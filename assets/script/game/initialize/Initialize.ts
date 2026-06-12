@@ -1,12 +1,7 @@
-/*
- * @Author: dgflash
- * @Date: 2021-11-11 17:45:23
- * @LastEditors: dgflash
- * @LastEditTime: 2022-08-03 10:07:14
- */
-import { ecs } from "db://oops-framework/libs/ecs/ECS";
-import { CCEntity } from "db://oops-framework/module/common/CCEntity";
-import { InitResComp } from "./bll/InitRes";
+import type { Node } from 'cc';
+import { ecs } from 'db://oops-framework/libs/ecs/ECS';
+import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
+import { VC_Initialize_Initial } from './view/VC_Initialize_Initial';
 
 /**
  * 游戏进入初始化模块
@@ -15,16 +10,8 @@ import { InitResComp } from "./bll/InitRes";
  */
 @ecs.register('Initialize')
 export class Initialize extends CCEntity {
-    protected init() {
-        // 初始化游戏公共资源
-        this.add(InitResComp);
+    /** 初始化游戏公共资源 */
+    load(initial: Node) {
+        this.add(initial.addComponent(VC_Initialize_Initial));
     }
 }
-
-// export class EcsInitializeSystem extends ecs.System {
-//     constructor() {
-//         super();
-
-//         this.add(new InitResSystem());
-//     }
-// }

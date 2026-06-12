@@ -1,0 +1,10 @@
+import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
+import type { Account } from '../Account';
+
+/** 账号子模块管理 */
+export class B_Account_Module extends CCBusiness<Account> {
+    protected init() {
+        this.ent.addChildSingletons<CCEntity>();
+    }
+}

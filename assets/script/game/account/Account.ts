@@ -1,19 +1,23 @@
-/*
- * @Author: dgflash
- * @Date: 2021-11-11 17:45:23
- * @LastEditors: dgflash
- * @LastEditTime: 2022-08-01 13:49:37
- */
-import { ecs } from "db://oops-framework/libs/ecs/ECS";
-import { CCEntity } from "db://oops-framework/module/common/CCEntity";
-import { AccountModelComp } from "./model/AccountModelComp";
+import { ecs } from 'db://oops-framework/libs/ecs/ECS';
+import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
+import { B_Account_Event } from './bll/B_Account_Event';
+import { B_Account_Login } from './bll/B_Account_Login';
+import { B_Account_Module } from './bll/B_Account_Module';
+import { M_Account_Model } from './model/M_Account_Model';
 
 /** 账号模块 */
 @ecs.register('Account')
 export class Account extends CCEntity {
-    AccountModel!: AccountModelComp;
+    M_Account_Model!: M_Account_Model;
+    B_Account_Module!: B_Account_Module;
+    B_Account_Event!: B_Account_Event;
+    B_Account_Login!: B_Account_Login;
 
     protected init() {
-        this.addComponents<ecs.Comp>(AccountModelComp);
+        this.addComponents(M_Account_Model);
+        this.addBusinesss(
+            B_Account_Module, 
+            B_Account_Event, 
+            B_Account_Login);
     }
 }

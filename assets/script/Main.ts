@@ -1,37 +1,30 @@
-/*
- * @Author: dgflash
- * @Date: 2021-07-03 16:13:17
- * @LastEditors: dgflash
- * @LastEditTime: 2022-08-05 18:25:56
- */
-import { _decorator, profiler } from 'cc';
-import { DEBUG } from 'cc/env';
-import { oops } from '../../extensions/oops-plugin-framework/assets/core/Oops';
-import { Root } from '../../extensions/oops-plugin-framework/assets/core/Root';
-import { ecs } from '../../extensions/oops-plugin-framework/assets/libs/ecs/ECS';
-import { Account } from './game/account/Account';
-import { smc } from './game/common/SingletonModuleComp';
-import { UIConfigData } from './game/common/config/GameUIConfig';
+import { _decorator, Node } from 'cc';
+import { LogType } from 'db://oops-framework/core/common/log/Logger';
+import { oops } from 'db://oops-framework/core/Oops';
+import { Root } from 'db://oops-framework/core/Root';
+import { ecs } from 'db://oops-framework/libs/ecs/ECS';
+import { gsm } from './game/common/GameSingletonModule';
 import { Initialize } from './game/initialize/Initialize';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('Main')
 export class Main extends Root {
-    start() {
-        if (DEBUG) profiler.showStats();
+    @property({
+        type: Node,
+        tooltip: '游戏初始画面',
+    })
+    initial: Node = null!;
+
+    protected iniStart() {
+        oops.log.setTags(
+            // LogType.Net |
+            LogType.Model | LogType.Business | LogType.View | LogType.Config | LogType.Trace
+        );
     }
 
     protected run() {
-        smc.initialize = ecs.getEntity<Initialize>(Initialize);
-        smc.account = ecs.getEntity<Account>(Account);
+        gsm.initialize = ecs.getEntity(Initialize);
+        gsm.initialize.load(this.initial);
     }
-
-    protected initGui() {
-        oops.gui.init(UIConfigData);
-    }
-
-    // protected initEcsSystem() {
-    //     oops.ecs.add(new EcsInitializeSystem());
-    // }
 }
