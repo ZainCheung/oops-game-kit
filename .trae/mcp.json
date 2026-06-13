@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "oops-framework-mcp": {
+      "command": "node",
+      "args": [
+        "c:/Users/董刚/.trae-cn/extensions/oops.oops-framework-tools-1.0.8/dist/mcp-cli.js"
+      ],
+      "env": {
+        "OOPS_EXTENSION_PATH": "c:/Users/董刚/.trae-cn/extensions/oops.oops-framework-tools-1.0.8",
+        "OOPS_WORKSPACE_PATH": "d:/Cocos Code/oops-game-kit"
+      }
+    }
+  }
+}
