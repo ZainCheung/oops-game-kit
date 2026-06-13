@@ -1,3 +1,4 @@
+import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { LayerType } from 'db://oops-framework/core/gui/layer/LayerEnum';
 import type { UIConfig } from 'db://oops-framework/core/gui/layer/UIConfig';
 import { oops } from 'db://oops-framework/core/Oops';
@@ -17,6 +18,7 @@ const UIConfirm: UIConfig = { layer: LayerType.Dialog, prefab: 'common/prefab/co
 const UIConfirmSkip: UIConfig = { layer: LayerType.Dialog, prefab: 'gui/common/prefab/ConfirmSkip', mask: true };
 
 /** Prompt模块主业务逻辑 */
+@ecs.register('B_Prompt_Main')
 export class B_Prompt_Main extends CCBusiness<Prompt> {
     protected init() {
         this.event.setEvent(

@@ -15,8 +15,9 @@ export class Account extends CCEntity {
 
     protected init() {
         this.addComponents(M_Account_Model);
-        this.B_Account_Module = this.addBusiness(B_Account_Module);
-        this.B_Account_Event = this.addBusiness(B_Account_Event);
-        this.B_Account_Login = this.addBusiness(B_Account_Login);
+        this.addBusinesss(
+            B_Account_Module, 
+            B_Account_Event, 
+            B_Account_Login);
     }
 }

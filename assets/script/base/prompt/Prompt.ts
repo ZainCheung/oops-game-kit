@@ -9,6 +9,6 @@ export class Prompt extends CCEntity {
     B_Prompt_Main!: B_Prompt_Main;
 
     protected init() {
-        this.B_Prompt_Main = this.addBusiness(B_Prompt_Main);
+        this.addBusinesss(B_Prompt_Main);
     }
 }

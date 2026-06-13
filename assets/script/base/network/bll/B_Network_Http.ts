@@ -1,9 +1,11 @@
+import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import type { HttpExtraOptions } from './http/HttpHelper';
 import { HttpHelper } from './http/HttpHelper';
 import type { Network } from '../Network';
 
 /** HTTP 网络业务逻辑 */
+@ecs.register('B_Network_Http')
 export class B_Network_Http extends CCBusiness<Network> {
     /**
      * POST 请求获取业务数据

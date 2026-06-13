@@ -1,3 +1,4 @@
+import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { oops } from 'db://oops-framework/core/Oops';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import type { Network } from '../Network';
@@ -11,6 +12,7 @@ export enum NetChannelType {
 }
 
 /** WebSocket 网络业务逻辑 */
+@ecs.register('B_Network_WebSocket')
 export class B_Network_WebSocket extends CCBusiness<Network> {
     /** 游戏逻辑服务器 */
     game: NetNodeGame = null!;
