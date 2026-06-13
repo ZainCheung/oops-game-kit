@@ -1,11 +1,11 @@
-import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { EventMessage } from 'db://oops-framework/core/common/event/EventMessage';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import type { Account } from '../Account';
 import { AccountEvent } from '../AccountEvent';
 
 /** 账号全局事件业务逻辑 */
-@ecs.register('B_Account_Event')
+@classname('B_Account_Event')
 export class B_Account_Event extends CCBusiness<Account> {
     protected init() {
         this.event.setEvent(

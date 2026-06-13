@@ -1,12 +1,12 @@
-import { ecs } from 'db://oops-framework/libs/ecs/ECS';
+import { oops } from 'db://oops-framework/core/Oops';
 import { LayerType } from 'db://oops-framework/core/gui/layer/LayerEnum';
 import type { UIConfig } from 'db://oops-framework/core/gui/layer/UIConfig';
-import { oops } from 'db://oops-framework/core/Oops';
 import { PromptSkip } from 'db://oops-framework/libs/gui/window/PromptSkip';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { GuiAnimUtil } from '../../../utils/GuiAnimUtil';
 import { Prompt } from '../Prompt';
-import { PromptEventName, IPromptEventDataMap } from '../PromptEvent';
+import { IPromptEventDataMap, PromptEventName } from '../PromptEvent';
 
 /** Alert窗口配置 */
 const UIAlert: UIConfig = { layer: LayerType.Dialog, prefab: 'common/prefab/alert', mask: true };
@@ -18,7 +18,7 @@ const UIConfirm: UIConfig = { layer: LayerType.Dialog, prefab: 'common/prefab/co
 const UIConfirmSkip: UIConfig = { layer: LayerType.Dialog, prefab: 'gui/common/prefab/ConfirmSkip', mask: true };
 
 /** Prompt模块主业务逻辑 */
-@ecs.register('B_Prompt_Main')
+@classname('B_Prompt_Main')
 export class B_Prompt_Main extends CCBusiness<Prompt> {
     protected init() {
         this.event.setEvent(

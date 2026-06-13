@@ -1,8 +1,8 @@
-import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { oops } from 'db://oops-framework/core/Oops';
 import type { BTNodeJson } from 'db://oops-framework/libs/behavior-tree';
 import { BehaviorTree } from 'db://oops-framework/libs/behavior-tree';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import type { Account } from '../Account';
 import { ConnectNet } from './login/process/ConnectNet';
 import { LoginSdk } from './login/process/LoginSdk';
@@ -29,7 +29,7 @@ const ReconnectProcessConfig: BTNodeJson = {
 };
 
 /** 账号登录流程逻辑 */
-@ecs.register('B_Account_Login')
+@classname('B_Account_Login')
 export class B_Account_Login extends CCBusiness<Account> {
     /** 登录流程 */
     private loginProcess!: BehaviorTree;

@@ -271,7 +271,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 489.9191374663073,
+    "_orthoHeight": 444.3361753958587,
     "_near": 1,
     "_far": 2000,
     "_color": {
@@ -931,7 +931,6 @@
     "__type__": "0eec0s4qrZF7onPlYBrD+y+",
     "_name": "",
     "_objFlags": 0,
-    "__editorExtras__": {},
     "node": {
       "__id__": 2
     },
