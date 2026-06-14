@@ -18,7 +18,7 @@ export class V_Guide_Mask extends Component {
     /** 初始化（资源加载完成后立即调用，不等 start） */
     init(model: M_Guide_Main) {
         this.model = model;
-        const prefab: Prefab = oops.res.get('gui/guide/mask', Prefab)!;
+        const prefab: Prefab = oops.res.get('gui/guide/prefab/Mask', Prefab)!;
         this.mask = instantiate(prefab);
         this.mask.parent = this.node;
         this.bg = this.mask.getChildByName('bg')!;
