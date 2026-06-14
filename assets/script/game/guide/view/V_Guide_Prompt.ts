@@ -11,12 +11,9 @@ export class V_Guide_Prompt extends Component {
     private prompt: Node = null!;
     private content: Label = null!;
 
-    /** 初始化 */
+    /** 初始化（资源加载完成后立即调用，不等 start） */
     init(model: M_Guide_Main) {
         this.model = model;
-    }
-
-    start() {
         const prefab: Prefab = oops.res.get('gui/guide/prompt', Prefab)!;
         this.prompt = instantiate(prefab);
         this.prompt.parent = oops.gui.guide;

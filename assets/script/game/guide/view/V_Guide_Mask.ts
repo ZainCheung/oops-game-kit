@@ -15,12 +15,9 @@ export class V_Guide_Mask extends Component {
     private maskPm: PolygonMask = null!;
     private maskWidget: Widget = null!;
 
-    /** 初始化 */
+    /** 初始化（资源加载完成后立即调用，不等 start） */
     init(model: M_Guide_Main) {
         this.model = model;
-    }
-
-    start() {
         const prefab: Prefab = oops.res.get('gui/guide/mask', Prefab)!;
         this.mask = instantiate(prefab);
         this.mask.parent = this.node;
