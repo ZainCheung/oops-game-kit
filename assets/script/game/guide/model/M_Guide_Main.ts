@@ -11,8 +11,6 @@ export class M_Guide_Main extends ecs.Comp {
     /** 引导的节点 */
     guides: Map<number, Node> = new Map();
 
-    /** 资源文件夹 */
-    resDir = 'gui/guide';
     /** 遮罩预制资源 */
     resMask = 'gui/guide/mask';
     /** 提示预制资源 */

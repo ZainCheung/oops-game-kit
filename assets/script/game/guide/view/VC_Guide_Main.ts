@@ -1,6 +1,5 @@
 import { Button, EventTouch, Node, _decorator } from 'cc';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
-import { oops } from 'db://oops-framework/core/Oops';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Guide } from '../Guide';
 import { GuideEventName } from '../GuideEvent';
@@ -24,11 +23,11 @@ export class VC_Guide_Main extends CCView<Guide> {
     private currentBtn: Node | null = null;
 
     async onLoad() {
-        super.onLoad();
         this.event.setEvent(GuideEventName.UIDraw, GuideEventName.UIShowPrompt, GuideEventName.UIHide);
+        this.res.loadDir('gui/guide', this.onCompleteCallback.bind(this));
+    }
 
-        await oops.res.loadDir(this.ent.M_Guide_Main.resDir);
-
+    private onCompleteCallback() {
         this.mask = this.node.addComponent(V_Guide_Mask);
         this.mask.init(this.ent.M_Guide_Main);
         this.prompt = this.node.addComponent(V_Guide_Prompt);
@@ -85,7 +84,6 @@ export class VC_Guide_Main extends CCView<Guide> {
     }
 
     reset(): void {
-        oops.res.releaseDir(this.ent.M_Guide_Main.resDir);
         this.mask = null!;
         this.prompt = null!;
         this.currentBtn = null;
