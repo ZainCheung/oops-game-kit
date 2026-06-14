@@ -20,7 +20,7 @@ export class VC_Guide_Main extends CCView<Guide> {
     /** 引导提示动画 */
     private prompt: V_Guide_Prompt = null!;
     /** 当前引导目标节点 */
-    private currentBtn: Node | null = null;
+    private current: Node | null = null;
 
     async onLoad() {
         this.event.setEvent(GuideEventName.UIDraw, GuideEventName.UIShowPrompt, GuideEventName.UIHide);
@@ -37,7 +37,7 @@ export class VC_Guide_Main extends CCView<Guide> {
     //#region 事件处理
     /** UI绘制遮罩 */
     private onGuideUIDraw<K extends GuideEventName.UIDraw>(event: K, data: IGuideEventDataMap[K]): void {
-        this.currentBtn = data.node;
+        this.current = data.node;
         this.mask.draw(data.node);
 
         // 引导节点加触摸事件
@@ -59,9 +59,9 @@ export class VC_Guide_Main extends CCView<Guide> {
     //#endregion
 
     private onTransformChanged() {
-        if (this.currentBtn) {
-            this.mask.draw(this.currentBtn);
-            this.prompt.show(this.currentBtn);
+        if (this.current) {
+            this.mask.draw(this.current);
+            this.prompt.show(this.current);
         }
     }
 
@@ -69,7 +69,7 @@ export class VC_Guide_Main extends CCView<Guide> {
         const btn = event.target as Node;
         btn.off(Node.EventType.TOUCH_END, this.onTouchEnd, this, true);
         btn.off(Node.EventType.TRANSFORM_CHANGED, this.onTransformChanged, this);
-        this.currentBtn = null;
+        this.current = null;
 
         // 触发按钮组件
         const button = btn.getComponent(Button);
@@ -86,6 +86,6 @@ export class VC_Guide_Main extends CCView<Guide> {
     reset(): void {
         this.mask = null!;
         this.prompt = null!;
-        this.currentBtn = null;
+        this.current = null;
     }
 }
