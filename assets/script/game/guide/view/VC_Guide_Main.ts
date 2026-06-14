@@ -5,6 +5,7 @@ import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Guide } from '../Guide';
 import { GuideEventName } from '../GuideEvent';
 import type { IGuideEventDataMap } from '../GuideEventData';
+import type { M_Guide_Main } from '../model/M_Guide_Main';
 import { V_Guide_Mask } from './V_Guide_Mask';
 import { V_Guide_Prompt } from './V_Guide_Prompt';
 
@@ -22,6 +23,8 @@ export class VC_Guide_Main extends CCView<Guide> {
     private prompt: V_Guide_Prompt = null!;
     /** 当前引导目标节点 */
     private current: Node | null = null;
+    /** checkInternal 的定时器 id */
+    private _checkTimer: ReturnType<typeof setTimeout> | null = null;
 
     async onLoad() {
         this.event.setEvent(GuideEventName.UIDraw, GuideEventName.UIShowPrompt, GuideEventName.UIHide);
@@ -75,8 +78,11 @@ export class VC_Guide_Main extends CCView<Guide> {
 
     /** 验证当前引导 */
     private checkInternal(): void {
+        this._clearCheckTimer();
         const model = this.ent.M_Guide_Main;
-        setTimeout(() => {
+        this._checkTimer = setTimeout(() => {
+            this._checkTimer = null;
+            this._cleanInvalidGuides(model);
             const btn = model.guides.get(model.step);
             if (btn == null) {
                 this.event.emit(GuideEventName.UIHide, {});
@@ -85,6 +91,23 @@ export class VC_Guide_Main extends CCView<Guide> {
             else {
                 this.event.emit(GuideEventName.UIDraw, { node: btn });
                 this.event.emit(GuideEventName.UIShowPrompt, { node: btn });
+            }
+        });
+    }
+
+    /** 清除 checkInternal 的定时器 */
+    private _clearCheckTimer() {
+        if (this._checkTimer !== null) {
+            clearTimeout(this._checkTimer);
+            this._checkTimer = null;
+        }
+    }
+
+    /** 清理已销毁的引导节点引用 */
+    private _cleanInvalidGuides(model: M_Guide_Main) {
+        model.guides.forEach((node, step) => {
+            if (!node.isValid) {
+                model.guides.delete(step);
             }
         });
     }
@@ -140,8 +163,17 @@ export class VC_Guide_Main extends CCView<Guide> {
     }
 
     reset(): void {
-        this.mask = null!;
-        this.prompt = null!;
+        this._clearCheckTimer();
+
+        // 销毁 instantiate 创建的节点，防止内存泄漏
+        if (this.mask) {
+            this.mask.destroyNode();
+            this.mask = null!;
+        }
+        if (this.prompt) {
+            this.prompt.destroyNode();
+            this.prompt = null!;
+        }
         this.current = null;
     }
 }

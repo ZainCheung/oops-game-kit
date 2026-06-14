@@ -41,6 +41,13 @@ export class V_Guide_Mask extends Component {
         this.node.active = false;
     }
 
+    /** 销毁 instantiate 创建的节点 */
+    destroyNode() {
+        if (this.mask && this.mask.isValid) {
+            this.mask.destroy();
+        }
+    }
+
     /** 绘制遮罩 */
     draw(btn: Node) {
         // 定义规制区域的位置

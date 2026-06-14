@@ -4,6 +4,10 @@ import type { M_Guide_Main } from '../model/M_Guide_Main';
 
 const { ccclass } = _decorator;
 
+/** 复用 Vec3 减少 GC */
+const _tempPos = new Vec3();
+const _tempOffset = new Vec3();
+
 /** 新手引导提示逻辑 */
 @ccclass('V_Guide_Prompt')
 export class V_Guide_Prompt extends Component {
@@ -24,15 +28,15 @@ export class V_Guide_Prompt extends Component {
     /** 显示引导提示动画 */
     show(btn: Node) {
         // 提示位置修正到显示对象中心
-        let pos = btn.worldPosition.clone();
-        const offset: Vec3 = new Vec3();
+        Vec3.copy(_tempPos, btn.worldPosition);
         const uit = btn.getComponent(UITransform)!;
-        offset.x = uit.contentSize.width * 0.5 - uit.contentSize.width * uit.anchorX;
-        offset.y = uit.contentSize.height * 0.5 - uit.contentSize.height * uit.anchorY;
-        pos = pos.add(offset);
+        _tempOffset.x = uit.contentSize.width * 0.5 - uit.contentSize.width * uit.anchorX;
+        _tempOffset.y = uit.contentSize.height * 0.5 - uit.contentSize.height * uit.anchorY;
+        _tempOffset.z = 0;
+        Vec3.add(_tempPos, _tempPos, _tempOffset);
 
         this.prompt.active = true;
-        this.prompt.worldPosition = pos;
+        this.prompt.worldPosition = _tempPos;
         this.prompt.setSiblingIndex(this.prompt.parent!.children.length);
     }
 
@@ -45,5 +49,12 @@ export class V_Guide_Prompt extends Component {
     /** 隐藏提示 */
     hide() {
         this.prompt.active = false;
+    }
+
+    /** 销毁 instantiate 创建的节点 */
+    destroyNode() {
+        if (this.prompt && this.prompt.isValid) {
+            this.prompt.destroy();
+        }
     }
 }
