@@ -1,41 +1,46 @@
-import { CCInteger, _decorator } from 'cc';
-import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
+import { CCInteger, Component, _decorator } from 'cc';
 import { gsm } from '../../common/GameSingletonModule';
+import { Guide } from '../Guide';
 
 const { ccclass, property } = _decorator;
 
 /** 新手引导数据（绑定到引导节点上） */
 @ccclass('V_Guide_Item')
-export class V_Guide_Item extends GameComponent {
+export class V_Guide_Item extends Component {
     @property({
-        type: [CCInteger]
+        type: [CCInteger],
     })
     step: Array<number> = [];
 
+    private guide: Guide = null!;
+
     start() {
-        const guide = gsm.guide;
-        if (!guide) return;
+        this.guide = gsm.account.getChildSingleton(Guide);
+        if (!this.guide) return;
 
         this.step.forEach((step: number) => {
             // 注册引导数据
-            guide.B_Guide_Main.register(step, this.node);
+            this.guide.B_Guide_Main.register(step, this.node);
 
             // 验证当前是否触发这个引导
-            if (guide.M_Guide_Main.step === step) {
-                guide.B_Guide_Main.check();
+            if (this.guide.M_Guide_Main.step === step) {
+                this.guide.B_Guide_Main.check();
             }
         });
     }
 
     update(dt: number) {
-        const guide = gsm.guide;
-        if (!guide) return;
+        if (!this.guide) return;
 
         this.step.forEach((step: number) => {
             // 验证当前是否触发这个引导
-            if (guide.M_Guide_Main.step === step) {
-                guide.B_Guide_Main.refresh();
+            if (this.guide.M_Guide_Main.step === step) {
+                this.guide.B_Guide_Main.refresh();
             }
         });
+    }
+
+    onDestroy(): void {
+        this.guide = null!;
     }
 }
