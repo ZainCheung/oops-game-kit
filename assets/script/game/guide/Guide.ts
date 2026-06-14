@@ -1,7 +1,6 @@
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
 import { B_Guide_Main } from './bll/B_Guide_Main';
-import { B_Guide_ViewUI } from './bll/B_Guide_ViewUI';
 import { M_Guide_Main } from './model/M_Guide_Main';
 
 /**
@@ -15,10 +14,9 @@ export class Guide extends CCEntity {
     M_Guide_Main!: M_Guide_Main;
 
     B_Guide_Main!: B_Guide_Main;
-    B_Guide_ViewUI!: B_Guide_ViewUI;
 
     protected init() {
         this.addComponents(M_Guide_Main);
-        this.addBusinesss(B_Guide_Main, B_Guide_ViewUI);
+        this.addBusinesss(B_Guide_Main);
     }
 }
