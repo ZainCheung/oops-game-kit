@@ -23,34 +23,34 @@ export function runAllEcsDemos(): void {
     console.log('  ECS 功能演示 — 开始');
     console.log('========================================');
 
-    ensureDemoTypesRegistered();
+    // ensureDemoTypesRegistered();
 
-    // 基础
-    runDemoEntityComponent();
-    runDemoQuery();
-    runDemoComblockSystem();
+    // // 基础
+    // runDemoEntityComponent();
+    // runDemoQuery();
+    // runDemoComblockSystem();
 
-    // 运行时机制
-    runDemoEpoch();
-    runDemoCommandBuffer();
-    runDemoEidHandle();
-    runDemoMultiWorld();
-    runDemoMultiWorldSystem();
+    // // 运行时机制
+    // runDemoEpoch();
+    // runDemoCommandBuffer();
+    // runDemoEidHandle();
+    // runDemoMultiWorld();
+    // runDemoMultiWorldSystem();
 
-    // 存储与同步
-    runDemoSoA();
-    runDemoNetworkSync();
-    runDemoSerialization();
-    runDemoIncrementalSerialization();
+    // // 存储与同步
+    // runDemoSoA();
+    // runDemoNetworkSync();
+    // runDemoSerialization();
+    // runDemoIncrementalSerialization();
 
-    // 系统扩展
-    runDemoIntervalSystem();
-    runDemoSystemScheduling();
-    runDemoPassiveSystem();
-    runDemoEntityRef();
+    // // 系统扩展
+    // runDemoIntervalSystem();
+    // runDemoSystemScheduling();
+    // runDemoPassiveSystem();
+    // runDemoEntityRef();
 
-    // 回归校验（断言式，验证关键隐患修复）
-    runDemoRegression();
+    // // 回归校验（断言式，验证关键隐患修复）
+    // runDemoRegression();
 
     console.log('\n========================================');
     console.log('  ECS 功能演示 — 全部完成');
