@@ -1,7 +1,9 @@
+import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
 import { B_Guide_Main } from './bll/B_Guide_Main';
 import { M_Guide_Main } from './model/M_Guide_Main';
+import { VC_Guide_Main } from './view/VC_Guide_Main';
 
 /**
  * 新手引导
@@ -18,5 +20,9 @@ export class Guide extends CCEntity {
     protected init() {
         this.addComponents(M_Guide_Main);
         this.addBusinesss(B_Guide_Main);
+
+        // 添加引导组件
+        const comp = oops.gui.guide.addComponent(VC_Guide_Main);
+        this.add(comp);
     }
 }
