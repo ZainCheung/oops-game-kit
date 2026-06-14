@@ -11,11 +11,6 @@ export class M_Guide_Main extends ecs.Comp {
     /** 引导的节点 */
     guides: Map<number, Node> = new Map();
 
-    /** 遮罩预制资源 */
-    resMask = 'gui/guide/mask';
-    /** 提示预制资源 */
-    resPrompt = 'gui/guide/prompt';
-
     /** 当前准备引导的节点 */
     get current(): Node | undefined {
         return this.guides.get(this.step);

@@ -17,7 +17,7 @@ export class V_Guide_Prompt extends Component {
     }
 
     start() {
-        const prefab: Prefab = oops.res.get(this.model.resPrompt, Prefab)!;
+        const prefab: Prefab = oops.res.get('gui/guide/prompt', Prefab)!;
         this.prompt = instantiate(prefab);
         this.prompt.parent = oops.gui.guide;
         this.content = this.prompt.getChildByName('content')!.getComponent(Label)!;

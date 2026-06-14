@@ -21,7 +21,7 @@ export class V_Guide_Mask extends Component {
     }
 
     start() {
-        const prefab: Prefab = oops.res.get(this.model.resMask, Prefab)!;
+        const prefab: Prefab = oops.res.get('gui/guide/mask', Prefab)!;
         this.mask = instantiate(prefab);
         this.mask.parent = this.node;
         this.bg = this.mask.getChildByName('bg')!;
