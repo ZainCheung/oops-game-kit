@@ -4,7 +4,7 @@ import { ViewUtil } from 'db://oops-framework/core/utils/ViewUtil';
 import type { M_Guide_Main } from '../model/M_Guide_Main';
 import { PolygonMask } from './PolygonMask';
 
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 /** 新手引导遮罩逻辑 */
 @ccclass('V_Guide_Mask')

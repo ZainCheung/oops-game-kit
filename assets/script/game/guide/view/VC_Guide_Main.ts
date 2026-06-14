@@ -7,7 +7,7 @@ import type { IGuideEventDataMap } from '../GuideEventData';
 import { V_Guide_Mask } from './V_Guide_Mask';
 import { V_Guide_Prompt } from './V_Guide_Prompt';
 
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 /**
  * 新手引导界面管理

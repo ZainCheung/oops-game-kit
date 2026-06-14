@@ -6,7 +6,7 @@
  */
 import * as cc from "cc";
 import { Component, Mask, _decorator } from "cc";
-const { ccclass, property, executeInEditMode, requireComponent } = _decorator;
+const { ccclass, executeInEditMode, requireComponent } = _decorator;
 
 /** 多边形遮罩编辑 */
 @ccclass("PolygonMask")

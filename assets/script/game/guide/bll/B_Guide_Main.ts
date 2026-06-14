@@ -6,25 +6,7 @@ import { GuideEventName } from '../GuideEvent';
 
 /** 引导主业务逻辑 */
 export class B_Guide_Main extends CCBusiness<Guide> {
-    protected init() {
-        this.setWatch();
-    }
-
-    /** 注册事件监听 */
-    private setWatch() {
-    }
-
     //#region 对外 API（供 View 层直接调用）
-    /** 加载引导资源 */
-    load(callback: Function): void {
-        oops.res.loadDir(this.ent.M_Guide_Main.resDir, (err: Error | null) => {
-            if (err) {
-                oops.log.logBusiness(`引导资源加载失败`, 'Guide');
-            }
-            callback();
-        });
-    }
-
     /** 注册引导项 */
     register(step: number, node: Node): void {
         this.ent.M_Guide_Main.guides.set(step, node);
@@ -44,10 +26,11 @@ export class B_Guide_Main extends CCBusiness<Guide> {
         oops.log.logBusiness(`验证下一个引导【${this.ent.M_Guide_Main.step}】`, 'Guide');
 
         if (this.ent.M_Guide_Main.step > this.ent.M_Guide_Main.last) {
-            this.emit(GuideEventName.UIHide, {});
+            this.event.emit(GuideEventName.UIHide, {});
             this.ent.destroy();
             oops.log.logBusiness(`全部结束`, 'Guide');
-        } else {
+        } 
+        else {
             this.checkInternal();
         }
     }
@@ -56,14 +39,9 @@ export class B_Guide_Main extends CCBusiness<Guide> {
     refresh(): void {
         const btn = this.ent.M_Guide_Main.current;
         if (btn) {
-            this.emit(GuideEventName.UIDraw, { node: btn });
-            this.emit(GuideEventName.UIShowPrompt, { node: btn });
+            this.event.emit(GuideEventName.UIDraw, { node: btn });
+            this.event.emit(GuideEventName.UIShowPrompt, { node: btn });
         }
-    }
-
-    /** 释放引导资源 */
-    release(): void {
-        oops.res.releaseDir(this.ent.M_Guide_Main.resDir);
     }
     //#endregion
 
@@ -72,14 +50,15 @@ export class B_Guide_Main extends CCBusiness<Guide> {
     private checkInternal(): void {
         const model = this.ent.M_Guide_Main;
         // 延时处理是为了避免与cc.Widget组件冲突
-        this.scheduleOnce(() => {
+        setTimeout(() => {
             const btn = model.guides.get(model.step);
             if (btn == null) {
-                this.emit(GuideEventName.UIHide, {});
+                this.event.emit(GuideEventName.UIHide, {});
                 oops.log.logBusiness(`暂无引导`, 'Guide');
-            } else {
-                this.emit(GuideEventName.UIDraw, { node: btn });
-                this.emit(GuideEventName.UIShowPrompt, { node: btn });
+            } 
+            else {
+                this.event.emit(GuideEventName.UIDraw, { node: btn });
+                this.event.emit(GuideEventName.UIShowPrompt, { node: btn });
             }
         });
     }

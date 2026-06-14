@@ -2,7 +2,7 @@ import { Component, Label, Node, Prefab, UITransform, Vec3, _decorator, instanti
 import { oops } from 'db://oops-framework/core/Oops';
 import type { M_Guide_Main } from '../model/M_Guide_Main';
 
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 /** 新手引导提示逻辑 */
 @ccclass('V_Guide_Prompt')
@@ -20,7 +20,7 @@ export class V_Guide_Prompt extends Component {
         const prefab: Prefab = oops.res.get(this.model.resPrompt, Prefab)!;
         this.prompt = instantiate(prefab);
         this.prompt.parent = oops.gui.guide;
-        this.content = this.prompt.getChildByName('content').getComponent(Label);
+        this.content = this.prompt.getChildByName('content')!.getComponent(Label)!;
         this.hide();
     }
 

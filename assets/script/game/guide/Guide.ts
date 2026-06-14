@@ -21,4 +21,10 @@ export class Guide extends CCEntity {
         this.addComponents(M_Guide_Main);
         this.addBusinesss(B_Guide_Main, B_Guide_ViewUI);
     }
+
+    destroy(): void {
+        this.B_Guide_ViewUI.release();
+        this.B_Guide_ViewUI.removeMain();
+        super.destroy();
+    }
 }
