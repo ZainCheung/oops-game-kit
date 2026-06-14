@@ -1,5 +1,6 @@
 import type { Account } from '../account/Account';
 import { Base } from '../../base/Base';
+import type { Guide } from '../guide/Guide';
 import type { Initialize } from '../initialize/Initialize';
 
 /** 游戏单例模块管理 */
@@ -10,6 +11,8 @@ class GameSingletonModule {
     static initialize: Initialize;
     /** 账号模块 */
     static account: Account;
+    /** 引导模块 */
+    static guide: Guide;
 }
 
 /** 游戏单例模块 */
