@@ -20,11 +20,11 @@ export class V_Guide_Item extends Component {
 
         this.step.forEach((step: number) => {
             // 注册引导数据
-            this.guide.B_Guide_Main.register(step, this.node);
+            this.guide.VC_Guide_Main.register(step, this.node);
 
             // 验证当前是否触发这个引导
             if (this.guide.M_Guide_Main.step === step) {
-                this.guide.B_Guide_Main.check();
+                this.guide.VC_Guide_Main.check();
             }
         });
     }
@@ -35,7 +35,7 @@ export class V_Guide_Item extends Component {
         this.step.forEach((step: number) => {
             // 验证当前是否触发这个引导
             if (this.guide.M_Guide_Main.step === step) {
-                this.guide.B_Guide_Main.refresh();
+                this.guide.VC_Guide_Main.refresh();
             }
         });
     }

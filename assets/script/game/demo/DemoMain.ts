@@ -53,15 +53,15 @@ export class DemoMain extends GameComponent {
 
         if (buttonNode) {
             this.guide.M_Guide_Main.prompts[1] = '点击Button按钮';
-            this.guide.B_Guide_Main.register(1, buttonNode);
+            this.guide.VC_Guide_Main.register(1, buttonNode);
         }
         if (button001Node) {
             this.guide.M_Guide_Main.prompts[2] = '点击Button-001按钮';
-            this.guide.B_Guide_Main.register(2, button001Node);
+            this.guide.VC_Guide_Main.register(2, button001Node);
         }
 
         this.guide.M_Guide_Main.last = 3;
-        this.guide.B_Guide_Main.check(1);
+        this.guide.VC_Guide_Main.check(1);
     }
 
     // ========================================

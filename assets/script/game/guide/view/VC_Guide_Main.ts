@@ -1,5 +1,6 @@
 import { Button, EventTouch, Node, _decorator } from 'cc';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
+import { oops } from 'db://oops-framework/core/Oops';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Guide } from '../Guide';
 import { GuideEventName } from '../GuideEvent';
@@ -33,6 +34,61 @@ export class VC_Guide_Main extends CCView<Guide> {
         this.prompt = this.node.addComponent(V_Guide_Prompt);
         this.prompt.init(this.ent.M_Guide_Main);
     }
+
+    //#region 引导控制
+    /** 注册引导项 */
+    register(step: number, node: Node): void {
+        this.ent.M_Guide_Main.guides.set(step, node);
+    }
+
+    /** 检查指定引导是否触发 */
+    check(step?: number): void {
+        if (step !== undefined) {
+            this.ent.M_Guide_Main.step = step;
+        }
+        this.checkInternal();
+    }
+
+    /** 下一个引导 */
+    next(): void {
+        this.ent.M_Guide_Main.step++;
+        oops.log.logBusiness(`验证下一个引导【${this.ent.M_Guide_Main.step}】`, 'Guide');
+
+        if (this.ent.M_Guide_Main.step > this.ent.M_Guide_Main.last) {
+            this.event.emit(GuideEventName.UIHide, {});
+            this.ent.destroy();
+            oops.log.logBusiness(`全部结束`, 'Guide');
+        }
+        else {
+            this.checkInternal();
+        }
+    }
+
+    /** 刷新引导位置 */
+    refresh(): void {
+        const btn = this.ent.M_Guide_Main.current;
+        if (btn) {
+            this.event.emit(GuideEventName.UIDraw, { node: btn });
+            this.event.emit(GuideEventName.UIShowPrompt, { node: btn });
+        }
+    }
+
+    /** 验证当前引导 */
+    private checkInternal(): void {
+        const model = this.ent.M_Guide_Main;
+        setTimeout(() => {
+            const btn = model.guides.get(model.step);
+            if (btn == null) {
+                this.event.emit(GuideEventName.UIHide, {});
+                oops.log.logBusiness(`暂无引导`, 'Guide');
+            }
+            else {
+                this.event.emit(GuideEventName.UIDraw, { node: btn });
+                this.event.emit(GuideEventName.UIShowPrompt, { node: btn });
+            }
+        });
+    }
+    //#endregion
 
     //#region 事件处理
     /** UI绘制遮罩 */
@@ -80,7 +136,7 @@ export class VC_Guide_Main extends CCView<Guide> {
         }
 
         // 调用业务层进入下一步
-        this.ent.B_Guide_Main.next();
+        this.next();
     }
 
     reset(): void {
