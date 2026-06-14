@@ -127,16 +127,16 @@ export class VC_Guide_Main extends CCView<Guide> {
         btn.off(Node.EventType.TRANSFORM_CHANGED, this.onTransformChanged, this);
         this.current = null;
 
-        // 触发按钮组件
+        // 1. 先走引导下一步（由 next() 统一控制进度和销毁）
+        this.next();
+
+        // 2. 再触发按钮业务回调
         const button = btn.getComponent(Button);
         if (button) {
             button.clickEvents.forEach(e => {
                 e.emit([event]);
             });
         }
-
-        // 调用业务层进入下一步
-        this.next();
     }
 
     reset(): void {
