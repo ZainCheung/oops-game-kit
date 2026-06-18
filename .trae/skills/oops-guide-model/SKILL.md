@@ -1,74 +1,74 @@
 ---
 name: "oops-guide-model"
-description: "Oops Framework Model layer writing specification. Called when user needs to create data components, define data structures, or implement reset()."
+description: "Oops Framework Model 层编写规范。当用户需要创建数据组件、定义数据结构、实现 reset() 时调用。"
 triggers:
   keywords:
     - "Model"
-    - "data layer"
+    - "数据层"
     - "ecs.Comp"
     - "reset"
-    - "data structure"
+    - "数据结构"
   patterns:
     - ".*Model.*"
-    - ".*data.*"
-    - ".*data layer.*"
+    - ".*数据.*"
+    - ".*数据层.*"
 ---
 
-# Oops Framework Model Layer Specification
+# Oops Framework Model 层规范
 
-## Usage Instructions
+## 使用说明
 
-When generating Model layer code, **must** follow this workflow:
+生成 Model 层代码时，**必须**遵循以下流程：
 
-1. Open `oops-rule-coding.md`, find **"2. Model Layer Meta-Template"**
-2. Copy the meta-template, replace `[Module]` placeholder
-3. Only declare data fields explicitly requested by user
-4. Implement `reset()` method to clean custom memory
-5. Check item by item against mandatory requirements below
+1. 打开 `oops-rule-coding.md`，找到 **"2. Model 层元模板"**
+2. 复制元模板，替换 `[Module]` 占位符
+3. 仅声明用户**明确要求**的数据字段
+4. 实现 `reset()` 方法清理自定义内存
+5. 对照下方强制要求逐项检查
 
-## Mandatory Meta-Template (from oops-rule-coding.md)
+## 强制元模板（来自 oops-rule-coding.md）
 
 ```typescript
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 
 @ecs.register('M_[Module]_Main')
 export class M_[Module]_Main extends ecs.Comp {
-    /** Data fields - Only declare properties explicitly requested by user */
-    // Example: items: SomeType[] = [];
+    /** 数据字段 - 仅声明用户明确要求的属性 */
+    // 示例: items: SomeType[] = [];
 
     reset() {
-        // Clean custom memory, release data references
+        // 清理自定义内存，释放数据引用
     }
 }
 ```
 
-## Mandatory Requirements
+## 强制要求
 
-| Check Item | Requirement |
-|-----------|-------------|
-| Inheritance | Must inherit `ecs.Comp` |
-| Decorator | `@ecs.register('M_[Module]_Main')`, parameter **with M_ prefix** |
-| reset() | **Must implement**; clean custom memory |
-| Properties | Only declare data fields explicitly requested by user |
-| Prohibited | ❌ No business logic; ❌ No unused property declarations |
+| 检查项 | 要求 |
+|--------|------|
+| 继承 | 必须继承 `ecs.Comp` |
+| 装饰器 | `@ecs.register('M_[Module]_Main')`，参数**带 M_ 前缀** |
+| reset() | **必须实现**；清理自定义内存 |
+| 属性 | 仅声明用户**明确要求**的数据字段 |
+| 禁止 | ❌ 不包含业务逻辑；❌ 不声明未使用的属性 |
 
-## Common Errors
+## 常见错误
 
 ```typescript
-// ❌ Error - Contains business logic
+// ❌ 错误 - 包含业务逻辑
 reset() {
-    this.items.sort();  // Prohibited! This is business logic
+    this.items.sort();  // 禁止！这是业务逻辑
 }
 
-// ❌ Error - Declares unused properties
-private cache: Map<string, any> = new Map();  // User didn't request!
+// ❌ 错误 - 声明未使用的属性
+private cache: Map<string, any> = new Map();  // 用户没要求！
 
-// ❌ Error - Decorator without M_ prefix
-@ecs.register('Backpack_Main')  // Error! Should be M_Backpack_Main
+// ❌ 错误 - 装饰器不带 M_ 前缀
+@ecs.register('Backpack_Main')  // 错误！应为 M_Backpack_Main
 ```
 
-## Related Specifications
+## 关联规范
 
-- Meta-template definition: `../rules/oops-rule-coding.md` Section 2
-- Core constraints: `../rules/oops-rule-core.md` Chapter 1
-- Project structure: `../rules/oops-rule-structure.md`
+- 元模板定义：`../rules/oops-rule-coding.md` 第 2 节
+- 核心约束：`../rules/oops-rule-core.md` 第 1 章
+- 项目结构：`../rules/oops-rule-structure.md`

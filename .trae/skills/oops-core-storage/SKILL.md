@@ -1,69 +1,71 @@
 ---
 name: "oops-core-storage"
-description: "Oops Framework local storage module usage guide. Called when user needs to store game data, read local config, implement data persistence, or needs encrypted data storage. Covers StorageManager storage manager usage, including basic storage, batch operations, JSON storage, and data encryption."
+description: "Oops Framework 本地存储模块使用指南。当用户需要存储游戏数据、读取本地配置、实现数据持久化或需要数据加密存储时调用。涵盖 StorageManager 存储管理器的使用方法，包括基础存储、批量操作、JSON存储和数据加密。"
 triggers:
   keywords:
+    - "存储"
     - "storage"
     - "StorageManager"
-    - "local storage"
-    - "data persistence"
-    - "save"
-    - "save data"
-    - "read data"
+    - "本地存储"
+    - "数据持久化"
+    - "存档"
+    - "保存数据"
+    - "读取数据"
     - "oops.storage"
     - "setItem"
     - "getItem"
     - "localStorage"
   patterns:
+    - ".*存储.*"
     - ".*storage.*"
     - "StorageManager.*"
-    - ".*save.*"
+    - ".*存档.*"
 ---
 
-# Oops Framework Local Storage Module
+# Oops Framework 本地存储模块
 
-This document introduces Oops Framework's local storage system, including basic storage, batch operations, data encryption, and user isolation features.
+本文档介绍 Oops Framework 的本地存储系统，包括基础存储、批量操作、数据加密和用户隔离功能。
 
-## Trigger Conditions
+## 触发条件
 
-**Call this skill when user needs the following operations**:
-- Store game data locally
-- Read locally stored data
-- Implement data persistence
-- Need encrypted data storage
-- Multi-user data isolation
-- Batch storage/read operations
+**当用户需要以下操作时调用此技能**：
+- 存储游戏数据到本地
+- 读取本地存储的数据
+- 实现数据持久化
+- 需要数据加密存储
+- 多用户数据隔离
+- 批量存储/读取操作
 
-**Non-matching cases** (use other skills/documents):
+**不匹配的情况**（使用其他技能）：
 
-| Scenario | Recommended Skill/Document |
-|----------|---------------------------|
-| Coding standards | `../rules/oops-rule-coding.md` |
-| Memory data management | `oops-guide-model` |
+| 场景 | 推荐技能/文档 |
+|------|--------------|
+| 编码标准 | `../rules/oops-rule-coding.md` |
+| 内存数据管理 | `oops-guide-model` |
 
 ---
 
-## 1. Storage Manager (StorageManager)
+## 1. 存储管理器 (StorageManager)
 
-### 1.1 Get Instance
+### 1.1 获取实例
 
 ```typescript
 import { oops } from 'db://oops-framework/core/Oops';
 
-// Access through oops (recommended)
+// 通过 oops 访问（推荐）
 oops.storage.set('key', 'value');
 
-// Or import directly (use after framework initialization)
+// 或直接导入（框架初始化后使用）
 import { StorageManager } from 'db://oops-framework/core/common/storage/StorageManager';
-// Note: StorageManager has no .instance singleton property, access through oops.storage
+// 注意：StorageManager 没有 .instance 单例属性，需通过 oops.storage 访问
 ```
 
-### 1.2 Initialize Encryption
+### 1.2 初始化加密
 
 ```typescript
 import { StorageSecuritySimple } from 'db://oops-framework/core/common/storage/StorageSecuritySimple';
 
-// Use simple encryption (XOR encryption)
+// 使用简单加密（XOR加密）
 const security = new StorageSecuritySimple();
 security.key = 'my-secret-key-16';
 security.iv = 'my-iv-16-chars!!';
@@ -73,28 +75,28 @@ oops.storage.init(security);
 
 ---
 
-## 2. Basic Storage Operations
+## 2. 基础存储操作
 
-### 2.1 Store Data
+### 2.1 存储数据
 
 ```typescript
 /**
- * Store local data
- * @param key   Storage key
- * @param value Storage value
- * @returns     Whether successful
+ * 存储本地数据
+ * @param key   存储键
+ * @param value 存储值
+ * @returns     是否成功
  */
 
-// Store string
+// 存储字符串
 oops.storage.set('username', 'Player001');
 
-// Store number
+// 存储数字
 oops.storage.set('level', 50);
 
-// Store boolean
+// 存储布尔值
 oops.storage.set('isNewPlayer', true);
 
-// Store object (auto JSON serialization)
+// 存储对象（自动JSON序列化）
 const playerData = {
     uid: 10001,
     name: 'Player001',
@@ -103,68 +105,68 @@ const playerData = {
 oops.storage.set('playerData', playerData);
 ```
 
-### 2.2 Read Data
+### 2.2 读取数据
 
 ```typescript
 /**
- * Get data for specified key
- * @param key          Key
- * @param defaultValue Default value
- * @returns            Stored value or default value
+ * 获取指定关键字的数据
+ * @param key          键
+ * @param defaultValue 默认值
+ * @returns            存储的值或默认值
  */
 
-// Read string (default returns empty string)
+// 读取字符串（默认返回空字符串）
 const username = oops.storage.get('username');
 const username2 = oops.storage.get('username', 'Guest');
 
-// Read number
+// 读取数字
 const level = oops.storage.getNumber('level', 1);
 
-// Read boolean
+// 读取布尔值
 const isNew = oops.storage.getBoolean('isNewPlayer', false);
 
-// Read JSON object
+// 读取JSON对象
 const playerData = oops.storage.getJson('playerData', {});
 ```
 
-### 2.3 Delete Data
+### 2.3 删除数据
 
 ```typescript
-// Delete single key
+// 删除单个键
 oops.storage.remove('tempData');
 
-// Batch delete
+// 批量删除
 oops.storage.removeBatch(['temp1', 'temp2', 'temp3']);
 
-// Clear all storage (dangerous operation)
+// 清空所有存储（危险操作）
 oops.storage.clear();
 ```
 
-### 2.4 Check and Query
+### 2.4 检查与查询
 
 ```typescript
-// Check if key exists
+// 检查 key 是否存在
 const exists = oops.storage.has('playerData');
 
-// Get all current user keys
+// 获取所有当前用户的 key
 const keys = oops.storage.getAllKeys();
 
-// Get storage usage info
+// 获取存储使用情况
 const info = oops.storage.getStorageInfo();
-console.log(`Stored ${info.keyCount} keys, estimated size: ${info.estimatedSize} bytes`);
+console.log(`存储了 ${info.keyCount} 个键，估计大小: ${info.estimatedSize} 字节`);
 ```
 
 ---
 
-## 3. Batch Operations
+## 3. 批量操作
 
-### 3.1 Batch Storage
+### 3.1 批量存储
 
 ```typescript
 /**
- * Batch storage (performance optimization: reduce 40-60% call overhead)
- * @param data Key-value pair object
- * @returns    Number successfully stored
+ * 批量存储（性能优化：减少 40-60% 的调用开销）
+ * @param data 键值对对象
+ * @returns    成功存储的数量
  */
 
 const data = {
@@ -176,14 +178,14 @@ const data = {
 const successCount = oops.storage.setBatch(data);
 ```
 
-### 3.2 Batch Read
+### 3.2 批量读取
 
 ```typescript
 /**
- * Batch get (performance optimization)
- * @param keys          Key array to get
- * @param defaultValues Default value object (optional)
- * @returns             Key-value pair object
+ * 批量获取（性能优化）
+ * @param keys          要获取的 key 数组
+ * @param defaultValues 默认值对象（可选）
+ * @returns             键值对对象
  */
 
 const keys = ['player.name', 'player.level', 'player.gold'];
@@ -192,42 +194,42 @@ const result = oops.storage.getBatch(keys);
 
 ---
 
-## 4. User Data Isolation
+## 4. 用户数据隔离
 
-### 4.1 Set User ID
+### 4.1 设置用户ID
 
 ```typescript
-// Set user ID after login
+// 登录后设置用户ID
 oops.storage.setUser('user_10001');
 
-// Stored data will auto-add user prefix
-oops.storage.set('level', 50);  // Actual storage: user_10001_level
+// 此时存储的数据会自动添加用户前缀
+oops.storage.set('level', 50);  // 实际存储: user_10001_level
 
-// Read will also auto-handle
-const level = oops.storage.get('level');  // Read: user_10001_level
+// 读取时也会自动处理
+const level = oops.storage.get('level');  // 读取: user_10001_level
 ```
 
-### 4.2 Clear User Data
+### 4.2 清空用户数据
 
 ```typescript
-// Clear all current user data
+// 清空当前用户的所有数据
 oops.storage.clearUser();
 ```
 
 ---
 
-## 5. Resource Release
+## 5. 资源释放
 
 ```typescript
-// Release storage manager resources (call when switching scenes or not needed)
+// 释放存储管理器资源（切换场景或不需要时调用）
 oops.storage.dispose();
 ```
 
 ---
 
-## 6. Backpack Module Storage Example
+## 6. 背包模块存储示例
 
-### 6.1 Save Backpack Data
+### 6.1 保存背包数据
 
 ```typescript
 import { oops } from 'db://oops-framework/core/Oops';
@@ -238,7 +240,7 @@ import { IRemoteProp } from '../BackpackEvent';
 export class B_Backpack_Storage extends CCBusiness<Backpack> {
     private static readonly KEY_BACKPACK = 'backpack_data';
 
-    /** Save backpack data to local */
+    /** 保存背包数据到本地 */
     saveBackpack(): void {
         const data: IRemoteProp[] = [];
         this.ent.M_Backpack_Main.props.forEach((prop) => {
@@ -249,25 +251,25 @@ export class B_Backpack_Storage extends CCBusiness<Backpack> {
         });
 
         oops.storage.set(B_Backpack_Storage.KEY_BACKPACK, data);
-        oops.log.logBusiness('Backpack data saved', 'Backpack');
+        oops.log.logBusiness('背包数据已保存', 'Backpack');
     }
 
-    /** Load backpack data from local */
+    /** 从本地加载背包数据 */
     loadBackpack(): IRemoteProp[] | null {
         return oops.storage.getJson<IRemoteProp[]>(B_Backpack_Storage.KEY_BACKPACK);
     }
 
-    /** Clear local backpack save */
+    /** 清空本地背包存档 */
     clearBackpack(): void {
         oops.storage.remove(B_Backpack_Storage.KEY_BACKPACK);
     }
 }
 ```
 
-### 6.2 Batch Save Settings
+### 6.2 批量保存设置
 
 ```typescript
-/** Batch save backpack settings */
+/** 批量保存背包设置 */
 saveSettings(settings: { autoSort: boolean; showReddot: boolean; filterType: number }): void {
     const data = {
         'backpack.autoSort': settings.autoSort,
@@ -280,33 +282,34 @@ saveSettings(settings: { autoSort: boolean; showReddot: boolean; filterType: num
 
 ---
 
-## 7. API Quick Reference
+## 7. API 速查表
 
-| Method | Parameters | Return Value | Description |
-|--------|-----------|-------------|-------------|
-| `init(iis)` | `IStorageSecurity` | `void` | Initialize encryption |
-| `setUser(id)` | `string` | `void` | Set user ID |
-| `set(key, value)` | `string, any` | `boolean` | Store data |
-| `get(key, default?)` | `string, any` | `string` | Read data |
-| `getNumber(key, default?)` | `string, number` | `number` | Read number |
-| `getBoolean(key, default?)` | `string, boolean` | `boolean` | Read boolean |
-| `getJson(key, default?)` | `string, T` | `T` | Read JSON object |
-| `remove(key)` | `string` | `boolean` | Delete single key |
-| `removeBatch(keys)` | `string[]` | `number` | Batch delete |
-| `clear()` | None | `void` | Clear all storage |
-| `clearUser()` | None | `void` | Clear current user data |
-| `setBatch(data)` | `Record<string, any>` | `number` | Batch storage |
-| `getBatch(keys, defaults?)` | `string[], Record?` | `Record<string, string>` | Batch read |
-| `has(key)` | `string` | `boolean` | Check if key exists |
-| `getAllKeys()` | None | `string[]` | Get all keys |
-| `getStorageInfo()` | None | `{keyCount, estimatedSize}` | Get storage info |
-| `dispose()` | None | `void` | Release resources |
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `init(iis)` | `IStorageSecurity` | `void` | 初始化加密 |
+| `setUser(id)` | `string` | `void` | 设置用户ID |
+| `set(key, value)` | `string, any` | `boolean` | 存储数据 |
+| `get(key, default?)` | `string, any` | `string` | 读取数据 |
+| `getNumber(key, default?)` | `string, number` | `number` | 读取数字 |
+| `getBoolean(key, default?)` | `string, boolean` | `boolean` | 读取布尔值 |
+| `getJson(key, default?)` | `string, T` | `T` | 读取JSON对象 |
+| `remove(key)` | `string` | `boolean` | 删除单个键 |
+| `removeBatch(keys)` | `string[]` | `number` | 批量删除 |
+| `clear()` | 无 | `void` | 清空所有存储 |
+| `clearUser()` | 无 | `void` | 清空当前用户数据 |
+| `setBatch(data)` | `Record<string, any>` | `number` | 批量存储 |
+| `getBatch(keys, defaults?)` | `string[], Record?` | `Record<string, string>` | 批量读取 |
+| `has(key)` | `string` | `boolean` | 检查key是否存在 |
+| `getAllKeys()` | 无 | `string[]` | 获取所有key |
+| `getStorageInfo()` | 无 | `{keyCount, estimatedSize}` | 获取存储信息 |
+| `dispose()` | 无 | `void` | 释放资源 |
 
 ---
 
-## 8. Related Skills
+## 8. 关联技能
 
-| Scenario | Recommended Skill |
-|----------|------------------|
-| Business layer writing | `oops-guide-business` |
-| Model layer writing | `oops-guide-model` |
+| 场景 | 推荐技能 |
+|------|----------|
+| 代码风格规范 | `oops-guide-code-style` |
+| Business 层编写 | `oops-guide-business` |
+| Model 层编写 | `oops-guide-model` |

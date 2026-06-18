@@ -1,33 +1,33 @@
 ---
 name: "oops-guide-entity"
-description: "Oops Framework Entity layer writing specification. Called when user needs to create module entry, register Entity, or manage Model and Business layer components."
+description: "Oops Framework Entity 层编写规范。当用户需要创建模块入口、注册 Entity、管理 Model 与 Business 层组件时调用。"
 triggers:
   keywords:
     - "Entity"
-    - "entity"
-    - "module entry"
+    - "实体"
+    - "模块入口"
     - "CCEntity"
     - "ecs.register"
     - "addComponents"
     - "addBusinesss"
   patterns:
     - ".*Entity.*"
-    - ".*entity.*"
-    - ".*module entry.*"
+    - ".*实体.*"
+    - ".*模块入口.*"
 ---
 
-# Oops Framework Entity Layer Specification
+# Oops Framework Entity 层规范
 
-## Usage Instructions
+## 使用说明
 
-When generating Entity layer code, **must** follow this workflow:
+生成 Entity 层代码时，**必须**遵循以下流程：
 
-1. Open `oops-rule-coding.md`, find **"1. Entity Layer Meta-Template"**
-2. Copy the meta-template, replace `[Module]` placeholder
-3. Based on user requirements, decide which Businesses to register (usually at least `B_[Module]_Main` and `B_[Module]_ViewUI`)
-4. Check item by item against mandatory requirements below
+1. 打开 `oops-rule-coding.md`，找到 **"1. Entity 层元模板"**
+2. 复制元模板，替换 `[Module]` 占位符
+3. 根据用户需求决定注册哪些 Business（通常至少包含 `B_[Module]_Main` 和 `B_[Module]_ViewUI`）
+4. 对照下方强制要求逐项检查
 
-## Mandatory Meta-Template (from oops-rule-coding.md)
+## 强制元模板（来自 oops-rule-coding.md）
 
 ```typescript
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
@@ -50,34 +50,36 @@ export class [Module] extends CCEntity {
 }
 ```
 
-## Mandatory Requirements
+## 强制要求
 
-| Check Item | Requirement |
-|-----------|-------------|
-| Inheritance | Must inherit `CCEntity` |
-| Decorator | `@ecs.register('[Module]')`, parameter **without prefix** |
-| Model property | Use `!` assertion, e.g. `M_[Module]_Main!: M_[Module]_Main` |
-| init() | Only contains component registration, **absolutely no business logic** |
+| 检查项 | 要求 |
+|--------|------|
+| 继承 | 必须继承 `CCEntity` |
+| 装饰器 | `@ecs.register('[Module]')`，参数**不带前缀** |
+| Model 属性 | 使用 `!` 断言，如 `M_[Module]_Main!: M_[Module]_Main` |
+| init() | 仅含组件注册，**绝对禁止**业务逻辑 |
 
-## Common Errors
+## 常见错误
 
 ```typescript
-// ❌ Error - Writing business logic in init()
+// ❌ 错误 - 在 init() 中编写业务逻辑
 protected init() {
     this.addComponents(M_Backpack_Main);
-    if (this.someCondition) {  // Prohibited! This is business logic
+    if (this.someCondition) {  // 禁止！这是业务逻辑
         this.addBusinesss(B_Backpack_Main);
     }
 }
 
-// ❌ Error - Encapsulating business methods in Entity
+// ❌ 错误 - 在 Entity 中封装业务方法
 getProp(id: number) {
-    return this.M_Backpack_Main.props.get(id);  // Prohibited! Should be implemented in Business layer
+    return this.M_Backpack_Main.props.get(id);  // 禁止！应在 Business 层实现
 }
+
+
 ```
 
-## Related Specifications
+## 关联规范
 
-- Meta-template definition: `../rules/oops-rule-coding.md` Section 1
-- Core constraints: `../rules/oops-rule-core.md` Chapter 5
-- Project structure: `../rules/oops-rule-structure.md`
+- 元模板定义：`../rules/oops-rule-coding.md` 第 1 节
+- 核心约束：`../rules/oops-rule-core.md` 第 5 章
+- 项目结构：`../rules/oops-rule-structure.md`

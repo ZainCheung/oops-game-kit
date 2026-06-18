@@ -9,6 +9,7 @@ import { AccountEvent } from '../../account/AccountEvent';
 import { ConfigCommonStorage } from '../../common/config/ConfigGameStorage';
 import { gsm } from '../../common/GameSingletonModule';
 import type { Initialize } from '../Initialize';
+import { InitializeEventName } from '../InitializeEvent';
 import { VC_Initialize_Loading } from './VC_Initialize_Loading';
 
 const { ccclass, property } = _decorator;
@@ -33,15 +34,19 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     private waitAnim(startColor: Color, endColor: Color, callback: Function) {
         const title = this.node.getChildByName('title')!.uiLabel;
         tween(title)
-            .to(this.duration, { color: endColor }, {
-                onUpdate: (target, ratio) => {
-                    const r = startColor.r + (endColor.r - startColor.r) * ratio!;
-                    const g = startColor.g + (endColor.g - startColor.g) * ratio!;
-                    const b = startColor.b + (endColor.b - startColor.b) * ratio!;
-                    const a = startColor.a + (endColor.a - startColor.a) * ratio!;
-                    title.color.set(r, g, b, a);
+            .to(
+                this.duration,
+                { color: endColor },
+                {
+                    onUpdate: (target, ratio) => {
+                        const r = startColor.r + (endColor.r - startColor.r) * ratio!;
+                        const g = startColor.g + (endColor.g - startColor.g) * ratio!;
+                        const b = startColor.b + (endColor.b - startColor.b) * ratio!;
+                        const a = startColor.a + (endColor.a - startColor.a) * ratio!;
+                        title.color.set(r, g, b, a);
+                    },
                 }
-            })
+            )
             .call(() => {
                 callback();
             })
@@ -76,6 +81,7 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     /** 登录成功回调 */
     private onLoginSuccessGame() {
         this.isLoginSuccess = true;
+        this.event.emit(InitializeEventName.LoginComplete);     // 登录完成事件
         this.tryEnter();
     }
     //#endregion
@@ -94,6 +100,7 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
         oops.gui.setOpenFailure(this.onOpenFailure);
 
         this.loadComplete = true;
+        this.event.emit(InitializeEventName.LoadComplete);      // 资源加载完成事件
         this.tryEnter();
     }
 

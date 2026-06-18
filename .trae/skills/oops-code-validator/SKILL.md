@@ -1,200 +1,199 @@
 ---
 name: "oops-code-validator"
-description: "Oops Framework code validation skill. Automatically validates generated code against framework specifications, ensuring 100% error-free. Supports TypeScript compilation check, ESLint check, framework rule check, and auto-fixes for fixable issues. Must call this skill for validation after code generation."
+description: "Oops Framework 代码验证技能。自动化验证生成的代码是否符合框架规范，确保100%无错误。支持 TypeScript 编译检查、ESLint 检查、框架规则检查，并自动修复可修复的问题。在代码生成后必须调用此技能进行验证。"
 triggers:
   keywords:
     - "validate"
-    - "validation"
-    - "code validation"
-    - "check code"
+    - "验证"
+    - "代码验证"
+    - "检查代码"
     - "lint"
-    - "compilation check"
-    - "typescript check"
+    - "编译检查"
+    - "typescript检查"
   patterns:
     - "validate.*"
-    - ".*validation.*"
-    - ".*check.*code"
+    - ".*验证.*"
+    - "检查.*代码"
     - ".*lint.*"
 ---
 
-# Oops Framework Code Validation Skill
+# Oops Framework 代码验证技能
 
-## Core Responsibility
+## 核心职责
 
-Automatically validate generated code to ensure:
+自动化验证生成的代码，确保：
 
-1. **TypeScript compilation passes** - No type errors
-2. **ESLint check passes** - No code style issues
-3. **Framework rule check passes** - Conforms to Oops Framework specifications
+1. **TypeScript 编译通过** - 无类型错误
+2. **ESLint 检查通过** - 无代码风格问题
+3. **框架规则检查通过** - 符合 Oops Framework 规范
 
-**Input**: Generated code file path list
-**Output**: Validation report (pass/fail + issue list + fix suggestions)
+**输入**：生成的代码文件路径列表
+**输出**：验证报告（通过/失败 + 问题列表 + 修复建议）
 
-**⚠️ Absolutely prohibited: Delivering code without passing validation. Validation failed = Not deliverable.**
+**⚠️ 绝对禁止：验证未通过就交付代码。验证失败 = 不可交付。**
 
-> **Note**: This skill is called by `oops-workflow-code-generation` at step 3, can also be called separately to validate existing code.
-
-***
-
-## Validation Flow
-
-### Flow Overview
-
-| Step | Check Item | Tool/Method | Check Content | Auto Fix |
-|------|-----------|-------------|--------------|----------|
-| 1 | TypeScript compilation check | `npx tsc --noEmit` | Type errors, syntax errors | Try auto fix |
-| 2 | ESLint check | `npx eslint` | Code style, specification issues | `--fix` auto fix |
-| 3 | Framework rule check | Custom rules | Class names, inheritance, imports, decorators, method signatures | Try auto fix |
-| 4 | Generate validation report | - | Summarize results | - |
-
-### Flow Diagram
-
-```
-Step 1 → Step 2 → Step 3 → Generate Report → All passed → Return success
-                                      ↓ Has errors
-                                Return fail + issue list → Must fix and re-validate
-```
+> **注意**：此技能由 `oops-workflow-code-generation` 在步骤3调用，也可单独调用验证已有代码。
 
 ***
 
-## Validation Rule Library
+## 验证流程
 
-> **Specification Source**: The following validation rules correspond to framework specification files, validation uses rule files as standard:
+### 流程概览
+
+| 步骤 | 检查项             | 工具/方式              | 检查内容              | 自动修复         |
+| -- | --------------- | ------------------ | ----------------- | ------------ |
+| 1  | TypeScript 编译检查 | `npx tsc --noEmit` | 类型错误、语法错误         | 尝试自动修复       |
+| 2  | ESLint 检查       | `npx eslint`       | 代码风格、规范问题         | `--fix` 自动修复 |
+| 3  | 框架规则检查          | 自定义规则              | 类名、继承、导入、装饰器、方法签名 | 尝试自动修复       |
+| 4  | 生成验证报告          | -                  | 汇总结果              | -            |
+
+### 流程图
+
+```
+步骤1 → 步骤2 → 步骤3 → 生成报告 → 全部通过 → 返回成功
+                                      ↓ 有错误
+                                返回失败 + 问题列表 → 必须修复后重新验证
+```
+
+***
+
+## 验证规则库
+
+> **规范来源**：以下验证规则对应框架规范文件，验证时以规则文件为准：
 >
-> - Project structure → `../rules/oops-rule-structure.md`
-> - Coding standards → `../rules/oops-rule-coding.md`
-> - Core constraints → `../rules/oops-rule-core.md`
-> - Architecture specification → `../rules/oops-rule-architecture.md`
+> - 项目结构 → `../rules/oops-rule-structure.md`
+> - 编码标准 → `../rules/oops-rule-coding.md`
+> - 核心约束 → `../rules/oops-rule-core.md`
+> - 架构规范 → `../rules/oops-rule-architecture.md`
 
-### Rule 1: Class Name Specification Check
+### 规则1：类名规范检查
 
-| File Type | Regex Rule | Example | Error Message |
-|-----------|-----------|---------|--------------|
-| View | `^VC_[A-Z][a-zA-Z]*_[A-Z][a-zA-Z]*$` | `VC_Backpack_Main` | View class name must use VC_{Module}_{Name} format |
-| Model | `^M_[A-Z][a-zA-Z]*_[A-Z][a-zA-Z]*$` | `M_Backpack_Main` | Model class name must use M_{Module}_{Name} format |
-| Business | `^B_[A-Z][a-zA-Z]*_[A-Z][a-zA-Z]*$` | `B_Backpack_Main` | Business class name must use B_{Module}_{Name} format |
-| Entity | `^[A-Z][a-zA-Z]*$` | `Backpack` | Entity class name must use PascalCase, no underscores |
+| 文件类型     | 正则规则                                 | 示例                 | 错误信息                                  |
+| -------- | ------------------------------------ | ------------------ | ------------------------------------- |
+| View     | `^VC_[A-Z][a-zA-Z]*_[A-Z][a-zA-Z]*$` | `VC_Backpack_Main` | View类名必须使用 VC\_{Module}\_{Name} 格式    |
+| Model    | `^M_[A-Z][a-zA-Z]*_[A-Z][a-zA-Z]*$`  | `M_Backpack_Main`  | Model类名必须使用 M\_{Module}\_{Name} 格式    |
+| Business | `^B_[A-Z][a-zA-Z]*_[A-Z][a-zA-Z]*$`  | `B_Backpack_Main`  | Business类名必须使用 B\_{Module}\_{Name} 格式 |
+| Entity   | `^[A-Z][a-zA-Z]*$`                   | `Backpack`         | Entity类名必须使用大驼峰格式，不含下划线               |
 
-### Rule 2: Inheritance Check
+### 规则2：继承关系检查
 
-| File Type | Expected Inheritance | Example | Error Message |
-|-----------|---------------------|---------|--------------|
-| View | `extends CCView<\w+>` | `extends CCView<Backpack>` | View must inherit CCView<Module> |
-| Model | `extends ecs\.Comp` | `extends ecs.Comp` | Model must inherit ecs.Comp |
-| Business | `extends CCBusiness<\w+>` | `extends CCBusiness<Backpack>` | Business must inherit CCBusiness<Module> |
-| Entity | `extends CCEntity` | `extends CCEntity` | Entity must inherit CCEntity |
+| 文件类型     | 期望继承                      | 示例                             | 错误信息                            |
+| -------- | ------------------------- | ------------------------------ | ------------------------------- |
+| View     | `extends CCView<\w+>`     | `extends CCView<Backpack>`     | View必须继承 CCView<Module>         |
+| Model    | `extends ecs\.Comp`       | `extends ecs.Comp`             | Model必须继承 ecs.Comp              |
+| Business | `extends CCBusiness<\w+>` | `extends CCBusiness<Backpack>` | Business必须继承 CCBusiness<Module> |
+| Entity   | `extends CCEntity`        | `extends CCEntity`             | Entity必须继承 CCEntity             |
 
-### Rule 3: Import Statement Check
+### 规则3：导入语句检查
 
-- Check if required imports exist (based on file type)
-- **Prohibit unused imports**: Every identifier imported by `import` must be actually used in file
-- **Prohibit speculative imports**: Do not import "might be used" but actually unused modules
+- 检查必需导入是否存在（根据文件类型）
+- **禁止未使用的导入**：每个 `import` 导入的标识符必须在文件中被实际使用
+- **禁止假设性导入**：不得导入"可能用到"但实际未使用的模块
 
-**Unused import check example**:
+**未使用导入检查示例**：
 
 ```typescript
-// ❌ Error - Imported but not used
-import { oops } from 'db://oops-framework/core/Oops';  // No oops usage in file
+// ❌ 错误 - 导入后未使用
+import { oops } from 'db://oops-framework/core/Oops';  // 文件中无 oops 的使用
 
-// ❌ Error - Speculative import
-import { ecs } from 'db://oops-framework/libs/ecs/ECS'; // Current file doesn't need ecs
+// ❌ 错误 - 假设性导入
+import { ecs } from 'db://oops-framework/libs/ecs/ECS'; // 当前文件不需要 ecs
 
-// ✅ Correct - Only import actually used
+// ✅ 正确 - 只导入实际使用的
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 ```
 
-### Rule 4: Decorator Check
+### 规则4：装饰器检查
 
-| File Type | Required Decorators |
-|-----------|-------------------|
-| View | `@ccclass('VC_xxx')`, `@ecs.register('VC_xxx', false)`, `@gui.register(...)` |
-| Model | `@ecs.register('M_xxx')` |
-| Entity | `@ecs.register('xxx')` |
+| 文件类型   | 必需装饰器                                                                      |
+| ------ | -------------------------------------------------------------------------- |
+| View   | `@ccclass('VC_xxx')`、`@ecs.register('VC_xxx', false)`、`@gui.register(...)` |
+| Model  | `@ecs.register('M_xxx')`                                                   |
+| Entity | `@ecs.register('xxx')`                                                     |
 
-### Rule 5: Method Signature Check
+### 规则5：方法签名检查
 
-| File Type | Check Items |
-|-----------|------------|
-| Business | Must have `init()` and `setWatch()`; event handling must use generic signature |
-| View | Must have `reset()` |
+| 文件类型     | 检查项                                      |
+| -------- | ---------------------------------------- |
+| Business | 必须有 `init()` 和 `setWatch()`；事件处理必须使用泛型签名 |
+| View     | 必须有 `reset()`                            |
 
-**Event handler method signature (mandatory format)**:
+**事件处理方法签名（强制格式）**：
 
 ```typescript
 private onEventName<K extends ModuleEventName.EventName>(event: K, data: IModuleEventDataMap[K]): void
 ```
 
-### Rule 5.1: Prohibit Calling Non-Existent Methods
+### 规则5.1：禁止调用不存在的方法
 
-**AI must ensure every method called actually exists in target class or framework.**
+**AI 必须确保调用的每个方法都真实存在于目标类或框架中。**
 
-| Method | Status | Description |
-|--------|--------|-------------|
-| `this.unwatchAll()` | ❌ Does not exist | Framework auto-manages event release, prohibit manual call |
-| `this.ent.add(ViewClass)` | ❌ Does not exist | Correct is `this.ent.addUi(ViewClass)` |
-| `this.ent.B_XXX.someMethod()` | ⚠️ Need confirm | Must confirm Business layer has defined this method |
+| 方法                            | 状态     | 说明                              |
+| ----------------------------- | ------ | ------------------------------- |
+| `this.unwatchAll()`           | ❌ 不存在  | 框架自动管理事件释放，禁止手动调用               |
+| `this.ent.add(ViewClass)`     | ❌ 不存在  | 正确为 `this.ent.addUi(ViewClass)` |
+| `this.ent.B_XXX.someMethod()` | ⚠️ 需确认 | 必须确认 Business 层已定义该方法           |
 
-**Check rules**:
+**检查规则**：
 
-1. Called methods must exist in target class definition
-2. Prohibit fabricating method names from memory or assumptions
-3. Framework auto-managed features (event release, button unbinding) prohibit manual release method calls
+1. 调用的方法必须在目标类的定义中存在
+2. 禁止凭记忆或假设编造方法名
+3. 框架自动管理的功能（事件释放、按钮解绑）禁止手动调用释放方法
 
-### Rule 6: declare global Check (EventData Files)
+### 规则6：declare global 检查（EventData 文件）
 
-- `[Module]EventData.ts` must contain `declare global` block
-- Must extend `OopsFramework.TypedEventMap`
+- `[Module]EventData.ts` 必须包含 `declare global` 块
+- 必须扩展 `OopsFramework.TypedEventMap`
 
-### Rule 7: Property Initialization Style Check
+### 规则7：属性初始化风格检查
 
-- `@property` properties must use `= null!` initialization
-- Prohibit `= null`, no initialization, union types, optional markers
+- `@property` 属性必须使用 `= null!` 初始化
+- 禁止 `= null`、不初始化、联合类型、可选标记
 
 ***
 
-## Self-Check List
+## 自检清单
 
-After generating code, check item by item:
+生成代码后，按以下清单逐项检查：
 
-### Entity Layer
+### Entity 层
 
-- [ ] `import { CCEntity }` import correct
-- [ ] `@ecs.register('Backpack')` parameter is module name, **without prefix**
-- [ ] Model property declaration uses `!` assertion
-- [ ] `init()` method **contains no business logic**
+- [ ] `import { CCEntity }` 导入正确
+- [ ] `@ecs.register('Backpack')` 参数是模块名，**不带前缀**
+- [ ] Model 属性声明使用 `!` 断言
+- [ ] `init()` 方法中**不编写任何业务逻辑**
 
-### Model Layer
+### Model 层
 
-- [ ] `@ecs.register('M_Backpack_Main')` parameter **with M_ prefix**
-- [ ] Must implement `reset()` method
-- [ ] Only declare properties explicitly mentioned by user
+- [ ] `@ecs.register('M_Backpack_Main')` 参数**带 M\_ 前缀**
+- [ ] 必须实现 `reset()` 方法
+- [ ] 只声明用户明确提到的属性
 
-### Business Layer
+### Business 层
 
-- [ ] `CCBusiness`, `IBackpackEventDataMap` imports correct
-- [ ] `init()` calls `setWatch()`
-- [ ] `watch()` calls unified in `setWatch()`, third parameter is `this`
-- [ ] Event handler generic signature exactly matches (see `oops-rule-coding.md` section 3.3)
-- [ ] **Delete all unused imports** (e.g., unused `oops`, `ecs`, etc.)
-- [ ] **Only call confirmed existing methods**, prohibit assuming Business layer has some method
+- [ ] `CCBusiness`、`IBackpackEventDataMap` 导入正确
+- [ ] `init()` 中调用 `setWatch()`
+- [ ] `watch()` 调用统一在 `setWatch()` 中，且第三个参数是 `this`
+- [ ] 事件处理泛型签名必须完全匹配（详见 `oops-rule-coding.md` 第3.3节）
+- [ ] **删除所有未使用的导入**（如未使用的 `oops`、`ecs` 等）
+- [ ] **只调用确认存在的方法**，禁止假设 Business 层有某个方法
 
-### View Layer
+### View 层
 
-- [ ] `@property` used components correctly imported from `'cc'`
-- [ ] `CCView`, `ecs`, `gui`, `LayerType` imports correct
-- [ ] `BackpackEventName`, `IBackpackEventDataMap`, `Backpack` imports correct
-- [ ] `@ecs.register('VC_Backpack_Main', false)` second parameter must be `false`
-- [ ] `@property` properties use `= null!` initialization
-- [ ] `onLoad()` calls `super.onLoad()` and `this.setWatch()`
-- [ ] Must include `reset()` method
-- [ ] **reset() prohibits calling** **`this.unwatchAll()`** — framework auto-manages
-- [ ] **Only call confirmed existing methods**, prohibit assuming methods exist
+- [ ] `@property` 使用的组件从 `'cc'` 正确导入
+- [ ] `CCView`, `ecs`, `gui`, `LayerType` 导入正确
+- [ ] `BackpackEventName`, `IBackpackEventDataMap`, `Backpack` 导入正确
+- [ ] `@ecs.register('VC_Backpack_Main', false)` 第二个参数必须是 `false`
+- [ ] `@property` 属性使用 `= null!` 初始化
+- [ ] `onLoad()` 中调用 `super.onLoad()` 和 `this.setWatch()`
+- [ ] 必须包含 `reset()` 方法
+- [ ] **reset() 中禁止调用** **`this.unwatchAll()`** — 框架自动管理
+- [ ] **只调用确认存在的方法**，禁止假设方法存在
 
-### EventData Layer
+### EventData 层
 
-- [ ] Must contain `declare global` block
-- [ ] `declare global` namespace must be `OopsFramework`
-- [ ] `TypedEventMap` must `extends IBackpackEventDataMap`
+- [ ] 必须包含 `declare global` 块
+- [ ] `declare global` 中命名空间必须是 `OopsFramework`
+- [ ] `TypedEventMap` 必须 `extends IBackpackEventDataMap`
 
-### Framework Import Check (All Files)
-- [ ] Every import is actually used in the file
+### 框架导入检查（所有文件）

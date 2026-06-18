@@ -1,44 +1,44 @@
 ---
 name: "oops-guide-framework-modules"
-description: "Oops Framework core functional modules overview. Called when user needs to understand oops.xxx API functionality overview, quick reference, or navigate to detailed skills."
+description: "Oops Framework 核心功能模块概览。当用户需要了解 oops.xxx API 的功能概览、快速参考或导航到详细技能时调用。"
 triggers:
   keywords:
     - "oops"
-    - "framework module"
-    - "core feature"
+    - "框架模块"
+    - "核心功能"
     - "API"
-    - "feature overview"
+    - "功能概览"
   patterns:
     - ".*oops\\..*"
-    - ".*framework.*"
-    - ".*module.*"
+    - ".*框架.*"
+    - ".*模块.*"
 ---
 
-# Oops Framework Core Functional Modules Overview
+# Oops Framework 核心功能模块概览
 
-## Usage Instructions
+## 使用说明
 
-When user asks about framework features, needs quick reference, or navigation to specific modules, use this skill to provide overview and navigation.
+当用户询问框架功能、需要快速参考或导航到具体模块时，使用本技能提供概览和导航。
 
-## Core Module Quick Reference
+## 核心模块速查表
 
-| Module | Entry | Purpose | Detailed Skill |
-|--------|-------|---------|---------------|
-| Log | `oops.log` | Log output, filtering, customization | `oops-core-log` |
-| Timer | `oops.timer` | Countdown, delayed execution, server time sync | `oops-core-timer` |
-| Random | `oops.random` | Random number generation, random extraction, seed random | `oops-core-random` |
-| Storage | `oops.storage` | Local data persistence, encrypted storage | `oops-core-storage` |
-| GUI | `oops.gui` | UI management, layer control | `oops-guide-viewui` |
-| ECS | `ecs` | Entity Component System | `oops-guide-entity` |
+| 模块 | 入口 | 用途 | 详细技能 |
+|------|------|------|----------|
+| 日志 | `oops.log` | 日志输出、过滤、自定义 | `oops-core-log` |
+| 定时器 | `oops.timer` | 倒计时、延迟执行、服务器时间同步 | `oops-core-timer` |
+| 随机数 | `oops.random` | 随机数生成、随机抽取、种子随机 | `oops-core-random` |
+| 存储 | `oops.storage` | 本地数据持久化、加密存储 | `oops-core-storage` |
+| GUI | `oops.gui` | 界面管理、层级控制 | `oops-guide-viewui` |
+| ECS | `ecs` | 实体组件系统 | `oops-guide-entity` |
 
-## Module Usage Principles
+## 模块使用原则
 
-1. **View layer** open/close UI must use `this.ent.B_[Module]_ViewUI.openMain()` / `removeMain()`, prohibit directly calling `oops.gui.open()` / `oops.gui.remove()`
-2. **Business layer** uses `oops.log.logBusiness(msg, module)` to record logs
-3. **All layers** use `oops.timer` for timing operations, prohibit `setTimeout`/`setInterval`
-4. **Data storage** uses `oops.storage`, prohibit directly operating `localStorage`
+1. **View 层** 打开/关闭界面必须通过 `this.ent.B_[Module]_ViewUI.openMain()` / `removeMain()`，禁止直接调用 `oops.gui.open()` / `oops.gui.remove()`
+2. **Business 层** 使用 `oops.log.logBusiness(msg, module)` 记录日志
+3. **所有层** 使用 `oops.timer` 进行定时操作，禁止 `setTimeout`/`setInterval`
+4. **数据存储** 使用 `oops.storage`，禁止直接操作 `localStorage`
 
-## Related Specifications
+## 关联规范
 
-- Core constraints: `../rules/oops-rule-core.md`
-- Coding standards: `../rules/oops-rule-coding.md`
+- 核心约束：`../rules/oops-rule-core.md`
+- 编码规范：`../rules/oops-rule-coding.md`

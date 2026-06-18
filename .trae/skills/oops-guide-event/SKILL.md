@@ -1,43 +1,43 @@
 ---
 name: "oops-guide-event"
-description: "Oops Framework event system writing specification. Called when user needs to define module events, event data interfaces, or declare global extensions."
+description: "Oops Framework 事件系统编写规范。当用户需要定义模块事件、事件数据接口、declare global 扩展时调用。"
 triggers:
   keywords:
     - "Event"
-    - "event"
-    - "event system"
-    - "event definition"
+    - "事件"
+    - "事件系统"
+    - "事件定义"
     - "declare global"
     - "TypedEventMap"
-    - "event enum"
+    - "事件枚举"
   patterns:
     - ".*Event.*"
-    - ".*event.*"
+    - ".*事件.*"
     - ".*declare global.*"
 ---
 
-# Oops Framework Event System Specification
+# Oops Framework 事件系统规范
 
-## Usage Instructions
+## 使用说明
 
-When generating event system code, **must** follow this workflow:
+生成事件系统代码时，**必须**遵循以下流程：
 
-1. Open `oops-rule-coding.md`, find **"4. Event Layer Meta-Template"**
-2. Copy the meta-template, replace `[Module]` placeholder
-3. Add event enums and event data interfaces based on user requirements
-4. **Absolutely do not omit** `declare global` extension
-5. Check item by item against mandatory requirements below
+1. 打开 `oops-rule-coding.md`，找到 **"4. Event 层元模板"**
+2. 复制元模板，替换 `[Module]` 占位符
+3. 根据用户需求添加事件枚举和事件数据接口
+4. **绝对不要遗漏** `declare global` 扩展
+5. 对照下方强制要求逐项检查
 
-## Mandatory Meta-Template (from oops-rule-coding.md)
+## 强制元模板（来自 oops-rule-coding.md）
 
-The event system consists of two files: `[Module]Event.ts` (enum and re-export) and `[Module]EventData.ts` (data interfaces and global declaration).
+事件系统由两个文件组成：`[Module]Event.ts`（枚举与重导出）和 `[Module]EventData.ts`（数据接口与全局声明）。
 
-### [Module]Event.ts (Event Enum File)
+### [Module]Event.ts（事件枚举文件）
 
 ```typescript
-/** [Module] event enum */
+/** [Module]事件枚举 */
 export enum [Module]EventName {
-    /** [Description] */
+    /** [描述] */
     [EventKey] = '[EventValue]',
 }
 
@@ -47,22 +47,22 @@ export {
 } from './[Module]EventData';
 ```
 
-> **⚠️ Key Constraint**: In `export { ... }` re-export syntax, **must** add `type` keyword. Types are only used at compile time, using `type` clearly identifies export nature and avoids circular dependency issues.
+> **⚠️ 关键约束**：`export { ... }` 重导出语法中**必须**加 `type` 关键字。类型仅在编译时使用，运行时不需要，使用 `type` 可明确标识导出性质并避免循环依赖问题。
 
-### [Module]EventData.ts (Event Data File)
+### [Module]EventData.ts（事件数据文件）
 
 ```typescript
-/** [Description] event data */
+/** [描述]事件数据 */
 export interface I[Module][EventKey]Data {
-    // Data fields
+    // 数据字段
 }
 
-/** [Module] event data mapping */
+/** [Module]事件数据映射 */
 export interface I[Module]EventDataMap {
     [EventValue]: I[Module][EventKey]Data;
 }
 
-// ✅ Must include - Extend global event types
+// ✅ 必须包含 - 扩展全局事件类型
 declare global {
     namespace OopsFramework {
         interface TypedEventMap extends I[Module]EventDataMap {}
@@ -70,42 +70,42 @@ declare global {
 }
 ```
 
-## Mandatory Requirements
+## 强制要求
 
-| Check Item | Requirement |
-|-----------|-------------|
-| Enum | Use `export enum [Module]EventName` |
-| Mapping interface | Use `export interface I[Module]EventDataMap` |
-| Enum values | String value format `on[Module][Action]` |
-| Global extension | **Must include** `declare global` extending `TypedEventMap` |
-| Export | `export { type ... }` re-export must add `type` keyword |
+| 检查项 | 要求 |
+|--------|------|
+| 枚举 | 使用 `export enum [Module]EventName` |
+| 映射接口 | 使用 `export interface I[Module]EventDataMap` |
+| 枚举值 | 字符串值格式 `on[Module][Action]` |
+| 全局扩展 | **必须包含** `declare global` 扩展 `TypedEventMap` |
+| 导出 | `export { type ... }` 重导出必须加 `type` 关键字 |
 
-## Common Errors
+## 常见错误
 
 ```typescript
-// ❌ Error - Omitting declare global
-declare global {  // Must not omit!
+// ❌ 错误 - 遗漏 declare global
+declare global {  // 绝对不能省略！
     namespace OopsFramework {
         interface TypedEventMap extends IBackpackEventDataMap {}
     }
 }
 
-// ❌ Error - Enum key with prefix
+// ❌ 错误 - 枚举键带前缀
 export enum BackpackEventName {
-    BackpackUse = 'onBackpackUse',  // Error! Key should be Use
+    BackpackUse = 'onBackpackUse',  // 错误！键应为 Use
 }
 
-// ✅ Correct
+// ✅ 正确
 export enum BackpackEventName {
     Use = 'onBackpackUse',
 }
 
-// ❌ Error - export without type
-export { IBackpackEventDataMap } from './BackpackEventData';  // Error! Should be export { type IBackpackEventDataMap }
+// ❌ 错误 - export 不加 type
+export { IBackpackEventDataMap } from './BackpackEventData';  // 错误！应为 export { type IBackpackEventDataMap }
 ```
 
-## Related Specifications
+## 关联规范
 
-- Meta-template definition: `../rules/oops-rule-coding.md` Section 4
-- Core constraints: `../rules/oops-rule-core.md` Chapter 4
-- Business layer event usage: `oops-guide-business`
+- 元模板定义：`../rules/oops-rule-coding.md` 第 4 节
+- 核心约束：`../rules/oops-rule-core.md` 第 4 章
+- Business 层事件使用：`oops-guide-business`

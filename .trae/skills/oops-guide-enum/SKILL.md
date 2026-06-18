@@ -1,46 +1,46 @@
 ---
 name: "oops-guide-enum"
-description: "Oops Framework enum definition specification. Called when user needs to create module enums or define constants."
+description: "Oops Framework 枚举定义规范。当用户需要创建模块枚举、定义常量时调用。"
 triggers:
   keywords:
     - "Enum"
-    - "enum"
-    - "constant"
-    - "config"
+    - "枚举"
+    - "常量"
+    - "配置"
   patterns:
     - ".*Enum.*"
-    - ".*enum.*"
-    - ".*constant.*"
+    - ".*枚举.*"
+    - ".*常量.*"
 ---
 
-# Oops Framework Enum Specification
+# Oops Framework 枚举规范
 
-## Usage Instructions
+## 使用说明
 
-When generating enum code, **must** follow this workflow:
+生成枚举代码时，**必须**遵循以下流程：
 
-1. Open `oops-rule-structure.md`, find enum naming conventions in **"3. Prefix Rules Table"**
-2. Select correct prefix (`EM_` / `EB_` / `EV_`) based on enum's layer
-3. Add enum values based on user requirements
-4. Check item by item against mandatory requirements below
+1. 打开 `oops-rule-structure.md`，找到 **"3. 前缀规则表"** 中的枚举命名规范
+2. 根据枚举所属层级选择正确前缀（`EM_` / `EB_` / `EV_`）
+3. 根据用户需求添加枚举值
+4. 对照下方强制要求逐项检查
 
-## Mandatory Requirements
+## 强制要求
 
-| Check Item | Requirement |
-|-----------|-------------|
-| Naming | `export enum [Prefix]_[Module]`, select prefix based on layer |
-| Export | Must `export` |
-| Value type | String or number enum, select based on scenario |
+| 检查项 | 要求 |
+|--------|------|
+| 命名 | `export enum [Prefix]_[Module]`，前缀根据层级选择 |
+| 导出 | 必须 `export` |
+| 值类型 | 字符串或数字枚举，根据场景选择 |
 
-### Layer Prefix Comparison Table (from oops-rule-structure.md)
+### 层级前缀对照表（来自 oops-rule-structure.md）
 
-| Layer | Enum Prefix | Example |
-|-------|------------|---------|
+| 层级 | Enum 前缀 | 示例 |
+|------|-----------|------|
 | **model** | `EM_` | `EM_Backpack.ts` |
 | **bll** | `EB_` | `EB_Backpack.ts` |
 | **view** | `EV_` | `EV_Backpack.ts` |
 
-## Related Specifications
+## 关联规范
 
-- Prefix rules: `../rules/oops-rule-structure.md` Section 3
-- Project structure: `../rules/oops-rule-structure.md`
+- 前缀规则：`../rules/oops-rule-structure.md` 第 3 节
+- 项目结构：`../rules/oops-rule-structure.md`

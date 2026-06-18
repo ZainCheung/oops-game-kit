@@ -2,394 +2,394 @@
 alwaysApply: true
 ---
 
-# Oops Framework - Core Mandatory Constraints and Workflow
+# Oops Framework - 核心强制约束与工作流
 
-This document defines the **absolute mandatory constraints** and **standard development workflow** for AI when generating code. Violating any single rule is considered non-compliant code.
+本文档定义 AI 在生成代码时的**绝对强制约束**和**标准开发流程**。违反任何一条即视为不合格代码。
 
-> **Absolute Priority**: The constraints in this document **take precedence over** all other rules, skills, and example code. When this document conflicts with any other specification, **this document shall prevail**. When two rules conflict, the **stricter** one shall prevail.
+> **绝对优先级**：本文档的约束**高于**所有其他规则、技能和示例代码。当本文档与任何其他规范冲突时，**以本文档为准**。两个规则冲突时，以**更严格**的为准。
 >
-> **Generation Principle**: AI must **first load the corresponding meta-template from `oops-rule-coding.md` → replace placeholders → fill business logic**. Free-form coding from memory is prohibited.
+> **生成原则**：AI 必须**先加载 `oops-rule-coding.md` 中的对应元模板 → 替换占位符 → 填充业务逻辑**，禁止凭记忆自由编写。
 
 ---
 
-## 1. AI Behavior Red Lines
+## 1. AI 行为红线
 
-### [Mandatory] 1.1 Do Not Generate Unused Code
+### [强制性] 1.1 不生成未使用的代码
 
 ```typescript
-// ❌ Absolutely prohibited - Do not generate features/properties/decorators not mentioned by user
-protected [feature user didn't mention] = true;     // User didn't mention this feature
+// ❌ 绝对禁止 - 用户没有提到的功能/属性/装饰器，就不要生成
+protected [用户未提的功能开关] = true;     // 用户没提到此功能
 
-protected [property user didn't mention]: any = null;    // User didn't mention this property
+protected [用户未提的属性]: any = null;    // 用户没提到此属性
 
-@property([component type user didn't mention])
-private [node name user didn't mention]: [type] = null!;  // User didn't mention this node!
+@property([用户未提的组件类型])
+private [用户未提的节点名]: [类型] = null!;  // 用户没提到这个节点！
 ```
 
-**Determination Standard**: If removing a line of code still allows the remaining code to fully implement the functionality described by the user, then that line is **unused**. Unused code **must be deleted**, regardless of whether it "might be useful later".
+**判定标准**：如果删除某行代码后，剩余代码仍能完整实现用户描述的功能，则该行代码是**未使用的**。未使用的代码**必须删除**，不管它"以后可能有用"。
 
-### [Mandatory] 1.2 Do Not Add Methods Not Requested by User
+### [强制性] 1.2 不添加用户未要求的方法
 
-**Determination Standard**: If the user did not explicitly mention a certain feature, button, event, or operation, AI is **absolutely prohibited** from generating corresponding handler methods.
+**判定标准**：如果用户没有明确提到某个功能、按钮、事件或操作，AI **绝对禁止**为其生成对应的处理方法。
 
 ```typescript
-// ❌ Absolutely prohibited - User only said "[Feature A]", do not preset "[Feature B]" "[Feature C]" etc.
-private on[feature user didn't mention]Click() { ... }
-private on[operation user didn't mention]Event() { ... }
+// ❌ 绝对禁止 - 用户只说"[功能A]"，不要预设"[功能B]""[功能C]"等方法
+private on[用户未提的功能]Click() { ... }
+private on[用户未提的操作]Event() { ... }
 ```
 
-**Common Violation Scenarios**:
-- User requests "display list" → AI auto-generates "refresh" "delete" "edit" button events
-- User requests "open UI" → AI auto-generates "close animation" "switch tab" methods
-- User requests "send request" → AI auto-generates "retry" "cancel" "cache" logic
+**常见违规场景**：
+- 用户要求"显示列表" → AI 自动生成"刷新""删除""编辑"按钮事件
+- 用户要求"打开界面" → AI 自动生成"关闭动画""切换标签"方法
+- 用户要求"发送请求" → AI 自动生成"重试""取消""缓存"逻辑
 
-### [Mandatory] 1.3 Do Not Preset "Future Might Be Used" Properties
+### [强制性] 1.3 不预设"未来可能用到"的属性
 
 ```typescript
-// ❌ Absolutely prohibited - Do not declare properties/states not mentioned by user
-private [property user didn't mention]: [type] = [default value];  // User didn't say need this property
-private [state user didn't mention]: boolean = false;   // User didn't say need this state
+// ❌ 绝对禁止 - 用户没提到的属性/状态不要声明
+private [用户未提的属性]: [类型] = [默认值];  // 用户没说需要此属性
+private [用户未提的状态]: boolean = false;   // 用户没说需要此状态
 ```
 
-### [Mandatory] 1.4 Precise Modification Principle
+### [强制性] 1.4 精准修改原则
 
-When modifying existing files:
-- **Prohibit "improving" adjacent code** — Do not refactor what isn't broken
-- **Prohibit modifying unrelated comments or formatting** — Only modify parts directly related to requirements
-- **Must match existing style** — Even if you would write it differently
-- **Delete orphaned code caused by changes** — Delete unused imports/variables/functions caused by your changes
+当修改已有文件时：
+- **禁止"改进"相邻代码** — 不要重构没有损坏的东西
+- **禁止修改无关注释或格式** — 只修改与需求直接相关的部分
+- **必须匹配现有风格** — 即使你会用不同的方式编写
+- **删除变更导致的孤立代码** — 删除你的更改导致未使用的导入/变量/函数
 
-**Test Standard**: Every line of change should be directly traceable to the user's request.
+**测试标准**：每一行更改都应该能直接追溯到用户的请求。
 
-### [Mandatory] 1.5 Dead Code Handling Rules
+### [强制性] 1.5 死代码处理规则
 
-| Scenario | Handling |
-|----------|----------|
-| Your change causes an import/variable/function to no longer be used | ✅ **Must delete** |
-| Pre-existing dead code (unrelated to your change) | ⚠️ **Mention but do not delete** (unless user explicitly requests cleanup) |
+| 场景 | 处理方式 |
+|------|----------|
+| 你的更改导致某导入/变量/函数不再使用 | ✅ **必须删除** |
+| 预先存在的死代码（与你本次修改无关） | ⚠️ **提及但不删除**（除非用户明确要求清理）|
 
-### [Mandatory] 1.6 Prohibit Generating Unused Imports
+### [强制性] 1.6 禁止生成未使用的导入
 
-**AI must ensure every import is actually used when generating code. Prohibit importing "just in case".**
+**AI 必须在生成代码时确保每个导入都被实际使用，禁止为了"可能用到"而导入。**
 
 ```typescript
-// ❌ Absolutely prohibited - Import never used
-import { oops } from 'db://oops-framework/core/Oops';  // No usage of [import item] anywhere in file
-import { ecs } from 'db://oops-framework/libs/ecs/ECS'; // No usage of [import item] anywhere in file
+// ❌ 绝对禁止 - 导入后从未使用
+import { oops } from 'db://oops-framework/core/Oops';  // 文件中没有任何地方使用 [导入项]
+import { ecs } from 'db://oops-framework/libs/ecs/ECS'; // 文件中没有任何地方使用 [导入项]
 
-// ✅ Correct - Only import actually used modules
+// ✅ 正确 - 只导入实际使用的模块
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { [Module] } from '../[Module]';
 ```
 
-**Determination Standard**: If deleting an `import` statement still allows the code to fully compile and run, then that import is **unused**. Unused imports **must be deleted**.
+**判定标准**：如果删除某个 `import` 语句后，代码仍然可以完整编译和运行，则该导入是**未使用的**。未使用的导入**必须删除**。
 
-### [Mandatory] 1.7 Prohibit Calling Non-Existent Methods
+### [强制性] 1.7 禁止调用不存在的方法
 
-**AI must ensure every method called actually exists in the target class or framework. Prohibit fabricating method names from memory or assumptions.**
+**AI 必须确保调用的每个方法都真实存在于目标类或框架中，禁止凭记忆或假设编造方法名。**
 
 ```typescript
-// ❌ Absolutely prohibited - Calling non-existent method
+// ❌ 绝对禁止 - 调用不存在的方法
 reset() {
-    this.unwatchAll();  // ❌ [Target class] does not have [method name]() method! Framework auto-manages event release
+    this.unwatchAll();  // ❌ [目标类] 不存在 [方法名]() 方法！框架自动管理事件释放
 }
 
-// ❌ Absolutely prohibited - Assuming method exists
-this.ent.B_[Module]_Main.[undefined method](id);  // ❌ If Business layer doesn't expose this method, prohibit calling!
+// ❌ 绝对禁止 - 假设存在的方法
+this.ent.B_[Module]_Main.[未定义的方法](id);  // ❌ 如果 Business 层没有公开此方法，禁止调用！
 
-// ✅ Correct - Only call confirmed existing methods
-this.emit([Module]EventName.[EventKey], { [field]: data.[field] });  // ✅ emit is confirmed method of CCBusiness/CCView
-this.ent.B_[Module]_ViewUI.removeMain();  // ✅ MCP-generated view management class, method confirmed existing
+// ✅ 正确 - 只调用确认存在的方法
+this.emit([Module]EventName.[EventKey], { [字段]: data.[字段] });  // ✅ emit 是 CCBusiness/CCView 的确认方法
+this.ent.B_[Module]_ViewUI.removeMain();  // ✅ 由 MCP 生成的视图管理类，方法已确认存在
 ```
 
-**Common Traps**:
-- `this.unwatchAll()` — **Does not exist**. Framework auto-releases event listeners when component is destroyed, no manual call needed.
-- `this.ent.add(ViewClass)` — **Does not exist**. Correct is `this.ent.addUi(ViewClass)` or `this.ent.addPrefab(ViewClass, parent)`.
-- `this.ent.B_XXX.someMethod()` — **Must confirm**. If Business layer hasn't defined this method, prohibit calling from View layer.
+**常见陷阱**：
+- `this.unwatchAll()` — **不存在**。框架在组件销毁时自动释放事件监听，无需手动调用。
+- `this.ent.add(ViewClass)` — **不存在**。正确的是 `this.ent.addUi(ViewClass)` 或 `this.ent.addPrefab(ViewClass, parent)`。
+- `this.ent.B_XXX.someMethod()` — **必须确认**。如果 Business 层没有定义该方法，禁止在 View 层调用。
 
-**Rules**:
-1. Before calling any method, must first confirm the method is defined in the target class.
-2. If uncertain whether a method exists, **prohibit guessing**, should consult framework documentation or ask user.
-3. Framework auto-managed features (event release, button unbinding) **prohibit manually calling release methods**.
+**规则**：
+1. 调用任何方法前，必须先确认该方法在目标类中已定义。
+2. 如果不确定某个方法是否存在，**禁止猜测**，应查阅框架文档或询问用户。
+3. 框架自动管理的功能（如事件释放、按钮解绑）**禁止手动调用释放方法**。
 
 ---
 
-## 2. Decision Inquiry Principle (Stop When Uncertain, Confirm Before Proceeding)
+## 2. 决策询问原则（模糊即停，确认再行）
 
-### [Mandatory] 2.1 Must Ask When Encountering Multiple Options
+### [强制性] 2.1 遇到多方案选择时必须询问
 
-When user requirements have the following ambiguities, **must** use AskUserQuestion tool to ask developer, prohibit arbitrarily choosing:
+当用户需求存在以下模糊性时，**必须**使用 AskUserQuestion 工具询问开发者，禁止擅自选择：
 
-| Ambiguity Type | Example | Must Ask |
-|---------------|---------|----------|
-| Uncertain feature scope | "Make a backpack system" → Include organize, sort, batch operations? | Must ask |
-| Unspecified interaction method | "Click friend to open details" → Popup or navigate to new UI? | Must ask |
-| Undefined data structure | "Display player info" → Which fields to display? | Must ask |
-| Missing business rules | "Buy item" → Quantity limits, cooldown time? | Must ask |
-| Unspecified visual hierarchy | "Main UI has list" → Simple text or complex cards? | Must ask |
-| Non-unique technical solution | One Model or multiple Models in Model layer? | Must ask |
-| Ambiguous event design | One event or multiple events? | Must ask |
-| Unclear data flow direction | Active pull or passive push? | Must ask |
+| 模糊类型 | 示例 | 必须询问 |
+|---------|------|---------|
+| 功能范围不确定 | "做一个背包系统" → 是否包含整理、排序、批量操作？ | 必须询问 |
+| 交互方式未明确 | "点击好友打开详情" → 是弹窗还是跳转新界面？ | 必须询问 |
+| 数据结构未定义 | "显示玩家信息" → 需要显示哪些字段？ | 必须询问 |
+| 业务规则缺失 | "购买道具" → 是否有数量限制、冷却时间？ | 必须询问 |
+| 视觉层级未说明 | "主界面有列表" → 列表项是简单文本还是复杂卡片？ | 必须询问 |
+| 技术方案不唯一 | Model 层用一个 Model 还是多个？ | 必须询问 |
+| 事件设计有歧义 | 一个事件还是多个事件？ | 必须询问 |
+| 数据流方向不明 | 主动拉取还是被动推送？ | 必须询问 |
 
-### [Mandatory] 2.2 Must Provide Options When Asking
+### [强制性] 2.2 询问时必须提供选项
 
-When asking, **prohibit** just throwing out questions for developer to freely answer. Must provide:
-1. **2-4 clear options**
-2. **Pros and cons of each option**
-3. **AI's best recommendation and reasoning**
+询问时**禁止**只抛出问题让开发者自由回答，必须提供：
+1. **2-4 个明确的选项**
+2. **每个选项的优缺点说明**
+3. **AI 的最佳推荐及理由**
 
-### [Mandatory] 2.3 Decision Points During Development Also Need Asking
+### [强制性] 2.3 开发过程中的决策点同样要询问
 
-During code generation, if discovering similar decision issues (e.g., need to add a method not mentioned, need to assume some data structure), **must** pause generation and ask developer.
+在代码生成过程中，如果发现同类决策性问题（如需要新增一个未提及的方法、需要假设某种数据结构），**必须**暂停生成，回头询问开发者。
 
-Prohibit assuming for the sake of "keeping the flow".
+禁止为了"保持流畅"而擅自假设。
 
-### [Mandatory] 2.4 Can Only Continue After Decision Confirmation
+### [强制性] 2.4 决策确认后才能继续
 
-**Only after all key decisions are confirmed by developer, can enter MCP file creation stage.**
+**只有所有关键决策都得到开发者确认后，才能进入 MCP 创建文件阶段。**
 
-During code generation, must also pause if encountering:
-- Discovering properties/methods not mentioned by user but needing assumption
-- Discovering multiple equivalent implementation options (e.g., one event vs multiple events)
-- Discovering need for supplementary business rules to continue coding
-- Discovering missing UI interaction details (e.g., feedback method after button click)
+在代码生成阶段，如果遇到以下情况也必须暂停：
+- 发现用户需求中未提及但需要假设的属性/方法
+- 发现多个等价的实现方案（如一种事件 vs 多种事件）
+- 发现需要补充的业务规则才能继续编码
+- 发现 UI 交互细节缺失（如按钮点击后的反馈方式）
 
-**Handling**: Stop current file generation, use AskUserQuestion to ask, continue after getting response.
-
----
-
-## 3. Mandatory Code Generation Order
-
-### [Mandatory] 3.1 Three-Tier Code Generation Order
-
-When generating module code, **strictly prohibit skipping or reversing order**, must execute in following order:
-
-| Layer | Order | File Type |
-|-------|-------|-----------|
-| **Layer 1: Data Layer (Model)** | 1 | Entity file (module entity definition) |
-| | 2 | Model file (data model definition) |
-| | 3 | Enum file (enum definitions) |
-| | 4 | Type file (type definitions) |
-| | 5 | Interface file (interface definitions) |
-| | 6 | Config file (config definitions) |
-| **Layer 2: Business Layer (Business)** | 7 | Event file (event definitions) |
-| | 8 | EventData file (event data definitions) |
-| | 9 | Business file (business logic implementation) |
-| | 10 | System file (system logic implementation) |
-| **Layer 3: Display Layer (View)** | 11 | View file (UI view implementation) |
-| | 12 | ViewPrefab file (prefab view implementation) |
-
-### [Mandatory] 3.2 Generation Principles
-
-- **Must implement data layer first, then business layer, finally display layer**
-- **Strictly prohibit skipping data layer to directly implement business or display layer**
-- **Strictly prohibit implementing display layer first then going back to fill data layer**
-- **One-time correctness**: Class names, inheritance, imports, decorators, methods all correct at once
-- **Prohibit step-by-step correction**: No longer use SearchReplace for gradual correction
-- **Generate according to meta-template**: Strictly follow meta-templates in `oops-rule-coding.md`, not from memory
-- **Ask when uncertain**: When encountering uncertain issues, don't make decisions yourself, prompt developer to supplement info
+**处理方式**：停止当前文件生成，使用 AskUserQuestion 询问，得到答复后继续。
 
 ---
 
-## 4. API Usage and View Management
+## 3. 强制代码生成顺序
 
-### [Mandatory] 4.1 Prohibit Directly Calling Low-Level APIs in View Layer
+### [强制性] 3.1 三层代码生成顺序
 
-**View layer prohibited from directly calling (should go through Business layer)**:
+生成模块代码时，**严禁跳过或逆序**，必须按以下顺序执行：
 
-| API | Status | Description |
-|-----|--------|-------------|
-| `oops.gui.open(string)` | ❌ Prohibited | Exists, but prohibited from direct call in View layer |
-| `oops.gui.remove(string)` | ❌ Prohibited | Exists, but prohibited from direct call in View layer |
-| `instantiate(this.prefab)` | ❌ Prohibited | View layer prohibited from self-instantiating prefabs |
-| `this.ent.add(ViewClass)` | ❌ Does not exist | This method does not exist, should use `this.ent.addUi(ViewClass)` |
+| 层级 | 顺序 | 文件类型 |
+|------|------|----------|
+| **第1层：数据层 (Model)** | 1 | Entity 文件（模块实体定义） |
+| | 2 | Model 文件（数据模型定义） |
+| | 3 | Enum 文件（枚举定义） |
+| | 4 | Type 文件（类型定义） |
+| | 5 | Interface 文件（接口定义） |
+| | 6 | Config 文件（配置定义） |
+| **第2层：业务层 (Business)** | 7 | Event 文件（事件定义） |
+| | 8 | EventData 文件（事件数据定义） |
+| | 9 | Business 文件（业务逻辑实现） |
+| | 10 | System 文件（系统逻辑实现） |
+| **第3层：显示层 (View)** | 11 | View 文件（界面视图实现） |
+| | 12 | ViewPrefab 文件（预制体视图实现） |
 
-**Confirmed Available APIs (View layer usage)**:
+### [强制性] 3.2 生成原则
 
-| API | Usage Scenario | Example |
-|-----|---------------|---------|
-| `this.remove()` | View closes itself | `this.remove();` |
-| `this.ent.B_[Module]_ViewUI.openMain()` | Open UI main interface | `this.ent.B_[Module]_ViewUI.openMain();` |
-| `this.ent.B_[Module]_ViewUI.removeMain()` | Close UI main interface | `this.ent.B_[Module]_ViewUI.removeMain();` |
-| `this.ent.B_[Module]_ViewUI.openDetail()` | Open UI detail interface | `this.ent.B_[Module]_ViewUI.openDetail();` |
+- **必须先实现数据层，再实现业务层，最后实现显示层**
+- **严禁跳过数据层直接实现业务层或显示层**
+- **严禁先实现显示层再回头补数据层**
+- **一次性正确**：类名、继承、导入、装饰器、方法全部一次性正确
+- **禁止分步修正**：不再使用 SearchReplace 逐步修正
+- **对照元模板生成**：严格对照 `oops-rule-coding.md` 中的元模板生成，不凭记忆
+- **不确定时询问**：遇到不确定的问题，不要自作主张，应提示开发者补充信息
 
-**Confirmed Available APIs (Business layer usage)**:
+---
 
-| API | Usage Scenario | Example |
-|-----|---------------|---------|
-| `this.ent.addUi(ViewClass)` | Business layer adds UI | `this.ent.addUi(VC_[Module]_Main);` |
-| `this.ent.removeUi(ViewClass)` | Business layer removes UI | `this.ent.removeUi(VC_[Module]_Main);` |
-| `this.ent.addPrefab(ViewClass, parent)` | Business layer adds prefab | `this.ent.addPrefab(V_[Module]_[Name], parent);` |
-| `this.ent.removePrefab(node)` | Business layer removes prefab | `this.ent.removePrefab(node);` |
-| `this.emit(EventName, data)` | Trigger event | `this.emit([Module]EventName.[EventKey], { [field], [field] });` |
-| `this.watch(EventName, callback, this)` | Listen to event | `this.watch([Module]EventName.[EventKey], this.on[method name], this);` |
-| `oops.log.logBusiness(msg, module)` | Business layer log | `oops.log.logBusiness('[log content]', '[module name]');` |
-| `oops.log.logView(msg)` | View layer log | `oops.log.logView('[log content]');` |
+## 4. API 使用与视图管理
 
-**API Usage Decision Tree**:
+### [强制性] 4.1 禁止在 View 层直接调用底层 API
+
+**View 层禁止直接调用（应通过 Business 层）**：
+
+| API | 状态 | 说明 |
+|-----|------|------|
+| `oops.gui.open(string)` | ❌ 禁止 | 存在，但禁止在 View 层直接调用 |
+| `oops.gui.remove(string)` | ❌ 禁止 | 存在，但禁止在 View 层直接调用 |
+| `instantiate(this.prefab)` | ❌ 禁止 | View 层禁止自行实例化预制体 |
+| `this.ent.add(ViewClass)` | ❌ 不存在 | 不存在此方法，应使用 `this.ent.addUi(ViewClass)` |
+
+**已确认可用的 API（View 层使用）**：
+
+| API | 使用场景 | 示例 |
+|-----|----------|------|
+| `this.remove()` | View 关闭自身 | `this.remove();` |
+| `this.ent.B_[Module]_ViewUI.openMain()` | 打开 UI 主界面 | `this.ent.B_[Module]_ViewUI.openMain();` |
+| `this.ent.B_[Module]_ViewUI.removeMain()` | 关闭 UI 主界面 | `this.ent.B_[Module]_ViewUI.removeMain();` |
+| `this.ent.B_[Module]_ViewUI.openDetail()` | 打开 UI 详情界面 | `this.ent.B_[Module]_ViewUI.openDetail();` |
+
+**已确认可用的 API（Business 层使用）**：
+
+| API | 使用场景 | 示例 |
+|-----|----------|------|
+| `this.ent.addUi(ViewClass)` | Business 层添加 UI | `this.ent.addUi(VC_[Module]_Main);` |
+| `this.ent.removeUi(ViewClass)` | Business 层移除 UI | `this.ent.removeUi(VC_[Module]_Main);` |
+| `this.ent.addPrefab(ViewClass, parent)` | Business 层添加预制体 | `this.ent.addPrefab(V_[Module]_[Name], parent);` |
+| `this.ent.removePrefab(node)` | Business 层移除预制体 | `this.ent.removePrefab(node);` |
+| `this.emit(EventName, data)` | 触发事件 | `this.emit([Module]EventName.[EventKey], { [字段], [字段] });` |
+| `this.watch(EventName, callback, this)` | 监听事件 | `this.watch([Module]EventName.[EventKey], this.on[方法名], this);` |
+| `oops.log.logBusiness(msg, module)` | Business 层日志 | `oops.log.logBusiness('[日志内容]', '[模块名]');` |
+| `oops.log.logView(msg)` | View 层日志 | `oops.log.logView('[日志内容]');` |
+
+**API 使用决策树**：
 ```
-Need to operate UI?
+需要操作界面？
     │
-    ├─ View layer needs to close itself ──► this.remove()
+    ├─ View 层需要关闭自身 ──► this.remove()
     │
-    ├─ View layer needs to open other UI ──► this.ent.B_[Module]_ViewUI.open{ViewName}()
+    ├─ View 层需要打开其他界面 ──► this.ent.B_[Module]_ViewUI.open{ViewName}()
     │
-    ├─ View layer needs to create prefab ──► this.ent.B_[Module]_ViewPrefab.open{PrefabName}(parent)
+    ├─ View 层需要创建预制体 ──► this.ent.B_[Module]_ViewPrefab.open{PrefabName}(parent)
     │
-    ├─ Business layer needs to open UI ──► this.ent.addUi(ViewClass)
+    ├─ Business 层需要打开界面 ──► this.ent.addUi(ViewClass)
     │
-    ├─ Business layer needs to create prefab ──► this.ent.addPrefab(ViewClass, parent)
+    ├─ Business 层需要创建预制体 ──► this.ent.addPrefab(ViewClass, parent)
     │
-    └─ Uncertain? ──► Ask user, prohibit guessing
+    └─ 不确定？ ──► 询问用户，禁止猜测
 ```
 
-### [Mandatory] 4.2 Button Events Must Use setButton()
+### [强制性] 4.2 按钮事件必须用 setButton()
 
 ```typescript
-// ❌ Absolutely prohibited - Manually binding button events
+// ❌ 绝对禁止 - 手动绑定按钮事件
 private bindEvents() {
-    this.[button node name]?.node.on(Node.EventType.TOUCH_END, this.[method name], this);
+    this.[按钮节点名]?.node.on(Node.EventType.TOUCH_END, this.[方法名], this);
 }
 
-// ✅ Correct
+// ✅ 正确
 onLoad() {
     super.onLoad();
     this.setWatch();
-    this.setButton();  // Auto-listen to all buttons
+    this.setButton();  // 自动监听所有按钮
 }
 
-/** [Button description] - Button event method name format: onBtn + button node name */
-private onBtn[button node name](): void { ... }
+/** [按钮描述] - 按钮事件方法名格式：onBtn + 按钮节点名 */
+private onBtn[按钮节点名](): void { ... }
 ```
 
-**Button Event Naming Conventions**:
-- **Button events** (auto-bound by `setButton()`): `onBtn[button node name]` (e.g., `onBtnClose`, `onBtnSearch`)
-- **Normal methods**: `on[action/event]` (e.g., `onRefresh`, `onDataUpdate`)
+**按钮事件命名规范**：
+- **按钮事件**（由 `setButton()` 自动绑定）：`onBtn[按钮节点名]`（如 `onBtnClose`、`onBtnSearch`）
+- **普通方法**：`on[动作/事件]`（如 `onRefresh`、`onDataUpdate`）
 
-**Prohibit manually unbinding button events in reset()/onDestroy()** — Framework auto-manages.
+**禁止在 reset()/onDestroy() 中手动解绑按钮事件** — 框架自动管理。
 
-### [Mandatory] 4.3 reset() and onDestroy() Responsibility Description
+### [强制性] 4.3 reset() 与 onDestroy() 职责说明
 
-**Core Principle**:
-- `reset()` is an **ECS lifecycle method**, auto-called by framework when entity is destroyed
-- `onDestroy()` is a **Cocos engine lifecycle method**, called when node is destroyed
-- **If class already implements `reset()`, then no need to implement `onDestroy()`** — Both serve the same purpose of cleaning custom memory
+**核心原则**：
+- `reset()` 是 **ECS 生命周期方法**，实体被销毁时由框架自动调用
+- `onDestroy()` 是 **Cocos 引擎生命周期方法**，节点销毁时调用
+- **如果类中已实现 `reset()`，则不需要再实现 `onDestroy()`** — 两者作用相同，都是清理自定义内存
 
 ```typescript
-// ❌ Absolutely prohibited - Manually unbinding events in reset() (framework auto-releases)
+// ❌ 绝对禁止 - reset() 中手动解绑事件（框架自动释放）
 reset() {
-    this.unwatchAll();  // Framework auto-releases event listeners
+    this.unwatchAll();  // 框架会自动释放事件监听
 }
 
-// ❌ Error - Duplicate cleanup (have reset no need onDestroy)
+// ❌ 错误 - 重复清理（有 reset 就不需要 onDestroy）
 reset() {
     this.props = null!;
 }
 
 onDestroy() {
-    this.props = null!;  // Duplicate! reset() already cleaned
+    this.props = null!;  // 重复！reset() 已经清理过了
     super.onDestroy();
 }
 
-// ✅ Correct - Only clean custom memory in reset()
+// ✅ 正确 - 只在 reset() 中清理自定义内存
 reset() {
-    // Only clean custom memory content in current class
+    // 只清理当前类中自定义的内存内容
     this.myCustomMap.clear();
     this.props = null!;
 }
 ```
 
-**Rules**:
-1. ECS components (Entity/Model/Business/View) **prefer using `reset()`** to clean memory
-2. Only pure Cocos components (non-ECS) need to use `onDestroy()`
-3. **Prohibit calling `this.unwatchAll()` in reset()** — Framework auto-releases event listeners
+**规则**：
+1. ECS 组件（Entity/Model/Business/View）**优先使用 `reset()`** 清理内存
+2. 只有纯 Cocos 组件（非 ECS）才需要使用 `onDestroy()`
+3. **禁止在 reset() 中调用 `this.unwatchAll()`** — 框架会自动释放事件监听
 
-### [Mandatory] 4.4 View Layer Must Operate UI Through Business
+### [强制性] 4.4 View 层必须通过 Business 操作界面
 
 ```typescript
-// ❌ Absolutely prohibited - View layer direct operation
-oops.gui.open('VC_[Module]_[Name]');     // Prohibit direct call!
-this.ent.add(VC_[Module]_[Name]);        // This method doesn't exist!
-instantiate(this.[prefab property]);     // Prohibit self-instantiation!
+// ❌ 绝对禁止 - View 层直接操作
+oops.gui.open('VC_[Module]_[Name]');     // 禁止直接调用！
+this.ent.add(VC_[Module]_[Name]);        // 不存在此方法！
+instantiate(this.[预制体属性]);            // 禁止自行实例化！
 
-// ✅ Correct - Operate through Business
+// ✅ 正确 - 通过 Business 操作
 this.ent.B_[Module]_ViewUI.open[ViewName]();
 ```
 
-### [Mandatory] 4.5 MCP-Generated View Management Files Absolutely Prohibit AI Modification
+### [强制性] 4.5 MCP 生成的视图管理文件绝对禁止 AI 修改
 
-`B_[Module]_ViewUI.ts` and `B_[Module]_ViewPrefab.ts` are auto-generated by MCP tool, containing standard APIs for view management. **AI is absolutely prohibited from modifying, deleting, or renaming any code in these files**.
+`B_[Module]_ViewUI.ts` 和 `B_[Module]_ViewPrefab.ts` 由 MCP 工具自动生成，包含视图管理的标准 API。**AI 绝对禁止修改、删除、重命名这些文件中的任何代码**。
 
-**AI handling principles when seeing these two files**:
-- If file exists → **Completely ignore, make no modifications**
-- If file doesn't exist → Generated by MCP tool, AI does not actively create
+**AI 看到这两个文件时的处理原则**：
+- 如果文件已存在 → **完全忽略，不做任何修改**
+- 如果文件不存在 → 由 MCP 工具生成，AI 不主动创建
 
 ```typescript
-// ❌ Absolutely prohibited - Delete MCP-generated files
-// B_[Module]_ViewUI.ts  ← Prohibit deletion!
+// ❌ 绝对禁止 - 删除 MCP 生成的文件
+// B_[Module]_ViewUI.ts  ← 禁止删除！
 
-// ❌ Absolutely prohibited - Modify method names
+// ❌ 绝对禁止 - 修改方法名
 class B_[Module]_ViewUI {
-    [wrong method name]() { ... }  // ❌ Error! Must be openMain()
+    [错误的方法名]() { ... }  // ❌ 错误！必须是 openMain()
 }
 
-// ❌ Absolutely prohibited - Inline replacement of this class in Business
+// ❌ 绝对禁止 - 在 Business 中内联替代这个类
 class B_[Module]_Main extends CCBusiness<[Module]> {
-    View: B_[Module]_ViewUI = new B_[Module]_ViewUI(this.ent);  // ❌ Prohibit inline!
+    View: B_[Module]_ViewUI = new B_[Module]_ViewUI(this.ent);  // ❌ 禁止内联！
 }
 
-// ✅ Correct - Keep MCP-generated files, directly use their APIs
+// ✅ 正确 - 保留 MCP 生成的文件，直接使用其 API
 this.ent.B_[Module]_ViewUI.openMain();
 this.ent.B_[Module]_ViewUI.removeMain();
 ```
 
-### [Mandatory] 4.6 MCP-Generated View Management File List
+### [强制性] 4.6 MCP 生成的视图管理文件列表
 
-The following two view management Business files **are auto-generated by MCP tool**, AI **is absolutely prohibited from modifying, deleting, or renaming** any code in them:
+以下两个视图管理 Business 文件**由 MCP 工具自动生成**，AI **绝对禁止修改、删除或重命名**其中的任何代码：
 
-| File | Responsibility | Core API |
-|------|---------------|----------|
-| `B_[Module]_ViewUI.ts` | UI interface management | `openMain()` / `removeMain()` / `openDetail()` / `removeDetail()` |
-| `B_[Module]_ViewPrefab.ts` | Prefab management | `openA(parent)` / `removeA(node)` / `openItem(parent)` / `removeItem(node)` |
+| 文件 | 职责 | 核心 API |
+|------|------|----------|
+| `B_[Module]_ViewUI.ts` | UI 界面管理 | `openMain()` / `removeMain()` / `openDetail()` / `removeDetail()` |
+| `B_[Module]_ViewPrefab.ts` | 预制体管理 | `openA(parent)` / `removeA(node)` / `openItem(parent)` / `removeItem(node)` |
 
-**Usage**: When needing to open/close UI or create/destroy prefabs, **directly call corresponding component's API**, prohibit inline implementing same logic in Entity or other Business.
+**使用方式**：需要打开/关闭界面或创建/销毁预制体时，**直接调用对应组件的 API**，禁止在 Entity 或其他 Business 中内联实现相同逻辑。
 
 ```typescript
-// ✅ Correct - View layer calls through Business
+// ✅ 正确 - View 层通过 Business 调用
 this.ent.B_[Module]_ViewUI.openMain();
 this.ent.B_[Module]_ViewUI.removeMain();
 this.ent.B_[Module]_ViewPrefab.openA(this.node);
 this.ent.B_[Module]_ViewPrefab.removeA(itemNode);
 
-// ❌ Absolutely prohibited - AI modifying MCP-generated view management files (B_[Module]_ViewUI.ts / B_[Module]_ViewPrefab.ts)
-// ❌ Absolutely prohibited - Inline implementing openMain() logic in Entity
-// ❌ Absolutely prohibited - Deleting B_[Module]_ViewUI.ts or B_[Module]_ViewPrefab.ts
+// ❌ 绝对禁止 - AI 修改 MCP 生成的视图管理文件（B_[Module]_ViewUI.ts / B_[Module]_ViewPrefab.ts）
+// ❌ 绝对禁止 - 在 Entity 中内联实现 openMain() 逻辑
+// ❌ 绝对禁止 - 删除 B_[Module]_ViewUI.ts 或 B_[Module]_ViewPrefab.ts
 ```
 
 ---
 
-## 5. Entity Layer Absolutely Prohibits Containing Business Logic
+## 5. Entity 层绝对禁止包含业务逻辑
 
-### [Mandatory] 5.1 Entity Is Module Entry, Prohibit Writing Business Methods
+### [强制性] 5.1 Entity 是模块入口，禁止编写业务方法
 
-Entity's responsibility is **to serve as module entry registering and managing layer components**, **absolutely prohibited** from writing any business logic methods or view operation methods in Entity.
+Entity（实体）的职责是**作为模块入口注册和管理各层组件**，**绝对禁止**在 Entity 中编写任何业务逻辑方法或视图操作方法。
 
 ```typescript
-// ❌ Absolutely prohibited - Writing business methods in Entity
+// ❌ 绝对禁止 - Entity 中编写业务方法
 @ecs.register('[Module]')
 export class [Module] extends CCEntity {
-    // ❌ Error! Business methods must be written in Business layer
-    [business method name]([parameters]): [return type] {
-        return this.M_[Module]_Main.[property].[method]([parameters]);
+    // ❌ 错误！业务方法必须写在 Business 层
+    [业务方法名]([参数]): [返回类型] {
+        return this.M_[Module]_Main.[属性].[方法]([参数]);
     }
 
-    // ❌ Error! View operations must be written in View layer or call Business layer
-    [view operation method name](): void {
+    // ❌ 错误！视图操作必须写在 View 层或调用 Business 层
+    [视图操作方法名](): void {
         this.B_[Module]_ViewUI.openMain();
     }
 }
 
-// ✅ Correct - Entity only responsible for registering components, contains no business logic
+// ✅ 正确 - Entity 只负责注册组件，不包含任何业务逻辑
 @ecs.register('[Module]')
 export class [Module] extends CCEntity {
     M_[Module]_Main!: M_[Module]_Main;
@@ -404,109 +404,211 @@ export class [Module] extends CCEntity {
 }
 ```
 
-### [Mandatory] 5.2 Business Logic Ownership Determination
+### [强制性] 5.2 业务逻辑归属判定
 
-| Method Type | Correct Owner | Wrong Owner |
-|-------------|--------------|-------------|
-| Data processing, validation, flow control | Business layer (`B_[Module]_Main`) | ❌ Entity |
-| UI open/close | `B_[Module]_ViewUI` / `B_[Module]_ViewPrefab` | ❌ Entity |
-| Data storage, state management | Model layer (`M_[Module]_Main`) | ❌ Entity |
-| User interaction, UI update | View layer (`VC_[Module]_Main`) | ❌ Entity |
+| 方法类型 | 正确归属 | 错误归属 |
+|----------|----------|----------|
+| 数据处理、验证、流程控制 | Business 层 (`B_[Module]_Main`) | ❌ Entity |
+| 界面打开/关闭 | `B_[Module]_ViewUI` / `B_[Module]_ViewPrefab` | ❌ Entity |
+| 数据存储、状态管理 | Model 层 (`M_[Module]_Main`) | ❌ Entity |
+| 用户交互、UI 更新 | View 层 (`VC_[Module]_Main`) | ❌ Entity |
 
-### [Mandatory] 5.3 Usage Method
+### [强制性] 5.3 使用方式
 
-When needing business functionality, **call corresponding layer component's API**, instead of encapsulating in Entity:
+需要使用业务功能时，**调用对应层组件的 API**，而不是在 Entity 中封装：
 
 ```typescript
-// ✅ Correct - Directly call Business layer API
-this.ent.B_[Module]_Main.[business method]([parameters]);
+// ✅ 正确 - 直接调用 Business 层 API
+this.ent.B_[Module]_Main.[业务方法]([参数]);
 
-// ✅ Correct - Directly call view management Business API
+// ✅ 正确 - 直接调用视图管理 Business API
 this.ent.B_[Module]_ViewUI.openMain();
 this.ent.B_[Module]_ViewPrefab.openA(parentNode);
 
-// ✅ Correct - Directly access Model data (read-only scenario)
-const [data] = this.ent.M_[Module]_Main.[property].get([key]);
+// ✅ 正确 - 直接访问 Model 数据（只读场景）
+const [数据] = this.ent.M_[Module]_Main.[属性].get([键]);
 
-// ❌ Absolutely prohibited - Encapsulate in Entity then call
-// Entity: [method name]([parameters]) { this.B_[Module]_Main.[business method]([parameters]); }
-// External call: this.ent.[method name]([parameters]);  ← Error!
+// ❌ 绝对禁止 - 在 Entity 中封装一层再调用
+// Entity 中：[方法名]([参数]) { this.B_[Module]_Main.[业务方法]([参数]); }
+// 外部调用：this.ent.[方法名]([参数]);  ← 错误！
 ```
 
 ---
 
-## 6. Property Initialization Style
+## 6. 属性初始化风格
 
-### [Mandatory] 6.1 @property Properties Must Use `null!` Initialization
+### [强制性] 6.1 @property 属性必须使用 `null!` 初始化
 
-All properties using `@property` decorator **must** use `null!` for initialization.
+所有使用 `@property` 装饰器的属性，**必须**使用 `null!` 进行初始化。
 
 ```typescript
-// ✅ Correct
-@property([component type])
-private [property name]: [component type] = null!;
+// ✅ 正确
+@property([组件类型])
+private [属性名]: [组件类型] = null!;
 
-// ❌ Error - Must initialize
-@property([component type])
-private [property name]: [component type];
+// ❌ 错误 - 必须初始化
+@property([组件类型])
+private [属性名]: [组件类型];
 
-// ❌ Error - Prohibit using = null (without !)
-@property([component type])
-private [property name]: [component type] = null;
+// ❌ 错误 - 禁止使用 = null（不含 !）
+@property([组件类型])
+private [属性名]: [组件类型] = null;
 
-// ❌ Error - Prohibit using union type
-@property([component type])
-private [property name]: [component type] | null = null;
+// ❌ 错误 - 禁止使用联合类型
+@property([组件类型])
+private [属性名]: [组件类型] | null = null;
 
-// ❌ Error - Prohibit using optional marker
-@property([component type])
-private [property name]?: [component type];
+// ❌ 错误 - 禁止使用可选标记
+@property([组件类型])
+private [属性名]?: [组件类型];
 ```
 
-**Reason**: Cocos Creator's `@property` auto-assigns in editor; `null!` tells TypeScript "this value won't be null, trust me"; avoids writing non-null assertions (`!`) everywhere in code.
+**原因**：Cocos Creator 的 `@property` 会在编辑器中自动赋值；`null!` 告诉 TypeScript "这个值不会为 null，相信我"；避免在代码中到处写非空断言（`!`）。
 
 ---
 
-## 7. Log Principles
+## 7. 日志原则
 
-### [Mandatory] 7.1 Prohibit Using console.log in Business/View
+### [强制性] 7.1 禁止在 Business/View 中使用 console.log
 
 ```typescript
-// ❌ Absolutely prohibited
-console.log('[log content]');
+// ❌ 绝对禁止
+console.log('[日志内容]');
 
-// ✅ Correct - Business layer
-oops.log.logBusiness('[log content]', '[module name]');
+// ✅ 正确 - Business 层
+oops.log.logBusiness('[日志内容]', '[模块名]');
 
-// ✅ Correct - View layer
-oops.log.logView('[log content]');
+// ✅ 正确 - View 层
+oops.log.logView('[日志内容]');
 ```
 
 ---
 
-## 8. Verification Closed Loop
+## 8. 验证闭环
 
-### [Mandatory] 8.1 AI Directly Generates Complete Code
+### [强制性] 8.1 AI 直接生成完整代码
 
 ```typescript
-// ✅ Correct - AI directly generates complete standard code and writes
-Write(filePath, "complete code content");
+// ✅ 正确 - AI 直接生成完整规范代码并写入
+Write(filePath, "完整代码内容");
 ```
 
-**Workflow**:
-1. MCP only creates empty files as needed
-2. AI directly generates complete code conforming to standards (one-time write)
-3. Validator verifies
+**工作流**：
+1. MCP 仅按需创建空文件
+2. AI 直接生成符合规范的完整代码（一次性写入）
+3. Validator 验证
 
-### [Mandatory] 8.2 Prohibit Skipping Verification Steps
+### [强制性] 8.2 禁止跳过验证步骤
 
-After code generation **must**:
-- [ ] Check if each import is actually used
-- [ ] Check if class names follow naming conventions
-- [ ] Check if inheritance relationships are correct
-- [ ] Check if decorators are correct
-- [ ] Check if method signatures match meta-templates
-- [ ] Check if `declare global` is included (EventData files)
-- [ ] Check if unused code is deleted
+代码生成后**必须**：
+- [ ] 检查每个导入是否被实际使用
+- [ ] 检查类名、继承、装饰器是否符合元模板
+- [ ] 检查方法签名是否完全匹配（尤其是事件处理）
+- [ ] 检查 `declare global` 是否存在（EventData 文件）
+- [ ] 检查 `@property` 是否使用 `= null!`
+- [ ] 检查是否包含未使用的代码/方法/属性
+- [ ] 每一行变更是否能追溯到用户请求？
 
-**Rule**: Verification failed = Not deliverable. Must fix and re-verify.
+### [强制性] 8.3 元模板生成检查流程
+
+AI 生成每个文件时，必须执行以下思维链：
+
+```
+1. 确定文件类型（Entity/Model/Business/View/Event...）
+2. 打开 oops-rule-coding.md，找到对应元模板
+3. 复制元模板到思维中
+4. 替换所有 [Module]/[Name] 占位符
+5. 根据用户需求填充业务逻辑
+6. 对照"生成前自检清单"逐项检查
+7. 删除所有未使用的导入/变量/方法
+8. 输出最终代码
+```
+
+**禁止跳过任何一步**。
+
+---
+
+## 9. 导入路径唯一真理源
+
+### [强制性] 9.1 框架导入路径表
+
+以下路径为**唯一正确答案**，禁止使用其他路径：
+
+| 导入项 | 正确路径 | 用途 |
+|--------|----------|------|
+| `ecs` | `db://oops-framework/libs/ecs/ECS` | ECS 框架 |
+| `oops` | `db://oops-framework/core/Oops` | 框架核心 |
+| `CCEntity` | `db://oops-framework/module/common/CCEntity` | Entity 基类 |
+| `CCBusiness` | `db://oops-framework/module/common/CCBusiness` | Business 基类 |
+| `CCView` | `db://oops-framework/module/common/CCView` | ECS View 基类 |
+| `GameComponent` | `db://oops-framework/module/common/GameComponent` | 普通组件基类 |
+| `gui` | `db://oops-framework/core/gui/Gui` | GUI 系统 |
+| `LayerType` | `db://oops-framework/core/gui/layer/LayerEnum` | 层级枚举 |
+| `prefab` | `db://oops-framework/module/decorator/GamePrefabDecorator` | 预制体装饰器 |
+
+### [强制性] 9.2 无需导入的框架模块
+
+以下模块通过 `oops.xxx` 直接访问，**不需要 import**：
+
+- `oops.log` - 日志管理器
+- `oops.config` - 游戏配置
+- `oops.storage` - 本地存储
+- `oops.res` - 资源管理
+- `oops.message` - 全局消息
+- `oops.random` - 随机工具
+- `oops.timer` - 游戏时间管理
+- `oops.audio` - 游戏音乐管理
+- `oops.gui` - 二维界面管理
+- `oops.game` - 三维游戏世界管理
+- `oops.language` - 多语言模块
+- `oops.ecs` - ECS 根系统
+- `oops.mvvm` - MVVM 框架
+- `oops.pool` - 对象池
+
+### [强制性] 9.3 导入风格
+
+```typescript
+// ✅ 正确 - 值导入（类/函数在运行时使用）
+import { Node, _decorator } from 'cc';
+import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { [Module] } from '../[Module]';
+
+// ✅ 正确 - 类型导入（仅在类型位置使用）
+import  { Node } from 'cc';  // 仅作为类型标注，无运行时引用
+
+// ❌ 错误 - export type
+export { I[Module]EventDataMap } from './[Module]EventData';
+
+// ✅ 正确 - 值导出
+export { type I[Module]EventDataMap } from './[Module]EventData';
+```
+
+---
+
+## 10. 架构决策速查表
+
+### [强制性] 10.1 同模块内通信方式
+
+| 方向 | 方式 | 示例 |
+|------|------|------|
+| View → Business | 直接调用 API | `this.ent.B_[Module]_Main.[方法]([参数])` |
+| View → View | 直接引用 | `this.ent.VC_[Module]_Main.[方法]([参数])` |
+| Business → View | 模块内事件 | `this.emit([Module]EventName.[EventKey])` |
+| Business → Model | 直接操作 | `this.ent.M_[Module]_Main.[属性].set([键], [值])` |
+| 跨模块 | 全局事件 | `this.emit([全局事件名].[EventKey], [数据])` |
+
+### [强制性] 10.2 View 类型选择
+
+| 场景 | 类型 | 继承 | 装饰器 |
+|------|------|------|--------|
+| 独立 UI 窗口/弹窗 | ECS View | `CCView<Module>` | `@ecs.register` + `@gui.register` |
+| 列表项/格子项/图标 | GameComponent | `GameComponent` | `@ccclass` (+ `@prefab.register`) |
+
+### [强制性] 10.3 生命周期方法选择
+
+| 组件类型 | 初始化 | 清理 |
+|----------|--------|------|
+| ECS 组件 (Entity/Model/Business/View) | `init()` / `onLoad()` | `reset()` |
+| 纯 Cocos 组件 | `onLoad()` | `onDestroy()` |
+
+**规则**：ECS 组件优先使用 `reset()`，有 `reset()` 就不需要 `onDestroy()`。
