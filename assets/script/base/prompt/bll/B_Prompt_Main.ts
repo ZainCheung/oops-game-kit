@@ -12,7 +12,7 @@ import { IPromptEventDataMap, PromptEventName } from '../PromptEvent';
 const UIAlert: UIConfig = {
     layer: LayerType.Dialog,
     bundle: 'game_common',
-    prefab: 'gui/window/prefab/alert',
+    prefab: 'gui/window/prefab/PB_Alert',
     mask: true,
 };
 
@@ -20,7 +20,7 @@ const UIAlert: UIConfig = {
 const UIConfirm: UIConfig = {
     layer: LayerType.Dialog,
     bundle: 'game_common',
-    prefab: 'gui/window/prefab/confirm',
+    prefab: 'gui/window/prefab/PB_Confirm',
     mask: true,
 };
 
