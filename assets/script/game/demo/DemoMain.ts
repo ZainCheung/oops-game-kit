@@ -19,8 +19,6 @@ export class DemoMain extends GameComponent {
     private guide: Guide = null!;
 
     protected async onLoad(): Promise<void> {
-        oops.res.defaultBundleName = 'bundle';
-
         this.button.bind();
 
         // 加载按钮音效并注册到劫持器
@@ -72,7 +70,7 @@ export class DemoMain extends GameComponent {
      * 注册按钮音效
      */
     private async registerButtonSounds(): Promise<void> {
-        const audioClip = await this.loadAudioClip('bundle', 'audios/Gravel');
+        const audioClip = await this.loadAudioClip('game_main', 'audios/Gravel');
         if (!audioClip) {
             console.warn('[DemoMain] 音效资源加载失败');
             return;
