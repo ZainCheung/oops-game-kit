@@ -21,11 +21,8 @@ export class DemoMain extends GameComponent {
     protected async onLoad(): Promise<void> {
         this.button.bind();
 
-        // 加载按钮音效并注册到劫持器
-        // this.registerButtonSounds();
-
         // 注册新手引导
-        this.registerGuide();
+        // this.registerGuide();
     }
 
     /** 点击按钮触发全部 ECS 功能演示（控制台输出） */
@@ -60,37 +57,6 @@ export class DemoMain extends GameComponent {
 
         this.guide.M_Guide_Main.last = 3;
         this.guide.VC_Guide_Main.check(1);
-    }
-
-    // ========================================
-    // 按钮音效相关
-    // ========================================
-
-    /**
-     * 注册按钮音效
-     */
-    private async registerButtonSounds(): Promise<void> {
-        const audioClip = await this.loadAudioClip('game_main', 'audios/Gravel');
-        if (!audioClip) {
-            console.warn('[DemoMain] 音效资源加载失败');
-            return;
-        }
-
-        ButtonInterceptor.instance.registerSound({ class: Button, clip: audioClip });
-        ButtonInterceptor.instance.registerSound({ class: ButtonSimple, clip: audioClip });
-        ButtonInterceptor.instance.activate();
-    }
-
-    /**
-     * 加载音频资源
-     */
-    private async loadAudioClip(bundleName: string, path: string): Promise<AudioClip | null> {
-        try {
-            return await oops.res.load(bundleName, path, AudioClip);
-        } catch (err) {
-            console.error(`[DemoMain] 加载音效失败: ${path}`, err);
-            return null;
-        }
     }
 
     reset(): void {
