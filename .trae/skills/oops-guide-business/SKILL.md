@@ -9,6 +9,7 @@ triggers:
     - "bll"
     - "业务层"
     - "setWatch"
+    - "setEvent"
     - "init()"
   patterns:
     - ".*Business.*"
@@ -23,12 +24,16 @@ triggers:
 生成 Business 层代码时，**必须**遵循以下流程：
 
 1. 打开 `oops-rule-coding.md`，找到 **"3. Business 层元模板"**
-2. 复制元模板，替换 `[Module]` 占位符
-3. 在 `setWatch()` 中注册所有需要监听的事件
+2. **根据场景选择模板**：
+   - **watch 模式（3.1）**：Business 需要主动监听其他模块事件
+   - **setEvent 模式（3.1b）**：Business 通过全局事件分发被触发
+3. 复制元模板，替换 `[Module]` 占位符
 4. 实现事件处理方法，**严格匹配签名格式**
 5. 对照下方强制要求逐项检查
 
-## 强制元模板（来自 oops-rule-coding.md）
+## 模式一：watch 模式（3.1）
+
+> **适用场景**：Business 需要监听其他模块事件并响应（如监听数据变化、跨模块通知）。
 
 ```typescript
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
@@ -56,16 +61,51 @@ export class B_[Module]_Main extends CCBusiness<[Module]> {
 }
 ```
 
+## 模式二：setEvent 模式（3.1b）
+
+> **适用场景**：Business 通过全局事件分发被触发（如 Prompt 弹窗、红点事件驱动、账号全局事件等），使用 `this.event.setEvent()` 注册事件，框架自动路由到同名处理方法。
+
+```typescript
+import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { [Module] } from '../[Module]';
+import { [Module]EventName, type I[Module]EventDataMap } from '../[Module]Event';
+
+export class B_[Module]_[Name] extends CCBusiness<[Module]> {
+    protected init() {
+        this.event.setEvent(
+            [Module]EventName.[EventKey1],
+            [Module]EventName.[EventKey2]);
+    }
+
+    //#region 全局事件处理
+    // private on[EventName]<K extends [Module]EventName.[EventKey]>(event: K, data: I[Module]EventDataMap[K]): void {
+    //     // 业务逻辑
+    // }
+    //#endregion
+}
+```
+
+## 两种模式对比
+
+| 对比项 | watch 模式（3.1） | setEvent 模式（3.1b） |
+|--------|-------------------|----------------------|
+| 注册方式 | `this.watch(EventName, handler, this)` | `this.event.setEvent(EventName1, EventName2, ...)` |
+| 路由方式 | 手动指定回调函数 | 框架按事件名自动路由到 `onXxx` 方法 |
+| 适用场景 | 主动监听其他模块事件 | 被动响应全局事件分发 |
+| 典型命名 | `B_[Module]_Main` | `B_[Module]_Event`、`B_Prompt_Main` |
+| 导入风格 | `I[Module]EventDataMap`（值导入） | `type I[Module]EventDataMap`（type 导入） |
+
 ## 强制要求
 
-| 检查项 | 要求 |
-|--------|------|
-| 继承 | 必须继承 `CCBusiness<[Module]>` |
-| init() | **必须**调用 `setWatch()` |
-| setWatch() | 所有 `watch()` 统一在此，第三个参数必须是 `this` |
-| 事件处理签名 | **必须完全匹配**：`private onXxx<K extends [Module]EventName.Xxx>(event: K, data: I[Module]EventDataMap[K]): void` |
-| 触发事件 | 使用 `this.emit()` |
-| 日志 | Business 层使用 `oops.log.logBusiness(msg, module)` |
+| 检查项 | watch 模式 | setEvent 模式 |
+|--------|-----------|--------------|
+| 继承 | 必须继承 `CCBusiness<[Module]>` | 必须继承 `CCBusiness<[Module]>` |
+| init() | **必须**调用 `setWatch()` | **必须**调用 `this.event.setEvent(...)` |
+| 事件注册 | `setWatch()` 中统一 `watch()`，第三个参数必须是 `this` | `this.event.setEvent()` 传入所有事件枚举 |
+| 事件处理签名 | 完全匹配（见下方） | 完全匹配（见下方） |
+| 触发事件 | 使用 `this.emit()` | 使用 `this.emit()` |
+| 日志 | `oops.log.logBusiness(msg, module)` | `oops.log.logBusiness(msg, module)` |
+| 导入风格 | `I[Module]EventDataMap`（值导入） | `type I[Module]EventDataMap`（type 导入） |
 
 ## 事件处理方法签名（绝对禁止变形）
 
@@ -91,13 +131,19 @@ private onBackpackUse(data: IBackpackEventDataMap[BackpackEventName.Use]): void 
 // ❌ 错误 - 使用 keyof
 private onBackpackUse<K extends keyof IBackpackEventDataMap>(event: K, data: IBackpackEventDataMap[K]): void
 
-// ❌ 错误 - 未调用 setWatch()
+// ❌ 错误 - watch 模式未调用 setWatch()
 protected init() {
     // 忘记调用 this.setWatch()！
 }
 
 // ❌ 错误 - watch 第三个参数不是 this
 this.watch(BackpackEventName.Use, this.onBackpackUse);  // 缺少 this！
+
+// ❌ 错误 - setEvent 模式使用 this.setEvent() 而非 this.event.setEvent()
+this.setEvent(RedDotEventName.Add);  // 应为 this.event.setEvent()
+
+// ❌ 错误 - setEvent 模式导入未使用 type
+import { IRedDotEventDataMap } from '../RedDotEvent';  // 应为 type IRedDotEventDataMap
 ```
 
 ## 关联规范

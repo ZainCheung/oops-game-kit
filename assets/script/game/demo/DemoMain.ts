@@ -1,11 +1,10 @@
-import { AudioClip, Button, _decorator } from 'cc';
+import { _decorator } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
-import { ButtonInterceptor } from 'db://oops-framework/libs/gui/button/ButtonInterceptor';
-import ButtonSimple from 'db://oops-framework/libs/gui/button/ButtonSimple';
-import { runAllEcsDemos } from './ecs/DemoEcsMain';
-import { Guide } from '../guide/Guide';
 import { gsm } from '../common/GameSingletonModule';
+import { Guide } from '../guide/Guide';
+import { runAllEcsDemos } from './ecs/DemoEcsMain';
+import { PromptEventName } from '../../base/prompt/PromptEvent';
 
 const { ccclass } = _decorator;
 
@@ -27,11 +26,22 @@ export class DemoMain extends GameComponent {
 
     /** 点击按钮触发全部 ECS 功能演示（控制台输出） */
     Button() {
-        runAllEcsDemos();
+        // runAllEcsDemos();
+        oops.gui.toast('ABC');
+    }
+
+    Button001() {
+        oops.message.emit(PromptEventName.Confirm, {
+            title: '加载中',
+            content: '请稍后...',
+        });
     }
 
     loading() {
-        console.log('loading');
+        oops.message.emit(PromptEventName.Alert, {
+            title: '加载中',
+            content: '请稍后...',
+        });
     }
 
     // ========================================

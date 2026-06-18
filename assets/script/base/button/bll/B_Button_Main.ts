@@ -10,12 +10,7 @@ import { Button } from '../Button';
 /** 通用按钮主业务逻辑 */
 export class B_Button_Main extends CCBusiness<Button> {
     protected init() {
-        this.setWatch();
-    }
-
-    /** 注册事件监听 */
-    private setWatch() {
-        this.event.watch(InitializeEventName.LoadComplete, this.onInitializeLoadComplete, this);
+        this.event.setEvent(InitializeEventName.LoadComplete);
     }
 
     /** 初始化资源加载完成，注册按钮音效 */
@@ -28,14 +23,14 @@ export class B_Button_Main extends CCBusiness<Button> {
 
     /** 注册按钮音效 */
     private async registerButtonSounds(): Promise<void> {
-        const audioClip = await oops.res.load('audios/Gravel', AudioClip);
-        if (!audioClip) {
+        const ac = await oops.res.load('audios/Gravel', AudioClip);
+        if (!ac) {
             oops.log.logBusiness('按钮音效资源加载失败');
             return;
         }
 
-        ButtonInterceptor.instance.registerSound({ class: CCButton, clip: audioClip });
-        ButtonInterceptor.instance.registerSound({ class: ButtonSimple, clip: audioClip });
+        ButtonInterceptor.instance.registerSound({ class: CCButton, clip: ac });
+        ButtonInterceptor.instance.registerSound({ class: ButtonSimple, clip: ac });
         ButtonInterceptor.instance.activate();
     }
 

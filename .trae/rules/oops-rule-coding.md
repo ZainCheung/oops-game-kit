@@ -108,7 +108,9 @@ export class M_[Module]_Main extends ecs.Comp {
 
 ## 3. Business 层元模板
 
-### 3.1 主业务 Business 元模板
+### 3.1 主业务 Business 元模板（watch 模式）
+
+> **适用场景**：Business 需要监听其他模块事件并响应（如监听数据变化、跨模块通知）。
 
 ```typescript
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
@@ -136,16 +138,51 @@ export class B_[Module]_Main extends CCBusiness<[Module]> {
 }
 ```
 
+### 3.1b 事件驱动 Business 元模板（setEvent 模式）
+
+> **适用场景**：Business 通过全局事件分发被触发（如 Prompt 弹窗、红点事件驱动、账号全局事件等），使用 `this.event.setEvent()` 注册事件，框架自动路由到同名处理方法。
+
+```typescript
+import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { [Module] } from '../[Module]';
+import { [Module]EventName, type I[Module]EventDataMap } from '../[Module]Event';
+
+export class B_[Module]_[Name] extends CCBusiness<[Module]> {
+    protected init() {
+        this.event.setEvent(
+            [Module]EventName.[EventKey1],
+            [Module]EventName.[EventKey2]);
+    }
+
+    //#region 全局事件处理
+    // private on[EventName]<K extends [Module]EventName.[EventKey]>(event: K, data: I[Module]EventDataMap[K]): void {
+    //     // 业务逻辑
+    // }
+    //#endregion
+}
+```
+
+**与 watch 模式的区别**：
+
+| 对比项 | watch 模式（3.1） | setEvent 模式（3.1b） |
+|--------|-------------------|----------------------|
+| 注册方式 | `this.watch(EventName, handler, this)` | `this.event.setEvent(EventName1, EventName2, ...)` |
+| 路由方式 | 手动指定回调函数 | 框架按事件名自动路由到 `onXxx` 方法 |
+| 适用场景 | 主动监听其他模块事件 | 被动响应全局事件分发 |
+| 典型命名 | `B_[Module]_Main` | `B_[Module]_Event`、`B_Prompt_Main` |
+| 导入风格 | `I[Module]EventDataMap`（值导入） | `type I[Module]EventDataMap`（type 导入） |
+
 ### 3.2 强制要求
 
-| 检查项 | 要求 |
-|--------|------|
-| 继承 | 必须继承 `CCBusiness<[Module]>` |
-| init() | **必须**调用 `setWatch()` |
-| setWatch() | 所有 `watch()` 统一在此，第三个参数必须是 `this` |
-| 事件处理签名 | **必须完全匹配**：`private onXxx<K extends [Module]EventName.Xxx>(event: K, data: I[Module]EventDataMap[K]): void` |
-| 触发事件 | 使用 `this.emit()` |
-| 日志 | Business 层使用 `oops.log.logBusiness(msg, module)` |
+| 检查项 | watch 模式（3.1） | setEvent 模式（3.1b） |
+|--------|-------------------|----------------------|
+| 继承 | 必须继承 `CCBusiness<[Module]>` | 必须继承 `CCBusiness<[Module]>` |
+| init() | **必须**调用 `setWatch()` | **必须**调用 `this.event.setEvent(...)` |
+| 事件注册 | `setWatch()` 中统一 `watch()`，第三个参数必须是 `this` | `this.event.setEvent()` 传入所有事件枚举 |
+| 事件处理签名 | **必须完全匹配**：`private onXxx<K extends XxxEventName.Xxx>(event: K, data: IXxxEventDataMap[K]): void` | **必须完全匹配**：`private onXxx<K extends XxxEventName.Xxx>(event: K, data: IXxxEventDataMap[K]): void` |
+| 触发事件 | 使用 `this.emit()` | 使用 `this.emit()` |
+| 日志 | Business 层使用 `oops.log.logBusiness(msg, module)` | Business 层使用 `oops.log.logBusiness(msg, module)` |
+| 导入风格 | `I[Module]EventDataMap`（值导入） | `type I[Module]EventDataMap`（type 导入） |
 
 ### 3.3 事件处理方法签名（绝对禁止变形）
 
@@ -463,7 +500,8 @@ AI 生成每个文件前，必须逐项确认：
 
 ### Business 层
 - [ ] 继承 `CCBusiness<[Module]>`
-- [ ] `init()` 调用 `setWatch()`
+- [ ] **watch 模式**：`init()` 调用 `setWatch()`，`watch()` 第三个参数是 `this`
+- [ ] **setEvent 模式**：`init()` 调用 `this.event.setEvent(...)`，导入使用 `type I[Module]EventDataMap`
 - [ ] 事件处理签名完全匹配元模板
 - [ ] 使用 `this.emit()` 触发事件
 - [ ] 删除所有未使用的导入

@@ -2,7 +2,7 @@ import { EventMessage } from 'db://oops-framework/core/common/event/EventMessage
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import type { Account } from '../Account';
-import { AccountEvent } from '../AccountEvent';
+import { AccountEvent, type IAccountEventDataMap } from '../AccountEvent';
 
 /** 账号全局事件业务逻辑 */
 @classname('B_Account_Event')
@@ -14,18 +14,20 @@ export class B_Account_Event extends CCBusiness<Account> {
             AccountEvent.Reconnect);
     }
 
+    //#region 全局事件处理
     /** 游戏后台切回来验证网络状态，判断是否需要重新登录 */
-    private onGameShow() {
+    private onGameShow<K extends typeof EventMessage.GAME_SHOW>(event: K): void {
         // if (!smc.net.game.connected) this.ent.B_Account_Login.login();
     }
 
     /** 游戏切到后台时 */
-    private onGameHide() {
+    private onGameHide<K extends typeof EventMessage.GAME_HIDE>(event: K): void {
 
     }
 
     /** 网络重连接 */
-    private onReconnect() {
+    private onReconnect<K extends typeof AccountEvent.Reconnect>(event: K, data: IAccountEventDataMap[K]): void {
         this.ent.B_Account_Login.reconnect();
     }
+    //#endregion
 }

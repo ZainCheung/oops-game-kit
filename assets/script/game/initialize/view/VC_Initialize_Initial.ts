@@ -81,7 +81,7 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     /** 登录成功回调 */
     private onLoginSuccessGame() {
         this.isLoginSuccess = true;
-        this.event.emit(InitializeEventName.LoginComplete);     // 登录完成事件
+        this.event.emit(InitializeEventName.LoginComplete); // 登录完成事件
         this.tryEnter();
     }
     //#endregion
@@ -93,14 +93,13 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
 
         promises.push(this.loadTable());
         promises.push(this.loadLanguage());
-        promises.push(this.loadCommon());
         await Promise.all(promises);
 
         // 窗口打开失败事件
         oops.gui.setOpenFailure(this.onOpenFailure);
 
         this.loadComplete = true;
-        this.event.emit(InitializeEventName.LoadComplete);      // 资源加载完成事件
+        this.event.emit(InitializeEventName.LoadComplete); // 资源加载完成事件
         this.tryEnter();
     }
 
@@ -140,13 +139,6 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
 
             // 加载语言包资源
             oops.language.setLanguage(lan, resolve);
-        });
-    }
-
-    /** 加载公共资源（必备） */
-    private loadCommon(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            oops.res.loadDir('common', resolve);
         });
     }
 

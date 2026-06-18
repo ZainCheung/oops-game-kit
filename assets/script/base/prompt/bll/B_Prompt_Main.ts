@@ -9,13 +9,28 @@ import { Prompt } from '../Prompt';
 import { IPromptEventDataMap, PromptEventName } from '../PromptEvent';
 
 /** Alert窗口配置 */
-const UIAlert: UIConfig = { layer: LayerType.Dialog, prefab: 'common/prefab/alert', mask: true };
+const UIAlert: UIConfig = {
+    layer: LayerType.Dialog,
+    bundle: 'game_common',
+    prefab: 'gui/window/prefab/alert',
+    mask: true,
+};
 
 /** Confirm窗口配置 */
-const UIConfirm: UIConfig = { layer: LayerType.Dialog, prefab: 'common/prefab/confirm', mask: true };
+const UIConfirm: UIConfig = {
+    layer: LayerType.Dialog,
+    bundle: 'game_common',
+    prefab: 'gui/window/prefab/confirm',
+    mask: true,
+};
 
 /** 可跳过的Confirm窗口配置 */
-const UIConfirmSkip: UIConfig = { layer: LayerType.Dialog, prefab: 'gui/common/prefab/ConfirmSkip', mask: true };
+const UIConfirmSkip: UIConfig = {
+    layer: LayerType.Dialog,
+    bundle: 'game_common',
+    prefab: 'gui/window/prefab/ConfirmSkip',
+    mask: true,
+};
 
 /** Prompt模块主业务逻辑 */
 @classname('B_Prompt_Main')
@@ -25,7 +40,8 @@ export class B_Prompt_Main extends CCBusiness<Prompt> {
             PromptEventName.Alert,
             PromptEventName.Confirm,
             PromptEventName.ConfirmSkip,
-            PromptEventName.NetError);
+            PromptEventName.NetError
+        );
     }
 
     //#region 全局事件处理
@@ -37,7 +53,7 @@ export class B_Prompt_Main extends CCBusiness<Prompt> {
             content: data.content,
             okWord: data.okWord || 'common_prompt_ok',
             onOk: data.onOk,
-            needCancel: false
+            needCancel: false,
         };
         oops.gui.open(UIAlert, uip);
     }
@@ -52,7 +68,7 @@ export class B_Prompt_Main extends CCBusiness<Prompt> {
             cancelWord: data.cancelWord || 'common_prompt_cancal',
             onOk: data.onOk,
             onCancel: data.onCancel,
-            needCancel: true
+            needCancel: true,
         };
         oops.gui.open(UIConfirm, uip);
     }
@@ -76,7 +92,7 @@ export class B_Prompt_Main extends CCBusiness<Prompt> {
             cancelWord: data.cancelWord || 'common_prompt_cancal',
             onOk: data.onOk,
             onCancel: data.onCancel,
-            needCancel: true
+            needCancel: true,
         };
         oops.gui.open(UIConfirmSkip, uip);
     }
@@ -89,7 +105,7 @@ export class B_Prompt_Main extends CCBusiness<Prompt> {
             content: data.msg || 'common_net_error',
             okWord: 'common_prompt_ok',
             onOk: data.onOk,
-            needCancel: false
+            needCancel: false,
         };
         oops.gui.open(UIAlert, uip);
     }
