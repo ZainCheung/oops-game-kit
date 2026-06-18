@@ -22,7 +22,7 @@ export class DemoMain extends GameComponent {
         this.button.bind();
 
         // 加载按钮音效并注册到劫持器
-        this.registerButtonSounds();
+        // this.registerButtonSounds();
 
         // 注册新手引导
         this.registerGuide();
