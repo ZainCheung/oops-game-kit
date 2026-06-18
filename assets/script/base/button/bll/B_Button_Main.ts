@@ -7,6 +7,11 @@ import { InitializeEventName } from '../../../game/initialize/InitializeEvent';
 import type { IInitializeEventDataMap } from '../../../game/initialize/InitializeEventData';
 import { Button } from '../Button';
 
+/** 按钮音效资源包名 */
+const audio_bundle = 'game_common';
+/** 按钮音效资源路径 */
+const audio_path = 'gui/button/audio/click';
+
 /** 通用按钮主业务逻辑 */
 export class B_Button_Main extends CCBusiness<Button> {
     protected init() {
@@ -23,7 +28,7 @@ export class B_Button_Main extends CCBusiness<Button> {
 
     /** 注册按钮音效 */
     private async registerButtonSounds(): Promise<void> {
-        const ac = await oops.res.load('audios/Gravel', AudioClip);
+        const ac = await oops.res.load(audio_bundle, audio_path, AudioClip);
         if (!ac) {
             oops.log.logBusiness('按钮音效资源加载失败');
             return;
