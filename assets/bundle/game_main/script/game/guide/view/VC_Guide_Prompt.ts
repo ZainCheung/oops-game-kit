@@ -34,12 +34,10 @@ export class GuideViewPromptComp extends CCView<Guide> {
             this.content.string = step.tips!;
 
             // 延时一帧确保 UITransform 尺寸已更新
-            this.scheduleOnce(() => {
-                var pos = this.calcTipsPosition(btn, direction);
+            var pos = this.calcTipsPosition(btn, direction);
 
-                this.prompt.worldPosition = pos;
-                this.prompt.setSiblingIndex(this.prompt.parent!.children.length);
-            });
+            this.prompt.worldPosition = pos;
+            this.prompt.setSiblingIndex(this.prompt.parent!.children.length);
         } else {
             this.hide();
         }

@@ -134,6 +134,9 @@ export class GuideViewComp extends CCView<Guide> {
                 this.mask.draw(btn);
                 this.prompt.show(btn);
 
+                // 记录按钮初始位置，避免 draw 引起的 TRANSFORM_CHANGED 无效刷新
+                this._lastBtnPos = { x: btn.worldPosition.x, y: btn.worldPosition.y };
+
                 // 引导节点加触摸事件，跳到下一步
                 btn.on(Node.EventType.TOUCH_END, this.onTouchEnd, this, true);
                 btn.on(Node.EventType.TRANSFORM_CHANGED, this.onTransformChanged, this);
@@ -141,8 +144,22 @@ export class GuideViewComp extends CCView<Guide> {
         });
     }
 
+    /** 上一次按钮的世界坐标，用于判断是否真正发生了位移 */
+    private _lastBtnPos: { x: number; y: number } | null = null;
+
     private onTransformChanged() {
-        this.refresh();
+        let btn = this.ent.GuideModel.current;
+        if (btn) {
+            const pos = btn.worldPosition;
+            if (this._lastBtnPos) {
+                const dx = Math.abs(pos.x - this._lastBtnPos.x);
+                const dy = Math.abs(pos.y - this._lastBtnPos.y);
+                // 位置未发生实际变化，跳过刷新
+                if (dx < 0.5 && dy < 0.5) return;
+            }
+            this._lastBtnPos = { x: pos.x, y: pos.y };
+            this.refresh();
+        }
     }
 
     private onTouchEnd(event: EventTouch) {
@@ -151,20 +168,6 @@ export class GuideViewComp extends CCView<Guide> {
         btn.off(Node.EventType.TRANSFORM_CHANGED, this.onTransformChanged, this);
 
         var gvi = btn.getComponent(GuideViewItem)!;
-        // if (gvi) {
-        //     // 触发按钮组件
-        //     var button = btn.getComponent(Button);
-        //     if (button) {
-        //         button.clickEvents.forEach(e => {
-        //             e.emit([event]);
-        //         });
-
-        //         // 点击引导回调
-        //         this.onClick && this.onClick(this.guide.GuideModel.step);
-        //     }
-        //     this.onClick && this.onClick(this.guide.GuideModel.step);
-        //     this.next(btn);
-        // }
         if (gvi) {
             this.onClick && this.onClick(this.ent.GuideModel.step);
             this.next(btn);
