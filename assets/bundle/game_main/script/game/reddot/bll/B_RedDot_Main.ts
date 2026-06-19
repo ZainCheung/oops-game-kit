@@ -18,7 +18,10 @@ export class B_RedDot_Main extends CCBusiness<RedDot> {
     /** 初始化红点数据结构 */
     protected init() {
         const model = this.ent.M_RedDot_Model;
-        model.config = { Root: 'Root' };
+        model.config = {
+            Root: 'Root',
+            Demo: 'Root/Demo'
+        };
 
         if (this.repeat(model.config)) {
             console.warn('【红点】配置数据重复，请检查');

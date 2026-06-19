@@ -59,3 +59,10 @@ export interface IRedDotEventDataMap {
     /** 红点确认逻辑事件 */
     onRedDotConfirm: IRedDotConfirmData;
 }
+
+// 扩展全局事件类型
+declare global {
+    namespace OopsFramework {
+        interface TypedEventMap extends IRedDotEventDataMap { }
+    }
+}
