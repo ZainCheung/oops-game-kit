@@ -3,11 +3,11 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import { Guide } from '../Guide';
-import { GuideEvent } from '../GuideEvent';
+import { GuideEventName, type IGuideAutoBindData } from '../GuideEvent';
 import { GuideModelComp } from '../model/M_Guide_Main';
-import { GuideStepData, GuideStepDataBox, GuideViewItem } from './V_Guide_Item';
 import { GuideViewMaskComp } from './VC_Guide_Mask';
 import { GuideViewPromptComp } from './VC_Guide_Prompt';
+import { GuideStepData, GuideStepDataBox, GuideViewItem } from './V_Guide_Item';
 
 const { ccclass, property } = _decorator;
 
@@ -26,19 +26,20 @@ export class GuideViewComp extends CCView<Guide> {
     private prompt: GuideViewPromptComp = null!;
 
     protected onLoad(): void {
-        if (!Guide.Editor) this.event.setEvent(GuideEvent.GuideAutoBind);
+        if (!Guide.Editor) this.event.setEvent(GuideEventName.AutoBind);
     }
 
-    private onGuideAutoBind(event: string, scene: Node) {
+    private onGuideAutoBind<K extends GuideEventName.AutoBind>(event: K, data: IGuideAutoBindData) {
+        const scene = data.scene;
         if (this.ent.GuideModel.step >= this.ent.GuideModel.last) return;
 
         oops.gui.guide.active = true;
 
         this.prompt = this.getComponent(GuideViewPromptComp)!;
         this.mask = this.getComponent(GuideViewMaskComp)!;
-        let data = this.ent.GuideModel.prompts[scene.name];
-        if (!data) return;
-        data.forEach(d => {
+        let guideData = this.ent.GuideModel.prompts[scene.name];
+        if (!guideData) return;
+        guideData.forEach(d => {
             if (d.step >= this.ent.GuideModel.step) {
                 let node = find(d.node, scene);
                 if (node) {

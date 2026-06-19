@@ -2,7 +2,7 @@ import { _decorator } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
 import { PromptEventName } from '../../base/prompt/PromptEvent';
-import { GuideEvent } from '../guide/GuideEvent';
+import { GuideEventName } from '../guide/GuideEvent';
 
 const { ccclass } = _decorator;
 
@@ -17,7 +17,7 @@ export class DemoMain extends GameComponent {
         this.button.bind();
 
         // 注册新手引导
-        this.event.dispatchEvent(GuideEvent.GuideAutoBind, this.node);
+        this.event.emit(GuideEventName.AutoBind, { scene: this.node });
     }
 
     /** 点击按钮触发全部 ECS 功能演示（控制台输出） */
