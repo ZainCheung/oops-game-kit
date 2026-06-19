@@ -241,7 +241,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 131.18507361778845,
+      "width": 131.2109375,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -280,7 +280,7 @@
     "_string": "content",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 45.13888888888889,
+    "_actualFontSize": 40,
     "_fontSize": 40,
     "_fontFamily": "Arial",
     "_lineHeight": 40,
@@ -444,12 +444,12 @@
     "playOnLoad": true,
     "_clips": [
       {
-        "__uuid__": "4cecde51-d46d-4b20-b02e-e58f063ec56f",
+        "__uuid__": "90f2ba7b-270e-400d-81db-853dc9006595",
         "__expectedType__": "cc.AnimationClip"
       }
     ],
     "_defaultClip": {
-      "__uuid__": "4cecde51-d46d-4b20-b02e-e58f063ec56f",
+      "__uuid__": "90f2ba7b-270e-400d-81db-853dc9006595",
       "__expectedType__": "cc.AnimationClip"
     },
     "_id": ""

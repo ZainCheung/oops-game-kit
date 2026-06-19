@@ -28,7 +28,10 @@ export class GuideModelComp extends ecs.Comp {
         this.last = Number.MAX_VALUE;
 
         this.guides.forEach(node => {
-            if (node.isValid) node.getComponent(GuideViewItem)!.destroy();
+            if (node.isValid) {
+                const gvi = node.getComponent(GuideViewItem);
+                if (gvi) gvi.destroy();
+            }
         });
         this.guides.clear();
     }

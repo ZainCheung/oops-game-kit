@@ -22,8 +22,8 @@ export class B_Guide_Main extends CCBusiness<Guide> {
     ): Promise<void> {
         // 引导当前位置
         this.ent.GuideModel.step = 1;
-        // 引导最大步数（最后一步引导完后自动释放引导相关资源）
-        this.ent.GuideModel.last = 2;
+        // 引导最大步数（最后一步编号 + 1，用于判断引导是否全部结束）
+        this.ent.GuideModel.last = 3;
 
         await this.load();
     }
