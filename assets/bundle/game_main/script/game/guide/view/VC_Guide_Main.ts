@@ -8,7 +8,7 @@ import { GuideEventName, type IGuideAutoBindData } from '../GuideEvent';
 import { GuideModelComp } from '../model/M_Guide_Main';
 import { GuideViewMaskComp } from './VC_Guide_Mask';
 import { GuideViewPromptComp } from './VC_Guide_Prompt';
-import { GuideStepData, GuideStepDataBox, GuideViewItem } from './V_Guide_Item';
+import { GuideDirection, GuideStepData, GuideStepDataBox, GuideViewItem } from './V_Guide_Item';
 
 const { ccclass, property } = _decorator;
 
@@ -53,9 +53,8 @@ export class GuideViewComp extends CCView<Guide> {
                         step: d.step,
                         offsetW: d.offsetW != null ? d.offsetW : 0,
                         offsetH: d.offsetH != null ? d.offsetH : 0,
+                        tipsDirection: d.tipsDirection != null ? d.tipsDirection : GuideDirection.Auto,
                         tips: d.tips != null ? d.tips : '',
-                        tipsX: d.tipsX != null ? d.tipsX : 0,
-                        tipsY: d.tipsY != null ? d.tipsY : 0,
                         handAngle: d.handAngle != null ? d.handAngle : 0,
                         handAPX: d.handAPX != null ? d.handAPX : 0,
                         handAPY: d.handAPY != null ? d.handAPY : 0,

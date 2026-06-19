@@ -3,20 +3,22 @@
         {
             "step": 1,
             "node": "Button",
-            "offsetW": 20,
-            "offsetH": 20,
+            "offsetW": 0,
+            "offsetH": 0,
+            "tipsDirection": "top",
             "tips": "点击Button按钮",
-            "handAPX": 90,
-            "handAPY": -65
+            "handAPX": 0,
+            "handAPY": 0
         },
         {
             "step": 2,
             "node": "Button001",
-            "offsetW": 20,
-            "offsetH": 20,
+            "offsetW": 0,
+            "offsetH": 0,
+            "tipsDirection": "top",
             "tips": "点击Button-001按钮",
-            "handAPX": 90,
-            "handAPY": -65
+            "handAPX": 0,
+            "handAPY": 0
         }
     ]
 }

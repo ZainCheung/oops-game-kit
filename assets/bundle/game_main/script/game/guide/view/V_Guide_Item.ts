@@ -2,6 +2,16 @@ import { _decorator, Component, Node } from 'cc';
 
 const { ccclass, property } = _decorator;
 
+/** 提示框吸附方位 */
+export enum GuideDirection {
+    /** 自动（根据目标在屏幕上半/下半部分自动选择上方或下方） */
+    Auto = 'auto',
+    /** 上方 */
+    Top = 'top',
+    /** 下方 */
+    Bottom = 'bottom',
+}
+
 /** 引导提示框数据 */
 export interface GuideStepDataBox {
     /** 提示框节点 */
@@ -32,10 +42,8 @@ export interface GuidePromptData {
     offsetW?: number;
     /** 上下扩大的高度 */
     offsetH?: number;
-    /** 提示位置 X */
-    tipsX?: number;
-    /** 提示位置 Y */
-    tipsY?: number;
+    /** 提示吸附方位（默认自动） */
+    tipsDirection?: GuideDirection;
     /** 提示内容（为空时不显示提示） */
     tips?: string;
     /** 手指角度 */
@@ -66,10 +74,8 @@ export interface GuideStepData {
     offsetW?: number;
     /** 上下扩大的高度 */
     offsetH?: number;
-    /** 提示位置 X */
-    tipsX?: number;
-    /** 提示位置 Y */
-    tipsY?: number;
+    /** 提示吸附方位（默认自动） */
+    tipsDirection?: GuideDirection;
     /** 提示内容（为空时不显示提示） */
     tips?: string;
     /** 手指角度 */

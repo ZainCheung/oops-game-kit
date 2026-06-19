@@ -1,9 +1,9 @@
-import { Label, Node, Prefab, Vec3, _decorator, find, instantiate } from 'cc';
+import { Label, Node, UITransform, Vec3, _decorator, find } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Guide } from '../Guide';
-import { GuideViewItem } from './V_Guide_Item';
+import { GuideDirection, GuideViewItem } from './V_Guide_Item';
 import { ViewUtil } from 'db://oops-framework/core/utils/ViewUtil';
 
 const { ccclass, property } = _decorator;
@@ -27,26 +27,48 @@ export class GuideViewPromptComp extends CCView<Guide> {
         var gvi = btn.getComponent(GuideViewItem)!;
         var step = gvi.step.get(this.ent.GuideModel.step)!;
         if (step.tips) {
-            // 提示位置修正到显示对象中心
-            var pos = btn.worldPosition.clone();
-            var offset: Vec3 = new Vec3();
-            // var uit = btn.getComponent(UITransform)!;
-            // offset.x = uit.contentSize.width * 0.5 - uit.contentSize.width * uit.anchorX;
-            // offset.y = uit.contentSize.height * 0.5 - uit.contentSize.height * uit.anchorY;
-            // offset.y = uit.contentSize.height * 0.5 + 50;
-            offset.x = step.tipsX!;
-            offset.y = step.tipsY!;
-            pos = pos.add(offset);
+            const direction = step.tipsDirection ?? GuideDirection.Auto;
 
+            // 先激活提示框确保尺寸计算准确
             this.prompt.active = true;
-            this.prompt.worldPosition = pos;
-            this.prompt.setSiblingIndex(this.prompt.parent!.children.length);
-
-            // 显示提示词
             this.content.string = step.tips!;
+
+            // 延时一帧确保 UITransform 尺寸已更新
+            this.scheduleOnce(() => {
+                var pos = this.calcTipsPosition(btn, direction);
+
+                this.prompt.worldPosition = pos;
+                this.prompt.setSiblingIndex(this.prompt.parent!.children.length);
+            });
         } else {
             this.hide();
         }
+    }
+
+    /** 根据吸附方位自动计算提示框世界坐标 */
+    private calcTipsPosition(btn: Node, direction: GuideDirection): Vec3 {
+        const targetUit = btn.getComponent(UITransform)!;
+        const promptUit = this.prompt.getComponent(UITransform)!;
+        const pos = btn.worldPosition.clone();
+
+        const gap = 60; // 固定间距
+
+        // 自动检测：目标在屏幕上半部分则提示放上方，否则放下方
+        if (direction === GuideDirection.Auto) {
+            const localPos = this.prompt.parent!.uiTransform.convertToNodeSpaceAR(btn.worldPosition);
+            direction = localPos.y > 0 ? GuideDirection.Top : GuideDirection.Bottom;
+        }
+
+        switch (direction) {
+            case GuideDirection.Top:
+                pos.y += targetUit.contentSize.height + gap + promptUit.contentSize.height;
+                break;
+            case GuideDirection.Bottom:
+                pos.y -= targetUit.contentSize.height + gap + promptUit.contentSize.height;
+                break;
+        }
+
+        return pos;
     }
 
     hide() {
