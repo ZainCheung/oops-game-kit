@@ -1,9 +1,3 @@
-/*
- * @Author: dgflash
- * @Date: 2022-03-21 11:12:03
- * @LastEditors: dgflash
- * @LastEditTime: 2022-09-06 10:12:03
- */
 import { Node } from "cc";
 import { ecs } from "db://oops-framework/libs/ecs/ECS";
 import { GuidePromptData, GuideViewItem } from "../view/V_Guide_Item";
