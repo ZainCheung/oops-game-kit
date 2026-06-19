@@ -4,12 +4,16 @@ const { ccclass, property } = _decorator;
 
 /** 提示框吸附方位 */
 export enum GuideDirection {
-    /** 自动（根据目标在屏幕上半/下半部分自动选择上方或下方） */
+    /** 自动（根据目标在屏幕位置自动选择最佳方位） */
     Auto = 'auto',
     /** 上方 */
     Top = 'top',
     /** 下方 */
     Bottom = 'bottom',
+    /** 左方 */
+    Left = 'left',
+    /** 右方 */
+    Right = 'right',
 }
 
 /** 引导提示框数据 */

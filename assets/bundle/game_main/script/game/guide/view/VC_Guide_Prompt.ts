@@ -51,7 +51,9 @@ export class GuideViewPromptComp extends CCView<Guide> {
         const promptUit = this.prompt.getComponent(UITransform)!;
         const pos = btn.worldPosition.clone();
 
-        const gap = 60; // 固定间距
+        const gap = 50; // 固定间距
+        const targetUitSelf = targetUit.contentSize.width / 2;
+        const promptUitSelf = promptUit.contentSize.width / 2;
 
         // 自动检测：目标在屏幕上半部分则提示放上方，否则放下方
         if (direction === GuideDirection.Auto) {
@@ -66,13 +68,19 @@ export class GuideViewPromptComp extends CCView<Guide> {
             case GuideDirection.Bottom:
                 pos.y -= targetUit.contentSize.height + gap + promptUit.contentSize.height;
                 break;
+            case GuideDirection.Left:
+                pos.x -= targetUitSelf + gap + promptUitSelf;
+                break;
+            case GuideDirection.Right:
+                pos.x += targetUitSelf + gap + promptUitSelf;
+                break;
         }
 
         return pos;
     }
 
     hide() {
-        if (this.prompt) this.prompt.active = false;
+        this.prompt.active = false;
     }
 
     reset(): void {

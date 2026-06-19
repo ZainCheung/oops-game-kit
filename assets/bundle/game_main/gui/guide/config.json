@@ -13,7 +13,7 @@
             "node": "Button001",
             "offsetW": 0,
             "offsetH": 0,
-            "tipsDirection": "bottom",
+            "tipsDirection": "left",
             "tips": "点击Button-001按钮"
         }
     ]
