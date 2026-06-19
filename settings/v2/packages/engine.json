@@ -15,7 +15,7 @@
             "_value": true
           },
           "gfx-webgpu": {
-            "_value": true
+            "_value": false
           },
           "animation": {
             "_value": true
@@ -203,7 +203,6 @@
           "dragon-bones",
           "gfx-webgl",
           "gfx-webgl2",
-          "gfx-webgpu",
           "graphics",
           "intersection-2d",
           "marionette",
