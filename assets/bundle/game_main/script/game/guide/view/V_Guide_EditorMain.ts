@@ -1,7 +1,7 @@
 import { _decorator, EventTouch, Node, Toggle } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
-// import { editor_main } from './GuideEditor';
+// import { editor_main } from './V_Guide_Editor';
 
 const { ccclass, property } = _decorator;
 

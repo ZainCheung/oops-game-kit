@@ -3,7 +3,7 @@ import { ViewUtil } from 'db://oops-framework/core/utils/ViewUtil';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import { Guide } from '../Guide';
-import { GuideStepData, GuideViewItem } from './GuideViewItem';
+import { GuideStepData, GuideViewItem } from './V_Guide_Item';
 
 const { ccclass, property } = _decorator;
 

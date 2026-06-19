@@ -6,7 +6,7 @@
  */
 import { Node } from "cc";
 import { ecs } from "db://oops-framework/libs/ecs/ECS";
-import { GuidePromptData, GuideViewItem } from "../view/GuideViewItem";
+import { GuidePromptData, GuideViewItem } from "../view/V_Guide_Item";
 
 /** 引导数据 */
 @ecs.register('GuideModel')

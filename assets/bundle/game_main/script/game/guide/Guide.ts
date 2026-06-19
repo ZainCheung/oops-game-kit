@@ -2,8 +2,8 @@ import { Node } from 'cc';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
 import { B_Guide_Main } from './bll/B_Guide_Main';
-import { GuideModelComp } from './model/GuideModelComp';
-import { GuideViewComp } from './view/GuideViewComp';
+import { GuideModelComp } from './model/M_Guide_Main';
+import { GuideViewComp } from './view/VC_Guide_Main';
 
 /**
  * 新手引导

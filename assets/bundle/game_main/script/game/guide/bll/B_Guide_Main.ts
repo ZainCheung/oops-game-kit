@@ -4,10 +4,10 @@ import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { InitializeEventName } from '../../initialize/InitializeEvent';
 import type { IInitializeEventDataMap } from '../../initialize/InitializeEventData';
 import { Guide } from '../Guide';
-import { GuidePromptData } from '../view/GuideViewItem';
-import { GuideViewComp } from '../view/GuideViewComp';
-import { GuideViewMaskComp } from '../view/GuideViewMaskComp';
-import { GuideViewPromptComp } from '../view/GuideViewPromptComp';
+import { GuidePromptData } from '../view/V_Guide_Item';
+import { GuideViewComp } from '../view/VC_Guide_Main';
+import { GuideViewMaskComp } from '../view/VC_Guide_Mask';
+import { GuideViewPromptComp } from '../view/VC_Guide_Prompt';
 
 /** 新手引导主业务逻辑 */
 export class B_Guide_Main extends CCBusiness<Guide> {

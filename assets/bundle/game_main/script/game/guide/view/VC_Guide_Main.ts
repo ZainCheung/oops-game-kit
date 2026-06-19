@@ -4,10 +4,10 @@ import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import { Guide } from '../Guide';
 import { GuideEvent } from '../GuideEvent';
-import { GuideModelComp } from '../model/GuideModelComp';
-import { GuideStepData, GuideStepDataBox, GuideViewItem } from './GuideViewItem';
-import { GuideViewMaskComp } from './GuideViewMaskComp';
-import { GuideViewPromptComp } from './GuideViewPromptComp';
+import { GuideModelComp } from '../model/M_Guide_Main';
+import { GuideStepData, GuideStepDataBox, GuideViewItem } from './V_Guide_Item';
+import { GuideViewMaskComp } from './VC_Guide_Mask';
+import { GuideViewPromptComp } from './VC_Guide_Prompt';
 
 const { ccclass, property } = _decorator;
 

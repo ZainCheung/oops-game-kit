@@ -17,7 +17,7 @@ export class DemoMain extends GameComponent {
         this.button.bind();
 
         // 注册新手引导
-        // this.event.dispatchEvent(GuideEvent.GuideAutoBind, this.node);
+        this.event.dispatchEvent(GuideEvent.GuideAutoBind, this.node);
     }
 
     /** 点击按钮触发全部 ECS 功能演示（控制台输出） */
