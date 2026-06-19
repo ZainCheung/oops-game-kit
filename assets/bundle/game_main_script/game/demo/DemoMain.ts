@@ -3,6 +3,7 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
 import { gsm } from '../common/GameSingletonModule';
 import { Guide } from '../guide/Guide';
+import { GuideViewItem } from '../guide/view/GuideViewItem';
 import { runAllEcsDemos } from './ecs/DemoEcsMain';
 import { PromptEventName } from '../../base/prompt/PromptEvent';
 
@@ -21,7 +22,7 @@ export class DemoMain extends GameComponent {
         this.button.bind();
 
         // 注册新手引导
-        // this.registerGuide();
+        await this.registerGuide();
     }
 
     /** 点击按钮触发全部 ECS 功能演示（控制台输出） */
@@ -49,24 +50,26 @@ export class DemoMain extends GameComponent {
     // ========================================
 
     /** 注册新手引导 */
-    private registerGuide(): void {
+    private async registerGuide(): Promise<void> {
         this.guide = gsm.account.getChildSingleton(Guide);
         if (!this.guide) return;
 
-        const buttonNode = this.node.getChildByName('Button');
-        const button001Node = this.node.getChildByName('Button-001');
+        // const buttonNode = this.node.getChildByName('Button');
+        // const button001Node = this.node.getChildByName('Button-001');
 
-        if (buttonNode) {
-            this.guide.M_Guide_Main.prompts[1] = '点击Button按钮';
-            this.guide.VC_Guide_Main.register(1, buttonNode);
-        }
-        if (button001Node) {
-            this.guide.M_Guide_Main.prompts[2] = '点击Button-001按钮';
-            this.guide.VC_Guide_Main.register(2, button001Node);
-        }
+        // if (buttonNode) {
+        //     let gvi = buttonNode.getComponent(GuideViewItem) || buttonNode.addComponent(GuideViewItem);
+        //     gvi.step.set(1, { scene: this.node, step: 1, tips: '点击Button按钮' });
+        //     this.guide.register(1, buttonNode);
+        // }
+        // if (button001Node) {
+        //     let gvi = button001Node.getComponent(GuideViewItem) || button001Node.addComponent(GuideViewItem);
+        //     gvi.step.set(2, { scene: this.node, step: 2, tips: '点击Button-001按钮' });
+        //     this.guide.register(2, button001Node);
+        // }
 
-        this.guide.M_Guide_Main.last = 3;
-        this.guide.VC_Guide_Main.check(1);
+        this.guide.GuideModel.last = 3;
+        this.guide.check(1);
     }
 
     reset(): void {

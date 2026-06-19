@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "fa3a3e28-91f5-427d-8780-b4a42a2a9da2",
+  "uuid": "c085a5a7-915e-45dc-a5b2-477bf856efbc",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "Prompt"
+    "syncNodeName": "prompt"
   }
 }

@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "5443bc8d-11a0-4d53-8039-c84d0eb38b15",
+  "uuid": "23b80efe-6479-4845-8879-e23aa0c432bb",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "mask"
+    "syncNodeName": "editor"
   }
 }

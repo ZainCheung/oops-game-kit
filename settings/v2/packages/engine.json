@@ -33,7 +33,7 @@
             "_value": true
           },
           "sorting-2d": {
-            "_value": false
+            "_value": true
           },
           "rich-text": {
             "_value": false
@@ -45,10 +45,10 @@
             "_value": true
           },
           "ui-skew": {
-            "_value": false
+            "_value": true
           },
           "affine-transform": {
-            "_value": false
+            "_value": true
           },
           "ui": {
             "_value": true
@@ -195,6 +195,7 @@
         },
         "includeModules": [
           "2d",
+          "affine-transform",
           "animation",
           "audio",
           "base",
@@ -210,10 +211,12 @@
           "particle-2d",
           "procedural-animation",
           "profiler",
+          "sorting-2d",
           "spine-3.8",
           "tiled-map",
           "tween",
           "ui",
+          "ui-skew",
           "websocket"
         ],
         "noDeprecatedFeatures": {

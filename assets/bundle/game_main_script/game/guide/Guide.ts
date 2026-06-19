@@ -1,8 +1,9 @@
+import { Node } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
-import { M_Guide_Main } from './model/M_Guide_Main';
-import { VC_Guide_Main } from './view/VC_Guide_Main';
+import { GuideModelComp } from './model/GuideModelComp';
+import { GuideViewComp } from './view/GuideViewComp';
 
 /**
  * 新手引导
@@ -12,16 +13,38 @@ import { VC_Guide_Main } from './view/VC_Guide_Main';
  */
 @ecs.register('Guide')
 export class Guide extends CCEntity {
-    M_Guide_Main!: M_Guide_Main;
+    GuideModel!: GuideModelComp;
+    GuideView!: GuideViewComp;
 
-    VC_Guide_Main!: VC_Guide_Main;
+    static Editor: boolean = false;
 
     protected init() {
-        this.addComponents(M_Guide_Main);
+        this.addComponents<ecs.Comp>(GuideModelComp);
 
-        // 添加引导组件
-        const comp = oops.gui.guide.addComponent(VC_Guide_Main);
-        this.VC_Guide_Main = comp;
+        const comp = oops.gui.guide.addComponent(GuideViewComp);
         this.add(comp);
+    }
+
+    /**
+     * 注册引导项
+     * @param step 引导步骤
+     * @param Node 引导节点
+     */
+    register(step: number, Node: Node) {
+        this.GuideModel.guides.set(step, Node);
+    }
+
+    /**
+     * 检查指定引导是否触发
+     * @param step 引导步骤
+     */
+    check(step: number): void {
+        this.GuideModel.step = step;
+        this.GuideView.check();
+    }
+
+    destroy(): void {
+        oops.res.releaseDir('gui/guide');
+        super.destroy();
     }
 }
