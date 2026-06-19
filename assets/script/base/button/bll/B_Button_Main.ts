@@ -10,7 +10,7 @@ import { Button } from '../Button';
 /** 按钮音效资源包名 */
 const audio_bundle = 'game_common';
 /** 按钮音效资源路径 */
-const audio_path = 'gui/button/audio/click';
+const audio_path = 'gui/button/audio/Click';
 
 /** 通用按钮主业务逻辑 */
 export class B_Button_Main extends CCBusiness<Button> {
