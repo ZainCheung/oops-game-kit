@@ -13,9 +13,9 @@ import { WeChatMiniGameSdk } from './platform/WeChatMiniGameSdk';
  * 3. 提供统一的访问入口 {@link getSdk} / {@link platform}。
  *
  * 平台识别策略：
- * - 优先判断全局对象是否存在（`wx` 等），兼容编辑器/打包后两种场景。
- * - 其次通过 Cocos 的 `sys.platform` 判断 H5 / 其它小游戏。
- * - 都不匹配时回退到 {@link DefaultSdk}（空实现，方法会 reject）。
+ * - 通过 Cocos 的 `sys.platform`（`sys.Platform` 枚举）判断当前运行平台，
+ *   覆盖编辑器/浏览器/各小游戏/原生全场景。
+ * - 未匹配到支持的平台时回退到 {@link DefaultSdk}（空实现，方法会 reject）。
  *
  * 接入新平台：
  * ```ts
@@ -57,29 +57,45 @@ export class SdkManager {
 
     /**
      * 探测当前运行平台
+     *
+     * 使用 Cocos Creator 的 `sys.platform`（`sys.Platform` 枚举）进行判断，
+     * 覆盖编辑器、浏览器、各小游戏平台、原生平台等全部场景。
+     *
      * @returns 当前平台枚举
      */
     static detectPlatform(): SdkPlatform {
-        // 微信小游戏（编辑器内 typeof wx 不可靠，这里同时校验 cc.sys）
-        if (typeof (globalThis as any).wx !== 'undefined') {
-            return SdkPlatform.WeChatMiniGame;
+        const p = sys.platform;
+        const P = sys.Platform;
+
+        // 小游戏平台
+        if (p === P.WECHAT_GAME) return SdkPlatform.WeChatMiniGame;
+        if (p === P.BYTEDANCE_MINI_GAME) return SdkPlatform.DouYinMiniGame;
+        if (p === P.OPPO_MINI_GAME) return SdkPlatform.OPPO;
+        if (p === P.VIVO_MINI_GAME) return SdkPlatform.Vivo;
+        if (p === P.XIAOMI_QUICK_GAME) return SdkPlatform.XiaoMi;
+        if (p === P.HUAWEI_QUICK_GAME) return SdkPlatform.Huawei;
+        if (p === P.ALIPAY_MINI_GAME) return SdkPlatform.Alipay;
+        if (p === P.OPENHARMONY) return SdkPlatform.OpenHarmony;
+        // 百度小游戏（部分版本支持）
+        if ((P as any).BAIDU_MINI_GAME && p === (P as any).BAIDU_MINI_GAME) {
+            return SdkPlatform.BaiDu;
         }
-        if (typeof (globalThis as any).tt !== 'undefined') {
-            return SdkPlatform.DouYinMiniGame;
-        }
-        if (typeof (globalThis as any).qg !== 'undefined') {
-            // OPPO / vivo 都用 qg，这里粗略区分
-            const platformStr = (sys.platform as unknown as string) || '';
-            if (platformStr.indexOf('oppo') >= 0) return SdkPlatform.OPPO;
-            return SdkPlatform.Vivo;
-        }
-        // 浏览器
+
+        // 浏览器（H5）
+        if (p === P.MOBILE_BROWSER || p === P.DESKTOP_BROWSER) return SdkPlatform.H5;
+
+        // 原生（WIN32/MACOS/ANDROID/IOS/OHOS）
         if (
-            sys.platform === (sys as any).MOBILE_BROWSER ||
-            sys.platform === (sys as any).DESKTOP_BROWSER
+            p === P.ANDROID ||
+            p === P.IOS ||
+            p === (P as any).WIN32 ||
+            p === (P as any).MACOS ||
+            p === (P as any).OHOS
         ) {
-            return SdkPlatform.H5;
+            return SdkPlatform.Native;
         }
+
+        // 编辑器及其它未知环境（sys.Platform.EDIT 等）
         return SdkPlatform.Unknown;
     }
 
