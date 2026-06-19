@@ -2,6 +2,7 @@ import { JsonAsset, Node } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
+import { B_Guide_Main } from './bll/B_Guide_Main';
 import { GuideModelComp } from './model/GuideModelComp';
 import { GuideViewComp } from './view/GuideViewComp';
 import { GuidePromptData } from './view/GuideViewItem';
@@ -18,11 +19,13 @@ import { GuideViewPromptComp } from './view/GuideViewPromptComp';
 export class Guide extends CCEntity {
     GuideModel!: GuideModelComp;
     GuideView!: GuideViewComp;
+    B_Guide_Main!: B_Guide_Main;
 
     static Editor: boolean = false;
 
     protected init() {
         this.addComponents<ecs.Comp>(GuideModelComp);
+        this.addBusinesss(B_Guide_Main);
     }
 
     /** 加载引导资源 */

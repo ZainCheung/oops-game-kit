@@ -99,7 +99,7 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
         oops.gui.setOpenFailure(this.onOpenFailure);
 
         this.loadComplete = true;
-        this.event.emit(InitializeEventName.LoadComplete); // 资源加载完成事件
+        await this.event.emitAsync(InitializeEventName.LoadComplete); // 资源加载完成事件
         this.tryEnter();
     }
 

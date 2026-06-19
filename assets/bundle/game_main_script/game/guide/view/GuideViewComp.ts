@@ -26,11 +26,13 @@ export class GuideViewComp extends CCView<Guide> {
     private prompt: GuideViewPromptComp = null!;
 
     protected onLoad(): void {
-        if (!Guide.Editor) this.setEvent(GuideEvent.GuideAutoBind);
+        if (!Guide.Editor) this.event.setEvent(GuideEvent.GuideAutoBind);
     }
 
     private onGuideAutoBind(event: string, scene: Node) {
         if (this.ent.GuideModel.step >= this.ent.GuideModel.last) return;
+
+        oops.gui.guide.active = true;
 
         this.prompt = this.getComponent(GuideViewPromptComp)!;
         this.mask = this.getComponent(GuideViewMaskComp)!;
