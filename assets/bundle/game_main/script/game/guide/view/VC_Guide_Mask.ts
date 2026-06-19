@@ -67,11 +67,12 @@ export class GuideViewMaskComp extends CCView<Guide> {
         // 主提示框架
         var box = this.createBox(btn, step.offsetW!, step.offsetH!);
 
-        // 手势
+        // 手势（默认定位在目标的右下角）
         var hand = box.getChildByName('hand')!;
         hand.angle = step.handAngle!;
         hand.setScale(step.handScale!.x, step.handScale!.y);
-        hand.setPosition(step.handAPX!, step.handAPY!);
+        var uit = btn.getComponent(UITransform)!;
+        hand.setPosition(uit.contentSize.width / 2, -uit.contentSize.height / 2);
 
         // 附引导框架
         if (step.box) {

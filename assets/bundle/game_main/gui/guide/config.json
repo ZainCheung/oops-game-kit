@@ -6,19 +6,15 @@
             "offsetW": 0,
             "offsetH": 0,
             "tipsDirection": "top",
-            "tips": "点击Button按钮",
-            "handAPX": 0,
-            "handAPY": 0
+            "tips": "点击Button按钮"
         },
         {
             "step": 2,
             "node": "Button001",
             "offsetW": 0,
             "offsetH": 0,
-            "tipsDirection": "top",
-            "tips": "点击Button-001按钮",
-            "handAPX": 0,
-            "handAPY": 0
+            "tipsDirection": "bottom",
+            "tips": "点击Button-001按钮"
         }
     ]
 }

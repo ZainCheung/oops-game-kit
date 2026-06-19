@@ -48,10 +48,6 @@ export interface GuidePromptData {
     tips?: string;
     /** 手指角度 */
     handAngle?: number;
-    /** 手指位置 X */
-    handAPX?: number;
-    /** 手指位置 Y */
-    handAPY?: number;
     /** 手指缩放 */
     handScale?: { x: number; y: number };
     /** 是否点击下一步（默认点击自动下一步） */
@@ -80,10 +76,6 @@ export interface GuideStepData {
     tips?: string;
     /** 手指角度 */
     handAngle?: number;
-    /** 手指位置 X */
-    handAPX?: number;
-    /** 手指位置 Y */
-    handAPY?: number;
     /** 手指缩放 */
     handScale?: { x: number; y: number };
     /** 是否点击下一步（默认点击自动下一步） */

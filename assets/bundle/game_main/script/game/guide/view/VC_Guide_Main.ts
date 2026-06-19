@@ -56,8 +56,6 @@ export class GuideViewComp extends CCView<Guide> {
                         tipsDirection: d.tipsDirection != null ? d.tipsDirection : GuideDirection.Auto,
                         tips: d.tips != null ? d.tips : '',
                         handAngle: d.handAngle != null ? d.handAngle : 0,
-                        handAPX: d.handAPX != null ? d.handAPX : 0,
-                        handAPY: d.handAPY != null ? d.handAPY : 0,
                         handScale: d.handScale != null ? d.handScale : { x: 1, y: 1 },
                         next: d.next != null ? d.next : true,
                         save: d.save != null ? d.save : 0,
