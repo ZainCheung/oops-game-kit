@@ -5,7 +5,6 @@ import { PromptEventName } from '../../base/prompt/PromptEvent';
 import { GuideEventName } from '../guide/GuideEvent';
 import { debounce } from 'db://oops-framework/module/decorator/DebounceDecorator';
 import { RedDotEventName } from '../reddot/RedDotEvent';
-import { V_RedDot_View } from '../reddot/view/V_RedDot_View';
 
 const { ccclass } = _decorator;
 
@@ -16,17 +15,11 @@ const { ccclass } = _decorator;
 /** 教程列表 */
 @ccclass('DemoMain')
 export class DemoMain extends GameComponent {
-    /** 红点视图组件缓存 */
-    private redDotView: V_RedDot_View | null = null;
-
     protected async onLoad(): Promise<void> {
         this.button.bind();
 
         // 注册新手引导
         this.event.emit(GuideEventName.AutoBind, { ui: this.node });
-
-        // 获取红点视图组件
-        this.redDotView = this.node.getChildByName('Button')?.getChildByName('V_RedDot_View')?.getComponent(V_RedDot_View) ?? null;
 
         // 显示红点（count=1）
         this.event.emit(RedDotEventName.Update, { key: 'Demo', count: 1 });
@@ -40,8 +33,8 @@ export class DemoMain extends GameComponent {
 
         console.log("Button")
 
-        // 点击后取消红点
-        this.redDotView?.confirm(false);
+        // 点击后取消红点（通过事件确认红点，由 B_RedDot_Event 处理）
+        this.event.emit(RedDotEventName.Confirm, { key: 'Demo', save: false });
     }
 
     Button001() {
