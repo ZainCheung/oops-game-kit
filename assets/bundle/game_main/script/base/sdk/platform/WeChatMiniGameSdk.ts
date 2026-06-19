@@ -142,10 +142,10 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         if (callback) wx.offHide(callback);
     }
     onError(callback: (err: string) => void): void {
-        wx.onError(callback);
+        wx.onError((error: WechatMinigame.ListenerError) => callback(error.message));
     }
     offError(callback?: (err: string) => void): void {
-        if (callback) wx.offError(callback);
+        if (callback) wx.offError(callback as any);
     }
 
     exitMiniProgram(): Promise<void> {
@@ -758,12 +758,12 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     loadSubpackage(name: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            const task = wx.loadSubpackage({
+            wx.loadSubpackage({
                 name,
                 success: () => resolve(),
                 fail: (err: any) => reject(err),
-            });
-            void task;
+                complete: () => {},
+            } as WechatMinigame.LoadSubpackageOption);
         });
     }
 
@@ -812,7 +812,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     canIUse(apiName: string): boolean {
         try {
-            return wx.canIUse(apiName);
+            return (wx as any).canIUse(apiName);
         } catch {
             return false;
         }
