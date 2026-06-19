@@ -4,6 +4,7 @@ import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
 import { PromptEventName } from '../../base/prompt/PromptEvent';
 import { gsm } from '../common/GameSingletonModule';
 import { Guide } from '../guide/Guide';
+import { GuideEvent } from '../guide/GuideEvent';
 
 const { ccclass } = _decorator;
 
@@ -52,11 +53,14 @@ export class DemoMain extends GameComponent {
         this.guide = gsm.account.getChildSingleton(Guide);
         if (!this.guide) return;
 
-        await this.guide.GuideView.loadRes();
-
+        // 引导当前位置
+        this.guide.GuideModel.step = 1;
+        // 引导最大步数（最后一步引导完后自动释放引导相关资源）
         this.guide.GuideModel.last = 2;
-        this.guide.GuideView.bindScene(this.node);
-        this.guide.check(1);
+
+        await this.guide.load();
+
+        this.event.dispatchEvent(GuideEvent.GuideAutoBind, this.node);
     }
 
     reset(): void {

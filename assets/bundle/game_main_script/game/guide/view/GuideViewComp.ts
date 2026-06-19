@@ -1,13 +1,15 @@
-import { EventTouch, JsonAsset, Node, _decorator, find, isValid } from 'cc';
+import { EventTouch, Node, _decorator, find, isValid } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import { Guide } from '../Guide';
-import { GuideStepData, GuideStepDataBox, GuidePromptData, GuideViewItem } from './GuideViewItem';
+import { GuideEvent } from '../GuideEvent';
+import { GuideModelComp } from '../model/GuideModelComp';
+import { GuideStepData, GuideStepDataBox, GuideViewItem } from './GuideViewItem';
 import { GuideViewMaskComp } from './GuideViewMaskComp';
 import { GuideViewPromptComp } from './GuideViewPromptComp';
 
-const { ccclass } = _decorator;
+const { ccclass, property } = _decorator;
 
 /** 新手引导界面管理 */
 @ccclass('GuideViewComp')
@@ -23,48 +25,16 @@ export class GuideViewComp extends CCView<Guide> {
     /** 引导提示动画 */
     private prompt: GuideViewPromptComp = null!;
 
-    async loadRes(): Promise<void> {
-        if (this.ent.GuideModel.step >= this.ent.GuideModel.last) {
-            return;
-        }
-
-        return new Promise((resolve, reject) => {
-            oops.res.loadDir('gui/guide', (err: Error | null) => {
-                if (err) {
-                    console.error('新手引导资源加载失败');
-                    reject(err);
-                    return;
-                }
-
-                // 新手引导配置
-                this.ent.GuideModel.prompts = oops.res.get('gui/guide/config', JsonAsset)!.json as Record<
-                    string,
-                    GuidePromptData[]
-                >;
-
-                // 注册显示对象到 ECS 实体中
-                this.mask = oops.gui.guide.addComponent(GuideViewMaskComp);
-                this.ent.add(this.mask);
-
-                this.prompt = oops.gui.guide.addComponent(GuideViewPromptComp);
-                this.ent.add(this.prompt);
-
-                // 引导点击事件
-                this.onClick = (step: number) => {};
-
-                // 每触发下一步存盘事件
-                this.onSave = (step: number) => {};
-
-                resolve();
-            });
-        });
+    protected onLoad(): void {
+        if (!Guide.Editor) this.setEvent(GuideEvent.GuideAutoBind);
     }
 
-    /** 绑定场景中的引导节点（从配置中读取并注册） */
-    bindScene(scene: Node) {
+    private onGuideAutoBind(event: string, scene: Node) {
         if (this.ent.GuideModel.step >= this.ent.GuideModel.last) return;
 
-        let data: GuidePromptData[] = this.ent.GuideModel.prompts[scene.name];
+        this.prompt = this.getComponent(GuideViewPromptComp)!;
+        this.mask = this.getComponent(GuideViewMaskComp)!;
+        let data = this.ent.GuideModel.prompts[scene.name];
         if (!data) return;
         data.forEach(d => {
             if (d.step >= this.ent.GuideModel.step) {
@@ -125,7 +95,7 @@ export class GuideViewComp extends CCView<Guide> {
     /** 下一个引导 */
     next(btn: Node) {
         var gvi = btn.getComponent(GuideViewItem)!;
-        var gm = this.ent.GuideModel;
+        var gm = this.ent.get(GuideModelComp)!;
         var step = gvi.step.get(gm.step)!;
         if (step) {
             gvi.step.delete(gm.step);
