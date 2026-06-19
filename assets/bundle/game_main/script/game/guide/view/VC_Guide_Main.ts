@@ -31,7 +31,7 @@ export class GuideViewComp extends CCView<Guide> {
     }
 
     private onGuideAutoBind<K extends GuideEventName.AutoBind>(event: K, data: IGuideAutoBindData) {
-        const scene = data.scene;
+        const scene = data.ui;
         if (this.ent.GuideModel.step >= this.ent.GuideModel.last) return;
 
         oops.gui.guide.active = true;
