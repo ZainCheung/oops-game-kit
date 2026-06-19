@@ -3,7 +3,7 @@ import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
 import { B_Guide_Main } from './bll/B_Guide_Main';
 import { GuideModelComp } from './model/M_Guide_Main';
-import { GuideViewComp } from './view/VC_Guide_Main';
+import type { GuideViewComp } from './view/VC_Guide_Main';
 
 /**
  * 新手引导
@@ -16,8 +16,6 @@ export class Guide extends CCEntity {
     GuideModel!: GuideModelComp;
     GuideView!: GuideViewComp;
     B_Guide_Main!: B_Guide_Main;
-
-    static Editor: boolean = false;
 
     protected init() {
         this.addComponents<ecs.Comp>(GuideModelComp);

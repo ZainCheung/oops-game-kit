@@ -2,7 +2,8 @@ import { EventTouch, Node, _decorator, find, isValid } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
-import { Guide } from '../Guide';
+import { GuideEditor } from '../GuideConst';
+import type { Guide } from '../Guide';
 import { GuideEventName, type IGuideAutoBindData } from '../GuideEvent';
 import { GuideModelComp } from '../model/M_Guide_Main';
 import { GuideViewMaskComp } from './VC_Guide_Mask';
@@ -26,7 +27,7 @@ export class GuideViewComp extends CCView<Guide> {
     private prompt: GuideViewPromptComp = null!;
 
     protected onLoad(): void {
-        if (!Guide.Editor) this.event.setEvent(GuideEventName.AutoBind);
+        if (!GuideEditor) this.event.setEvent(GuideEventName.AutoBind);
     }
 
     private onGuideAutoBind<K extends GuideEventName.AutoBind>(event: K, data: IGuideAutoBindData) {

@@ -2,7 +2,7 @@ import { Label, Node, Prefab, Vec3, _decorator, find, instantiate } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
-import { Guide } from '../Guide';
+import type { Guide } from '../Guide';
 import { GuideViewItem } from './V_Guide_Item';
 import { ViewUtil } from 'db://oops-framework/core/utils/ViewUtil';
 
