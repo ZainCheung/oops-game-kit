@@ -61,8 +61,7 @@ export class VC_Guide_Main extends CCView<Guide> {
             this.event.emit(GuideEventName.UIHide, {});
             this.ent.destroy();
             oops.log.logBusiness(`全部结束`, 'Guide');
-        }
-        else {
+        } else {
             this.checkInternal();
         }
     }
@@ -87,8 +86,7 @@ export class VC_Guide_Main extends CCView<Guide> {
             if (btn == null) {
                 this.event.emit(GuideEventName.UIHide, {});
                 oops.log.logBusiness(`暂无引导`, 'Guide');
-            }
-            else {
+            } else {
                 this.event.emit(GuideEventName.UIDraw, { node: btn });
                 this.event.emit(GuideEventName.UIShowPrompt, { node: btn });
             }
