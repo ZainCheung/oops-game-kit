@@ -3,6 +3,7 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
 import { PromptEventName } from '../../base/prompt/PromptEvent';
 import { GuideEventName } from '../guide/GuideEvent';
+import { debounce } from 'db://oops-framework/module/decorator/DebounceDecorator';
 
 const { ccclass } = _decorator;
 
@@ -21,6 +22,7 @@ export class DemoMain extends GameComponent {
     }
 
     /** 点击按钮触发全部 ECS 功能演示（控制台输出） */
+    @debounce.click()
     Button() {
         // runAllEcsDemos();
         oops.gui.toast('ABC');

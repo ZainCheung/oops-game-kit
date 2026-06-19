@@ -28,6 +28,9 @@
     "_active": true,
     "_components": [
       {
+        "__id__": 46
+      },
+      {
         "__id__": 48
       },
       {
@@ -35,13 +38,10 @@
       },
       {
         "__id__": 52
-      },
-      {
-        "__id__": 54
       }
     ],
     "_prefab": {
-      "__id__": 56
+      "__id__": 54
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -942,13 +942,10 @@
       },
       {
         "__id__": 43
-      },
-      {
-        "__id__": 45
       }
     ],
     "_prefab": {
-      "__id__": 47
+      "__id__": 45
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -1076,26 +1073,6 @@
     "fileId": "18IeqjlZFKbbywbnG186X4"
   },
   {
-    "__type__": "86cefAWukVE77lEwgfFdYeD",
-    "_name": "",
-    "_objFlags": 0,
-    "__editorExtras__": {},
-    "node": {
-      "__id__": 38
-    },
-    "_enabled": true,
-    "__prefab": {
-      "__id__": 44
-    },
-    "interval": 0,
-    "once": false,
-    "_id": ""
-  },
-  {
-    "__type__": "cc.CompPrefabInfo",
-    "fileId": "2dtztsThBCKIKaVzKpMCXD"
-  },
-  {
     "__type__": "cc.Widget",
     "_name": "",
     "_objFlags": 0,
@@ -1105,7 +1082,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 46
+      "__id__": 44
     },
     "_alignFlags": 36,
     "_target": null,
@@ -1140,8 +1117,6 @@
       "__id__": 0
     },
     "fileId": "7aPxNsn5pHyK2RH6J70zrF",
-    "instance": null,
-    "targetOverrides": null,
     "nestedPrefabInstanceRoots": null
   },
   {
@@ -1154,7 +1129,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 49
+      "__id__": 47
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -1182,7 +1157,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 51
+      "__id__": 49
     },
     "_alignFlags": 36,
     "_target": null,
@@ -1218,7 +1193,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 53
+      "__id__": 51
     },
     "_customMaterial": null,
     "_srcBlendFactor": 2,
@@ -1263,7 +1238,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 55
+      "__id__": 53
     },
     "guide": {
       "__id__": 21
