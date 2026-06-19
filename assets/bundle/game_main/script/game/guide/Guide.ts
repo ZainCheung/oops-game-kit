@@ -1,4 +1,3 @@
-import { Node } from 'cc';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
 import { B_Guide_Main } from './bll/B_Guide_Main';
@@ -20,23 +19,5 @@ export class Guide extends CCEntity {
     protected init() {
         this.addComponents<ecs.Comp>(M_Guide_Main);
         this.addBusinesss(B_Guide_Main);
-    }
-
-    /**
-     * 注册引导项
-     * @param step 引导步骤
-     * @param Node 引导节点
-     */
-    register(step: number, Node: Node) {
-        this.M_Guide_Main.guides.set(step, Node);
-    }
-
-    /**
-     * 检查指定引导是否触发
-     * @param step 引导步骤
-     */
-    check(step: number): void {
-        this.M_Guide_Main.step = step;
-        this.VC_Guide_Main.check();
     }
 }

@@ -77,7 +77,7 @@ export class VC_Guide_Main extends CCView<Guide> {
                     }
 
                     // 注册引导数据
-                    this.ent.register(gsd.step, node);
+                    this.ent.M_Guide_Main.guides.set(gsd.step, node);
 
                     // 注册引导节点上的步骤
                     gvi.step.set(gsd.step, gsd);

@@ -4,6 +4,7 @@ import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { InitializeEventName } from '../../initialize/InitializeEvent';
 import type { IInitializeEventDataMap } from '../../initialize/InitializeEventData';
 import type { Guide } from '../Guide';
+import { GuideEventName, type IGuideEventDataMap } from '../GuideEvent';
 import { GuidePromptData } from '../view/V_Guide_Item';
 import { VC_Guide_Main } from '../view/VC_Guide_Main';
 import { VC_Guide_Mask } from '../view/VC_Guide_Mask';
@@ -12,7 +13,11 @@ import { VC_Guide_Prompt } from '../view/VC_Guide_Prompt';
 /** 新手引导主业务逻辑 */
 export class B_Guide_Main extends CCBusiness<Guide> {
     protected init() {
-        this.event.setEvent(InitializeEventName.LoadComplete);
+        this.event.setEvent(
+            InitializeEventName.LoadComplete,
+            GuideEventName.Register,
+            GuideEventName.Check
+        );
     }
 
     /** 初始化资源加载完成，注册新手引导 */
@@ -26,6 +31,17 @@ export class B_Guide_Main extends CCBusiness<Guide> {
         this.ent.M_Guide_Main.last = 3;
 
         await this.load();
+    }
+
+    /** 注册引导项 */
+    private onGuideRegister<K extends GuideEventName.Register>(event: K, data: IGuideEventDataMap[K]): void {
+        this.ent.M_Guide_Main.guides.set(data.step, data.node);
+    }
+
+    /** 检查指定引导是否触发 */
+    private onGuideCheck<K extends GuideEventName.Check>(event: K, data: IGuideEventDataMap[K]): void {
+        this.ent.M_Guide_Main.step = data.step;
+        this.ent.VC_Guide_Main.check();
     }
 
     /** 加载引导资源 */
