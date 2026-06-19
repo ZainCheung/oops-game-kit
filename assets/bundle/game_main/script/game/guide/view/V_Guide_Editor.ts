@@ -12,8 +12,8 @@ const steps: GuideStepData[] = [];
  * 4. 点击保存按钮，将引导数据输出到控制台
  * 5. 事件触发类引导，通过事件参数触发，不会自动触发
  */
-@ccclass('GuideEditor')
-export class GuideEditor extends GameComponent {
+@ccclass('V_Guide_Editor')
+export class V_Guide_Editor extends GameComponent {
     protected start() {
         this.event.setEvent('onButtonClick');
     }

@@ -5,9 +5,9 @@ import { InitializeEventName } from '../../initialize/InitializeEvent';
 import type { IInitializeEventDataMap } from '../../initialize/InitializeEventData';
 import type { Guide } from '../Guide';
 import { GuidePromptData } from '../view/V_Guide_Item';
-import { GuideViewComp } from '../view/VC_Guide_Main';
-import { GuideViewMaskComp } from '../view/VC_Guide_Mask';
-import { GuideViewPromptComp } from '../view/VC_Guide_Prompt';
+import { VC_Guide_Main } from '../view/VC_Guide_Main';
+import { VC_Guide_Mask } from '../view/VC_Guide_Mask';
+import { VC_Guide_Prompt } from '../view/VC_Guide_Prompt';
 
 /** 新手引导主业务逻辑 */
 export class B_Guide_Main extends CCBusiness<Guide> {
@@ -21,9 +21,9 @@ export class B_Guide_Main extends CCBusiness<Guide> {
         data: IInitializeEventDataMap[K]
     ): Promise<void> {
         // 引导当前位置
-        this.ent.GuideModel.step = 1;
+        this.ent.M_Guide_Main.step = 1;
         // 引导最大步数（最后一步编号 + 1，用于判断引导是否全部结束）
-        this.ent.GuideModel.last = 3;
+        this.ent.M_Guide_Main.last = 3;
 
         await this.load();
     }
@@ -31,11 +31,11 @@ export class B_Guide_Main extends CCBusiness<Guide> {
     /** 加载引导资源 */
     private load(): Promise<void> {
         return new Promise((resolve, reject) => {
-            if (this.ent.GuideModel.step >= this.ent.GuideModel.last) {
+            if (this.ent.M_Guide_Main.step >= this.ent.M_Guide_Main.last) {
                 resolve();
                 return;
             }
-            var gv = oops.gui.guide.addComponent(GuideViewComp);
+            var gv = oops.gui.guide.addComponent(VC_Guide_Main);
             this.ent.add(gv);
 
             // 引导点击事件
@@ -52,14 +52,14 @@ export class B_Guide_Main extends CCBusiness<Guide> {
             gv.res.loadDir('gui/guide', (err: Error | null) => {
                 if (err) console.error('新手引导资源加载失败');
 
-                var gvm = oops.gui.guide.addComponent(GuideViewMaskComp);
+                var gvm = oops.gui.guide.addComponent(VC_Guide_Mask);
                 this.ent.add(gvm);
 
-                var gvp = oops.gui.guide.addComponent(GuideViewPromptComp);
+                var gvp = oops.gui.guide.addComponent(VC_Guide_Prompt);
                 this.ent.add(gvp);
                 
                 // 新手引导配置
-                this.ent.GuideModel.prompts = oops.res.get('gui/guide/config', JsonAsset)!.json as Record<
+                this.ent.M_Guide_Main.prompts = oops.res.get('gui/guide/config', JsonAsset)!.json as Record<
                     string,
                     GuidePromptData[]
                 >;

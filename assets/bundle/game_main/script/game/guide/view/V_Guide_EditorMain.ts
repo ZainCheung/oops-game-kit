@@ -7,8 +7,8 @@ const { ccclass, property } = _decorator;
 /** 游戏步骤 */
 const steps: GuideStepData[] = [];
 
-@ccclass('GuideEditorMain')
-export class GuideEditorMain extends GameComponent {
+@ccclass('V_Guide_EditorMain')
+export class V_Guide_EditorMain extends GameComponent {
     @property({ type: Toggle })
     guide: Toggle = null!;
 

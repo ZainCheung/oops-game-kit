@@ -93,8 +93,8 @@ export interface GuideStepData {
 }
 
 /** 新手引导数据（绑定到引导节点上） */
-@ccclass('GuideViewItem')
-export class GuideViewItem extends Component {
+@ccclass('V_Guide_Item')
+export class V_Guide_Item extends Component {
     /** 引导步骤 */
     step: Map<number, GuideStepData> = new Map();
 }

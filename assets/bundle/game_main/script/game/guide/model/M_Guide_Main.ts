@@ -1,10 +1,10 @@
 import { Node } from "cc";
 import { ecs } from "db://oops-framework/libs/ecs/ECS";
-import { GuidePromptData, GuideViewItem } from "../view/V_Guide_Item";
+import { GuidePromptData, V_Guide_Item } from "../view/V_Guide_Item";
 
 /** 引导数据 */
-@ecs.register('GuideModel')
-export class GuideModelComp extends ecs.Comp {
+@ecs.register('M_Guide_Main')
+export class M_Guide_Main extends ecs.Comp {
     /** 当前引导步骤 */
     step: number = 1;
     /** 最后一步索引 */
@@ -23,7 +23,7 @@ export class GuideModelComp extends ecs.Comp {
 
         this.guides.forEach(node => {
             if (node.isValid) {
-                const gvi = node.getComponent(GuideViewItem);
+                const gvi = node.getComponent(V_Guide_Item);
                 if (gvi) gvi.destroy();
             }
         });

@@ -2,8 +2,8 @@ import { Node } from 'cc';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
 import { B_Guide_Main } from './bll/B_Guide_Main';
-import { GuideModelComp } from './model/M_Guide_Main';
-import type { GuideViewComp } from './view/VC_Guide_Main';
+import { M_Guide_Main } from './model/M_Guide_Main';
+import type { VC_Guide_Main } from './view/VC_Guide_Main';
 
 /**
  * 新手引导
@@ -13,12 +13,12 @@ import type { GuideViewComp } from './view/VC_Guide_Main';
  */
 @ecs.register('Guide')
 export class Guide extends CCEntity {
-    GuideModel!: GuideModelComp;
-    GuideView!: GuideViewComp;
+    M_Guide_Main!: M_Guide_Main;
+    VC_Guide_Main!: VC_Guide_Main;
     B_Guide_Main!: B_Guide_Main;
 
     protected init() {
-        this.addComponents<ecs.Comp>(GuideModelComp);
+        this.addComponents<ecs.Comp>(M_Guide_Main);
         this.addBusinesss(B_Guide_Main);
     }
 
@@ -28,7 +28,7 @@ export class Guide extends CCEntity {
      * @param Node 引导节点
      */
     register(step: number, Node: Node) {
-        this.GuideModel.guides.set(step, Node);
+        this.M_Guide_Main.guides.set(step, Node);
     }
 
     /**
@@ -36,7 +36,7 @@ export class Guide extends CCEntity {
      * @param step 引导步骤
      */
     check(step: number): void {
-        this.GuideModel.step = step;
-        this.GuideView.check();
+        this.M_Guide_Main.step = step;
+        this.VC_Guide_Main.check();
     }
 }

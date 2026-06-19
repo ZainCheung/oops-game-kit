@@ -2,50 +2,50 @@ import { EventTouch, Node, _decorator, find, isValid } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
-import { GuideEditor } from '../GuideConst';
+import { GuideConst } from '../GuideConst';
 import type { Guide } from '../Guide';
 import { GuideEventName, type IGuideAutoBindData } from '../GuideEvent';
-import { GuideModelComp } from '../model/M_Guide_Main';
-import { GuideViewMaskComp } from './VC_Guide_Mask';
-import { GuideViewPromptComp } from './VC_Guide_Prompt';
-import { GuideDirection, GuideStepData, GuideStepDataBox, GuideViewItem } from './V_Guide_Item';
+import { M_Guide_Main } from '../model/M_Guide_Main';
+import { VC_Guide_Mask } from './VC_Guide_Mask';
+import { VC_Guide_Prompt } from './VC_Guide_Prompt';
+import { GuideDirection, GuideStepData, GuideStepDataBox, V_Guide_Item } from './V_Guide_Item';
 
 const { ccclass, property } = _decorator;
 
 /** 新手引导界面管理 */
-@ccclass('GuideViewComp')
-@ecs.register('GuideView', false)
-export class GuideViewComp extends CCView<Guide> {
+@ccclass('VC_Guide_Main')
+@ecs.register('VC_Guide_Main', false)
+export class VC_Guide_Main extends CCView<Guide> {
     /** 保存引导进度回调 */
     onSave: Function = null!;
     /** 点击引导回调 */
     onClick: Function = null!;
 
     /** 引导遮罩 */
-    private mask: GuideViewMaskComp = null!;
+    private mask: VC_Guide_Mask = null!;
     /** 引导提示动画 */
-    private prompt: GuideViewPromptComp = null!;
+    private prompt: VC_Guide_Prompt = null!;
 
     protected onLoad(): void {
-        if (!GuideEditor) this.event.setEvent(GuideEventName.AutoBind);
+        if (!GuideConst) this.event.setEvent(GuideEventName.AutoBind);
     }
 
     private onGuideAutoBind<K extends GuideEventName.AutoBind>(event: K, data: IGuideAutoBindData) {
         const scene = data.ui;
-        if (this.ent.GuideModel.step >= this.ent.GuideModel.last) return;
+        if (this.ent.M_Guide_Main.step >= this.ent.M_Guide_Main.last) return;
 
         oops.gui.guide.active = true;
 
-        this.prompt = this.getComponent(GuideViewPromptComp)!;
-        this.mask = this.getComponent(GuideViewMaskComp)!;
-        let guideData = this.ent.GuideModel.prompts[scene.name];
+        this.prompt = this.getComponent(VC_Guide_Prompt)!;
+        this.mask = this.getComponent(VC_Guide_Mask)!;
+        let guideData = this.ent.M_Guide_Main.prompts[scene.name];
         if (!guideData) return;
         guideData.forEach(d => {
-            if (d.step >= this.ent.GuideModel.step) {
+            if (d.step >= this.ent.M_Guide_Main.step) {
                 let node = find(d.node, scene);
                 if (node) {
-                    let gvi = node.getComponent(GuideViewItem);
-                    if (gvi == null) gvi = node.addComponent(GuideViewItem);
+                    let gvi = node.getComponent(V_Guide_Item);
+                    if (gvi == null) gvi = node.addComponent(V_Guide_Item);
 
                     // 设置引导配置数据
                     let gsd: GuideStepData = {
@@ -83,8 +83,8 @@ export class GuideViewComp extends CCView<Guide> {
                     gvi.step.set(gsd.step, gsd);
 
                     // 验证当前是否触发这个引导
-                    if (this.ent.GuideModel.step == gsd.step) {
-                        this.ent.GuideView.check();
+                    if (this.ent.M_Guide_Main.step == gsd.step) {
+                        this.ent.VC_Guide_Main.check();
                     }
                 } else {
                     console.error(`新手引导${scene.name}场景${d.node}节点不存在`);
@@ -95,8 +95,8 @@ export class GuideViewComp extends CCView<Guide> {
 
     /** 下一个引导 */
     next(btn: Node) {
-        var gvi = btn.getComponent(GuideViewItem)!;
-        var gm = this.ent.get(GuideModelComp)!;
+        var gvi = btn.getComponent(V_Guide_Item)!;
+        var gm = this.ent.get(M_Guide_Main)!;
         var step = gvi.step.get(gm.step)!;
         if (step) {
             gvi.step.delete(gm.step);
@@ -104,13 +104,13 @@ export class GuideViewComp extends CCView<Guide> {
         }
 
         // 引导进行到下一步
-        if (step.next) this.ent.GuideModel.step++;
+        if (step.next) this.ent.M_Guide_Main.step++;
 
         // 当前引导进度回调
-        if (step.save) this.onSave && this.onSave(step.save ?? this.ent.GuideModel.step);
+        if (step.save) this.onSave && this.onSave(step.save ?? this.ent.M_Guide_Main.step);
         // oops.log.logView(`验证下一个引擎【${this.model.step}】`);
 
-        if (this.ent.GuideModel.step >= this.ent.GuideModel.last) {
+        if (this.ent.M_Guide_Main.step >= this.ent.M_Guide_Main.last) {
             this.mask.hide();
             this.prompt.hide();
             this.ent.destroy();
@@ -124,7 +124,7 @@ export class GuideViewComp extends CCView<Guide> {
     check() {
         // 延时处理是为了避免与cc.Widget组件冲突，引导遮罩出现后，组件位置变了
         this.scheduleOnce(() => {
-            let btn = this.ent.GuideModel.current;
+            let btn = this.ent.M_Guide_Main.current;
             if (btn == null || !isValid(btn)) {
                 this.mask.hide();
                 this.prompt.hide();
@@ -148,7 +148,7 @@ export class GuideViewComp extends CCView<Guide> {
     private _lastBtnPos: { x: number; y: number } | null = null;
 
     private onTransformChanged() {
-        let btn = this.ent.GuideModel.current;
+        let btn = this.ent.M_Guide_Main.current;
         if (btn) {
             const pos = btn.worldPosition;
             if (this._lastBtnPos) {
@@ -167,16 +167,16 @@ export class GuideViewComp extends CCView<Guide> {
         btn.off(Node.EventType.TOUCH_END, this.onTouchEnd, this, true);
         btn.off(Node.EventType.TRANSFORM_CHANGED, this.onTransformChanged, this);
 
-        var gvi = btn.getComponent(GuideViewItem)!;
+        var gvi = btn.getComponent(V_Guide_Item)!;
         if (gvi) {
-            this.onClick && this.onClick(this.ent.GuideModel.step);
+            this.onClick && this.onClick(this.ent.M_Guide_Main.step);
             this.next(btn);
         }
     }
 
     /** 刷新引导位置 */
     refresh() {
-        let btn = this.ent.GuideModel.current;
+        let btn = this.ent.M_Guide_Main.current;
         if (btn) {
             this.mask.draw(btn);
             this.prompt.show(btn);

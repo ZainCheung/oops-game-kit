@@ -3,14 +3,14 @@ import { ViewUtil } from 'db://oops-framework/core/utils/ViewUtil';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Guide } from '../Guide';
-import { GuideStepData, GuideViewItem } from './V_Guide_Item';
+import { GuideStepData, V_Guide_Item } from './V_Guide_Item';
 
 const { ccclass, property } = _decorator;
 
 /** 新后引导遮罩逻辑 */
-@ccclass('GuideViewMaskComp')
-@ecs.register('GuideViewMask', false)
-export class GuideViewMaskComp extends CCView<Guide> {
+@ccclass('VC_Guide_Mask')
+@ecs.register('VC_Guide_Mask', false)
+export class VC_Guide_Mask extends CCView<Guide> {
     private bg: Node = null!;
     private mask: Node = null!;
     private mask_widget: Widget = null!;
@@ -59,10 +59,10 @@ export class GuideViewMaskComp extends CCView<Guide> {
             node.name == 'box' && node.destroy();
         }
         // 绘制引导可点击区域
-        var gvi = btn.getComponent(GuideViewItem)!;
+        var gvi = btn.getComponent(V_Guide_Item)!;
 
         // 引导步骤
-        var step = gvi.step.get(this.ent.GuideModel.step)!;
+        var step = gvi.step.get(this.ent.M_Guide_Main.step)!;
 
         // 主提示框架
         var box = this.createBox(btn, step.offsetW!, step.offsetH!);
@@ -126,7 +126,7 @@ export class GuideViewMaskComp extends CCView<Guide> {
 
     /** 事件模拟触发目标按钮触摸事件 */
     private onTouchEnd(event: EventTouch) {
-        var gm = this.ent.GuideModel;
+        var gm = this.ent.M_Guide_Main;
         var btn = gm.current;
         if (btn) {
             var touchPos = ViewUtil.calculateScreenPosToSpacePos(event, this.node);
@@ -135,7 +135,7 @@ export class GuideViewMaskComp extends CCView<Guide> {
 
             // 判断触摸点是否在按钮上
             var rect = btn.uiTransform.getBoundingBox();
-            var gvi = btn.getComponent(GuideViewItem)!;
+            var gvi = btn.getComponent(V_Guide_Item)!;
             var step = gvi.step.get(gm.step)!;
             rect.x -= step.offsetW! / 2;
             rect.y -= step.offsetH! / 2;
@@ -151,7 +151,7 @@ export class GuideViewMaskComp extends CCView<Guide> {
             else {
                 event.preventSwallow = false;
                 if (step.weak) {
-                    const gv = this.ent.GuideView;
+                    const gv = this.ent.VC_Guide_Main;
                     gv.next(btn);
                 }
             }

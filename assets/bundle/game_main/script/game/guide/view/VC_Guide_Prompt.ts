@@ -3,15 +3,15 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Guide } from '../Guide';
-import { GuideDirection, GuideViewItem } from './V_Guide_Item';
+import { GuideDirection, V_Guide_Item } from './V_Guide_Item';
 import { ViewUtil } from 'db://oops-framework/core/utils/ViewUtil';
 
 const { ccclass, property } = _decorator;
 
 /** 新手引导提示逻辑 */
-@ccclass('GuideViewPromptComp')
-@ecs.register('GuideViewPrompt', false)
-export class GuideViewPromptComp extends CCView<Guide> {
+@ccclass('VC_Guide_Prompt')
+@ecs.register('VC_Guide_Prompt', false)
+export class VC_Guide_Prompt extends CCView<Guide> {
     private prompt: Node = null!;
     private content: Label = null!;
 
@@ -24,8 +24,8 @@ export class GuideViewPromptComp extends CCView<Guide> {
 
     /** 显示引导提示动画 */
     show(btn: Node) {
-        var gvi = btn.getComponent(GuideViewItem)!;
-        var step = gvi.step.get(this.ent.GuideModel.step)!;
+        var gvi = btn.getComponent(V_Guide_Item)!;
+        var step = gvi.step.get(this.ent.M_Guide_Main.step)!;
         if (step.tips) {
             const direction = step.tipsDirection ?? GuideDirection.Auto;
 
