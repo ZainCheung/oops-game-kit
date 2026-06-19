@@ -1,11 +1,9 @@
 import { _decorator } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
+import { PromptEventName } from '../../base/prompt/PromptEvent';
 import { gsm } from '../common/GameSingletonModule';
 import { Guide } from '../guide/Guide';
-import { GuideViewItem } from '../guide/view/GuideViewItem';
-import { runAllEcsDemos } from './ecs/DemoEcsMain';
-import { PromptEventName } from '../../base/prompt/PromptEvent';
 
 const { ccclass } = _decorator;
 
@@ -54,21 +52,10 @@ export class DemoMain extends GameComponent {
         this.guide = gsm.account.getChildSingleton(Guide);
         if (!this.guide) return;
 
-        // const buttonNode = this.node.getChildByName('Button');
-        // const button001Node = this.node.getChildByName('Button-001');
+        await this.guide.GuideView.loadRes();
 
-        // if (buttonNode) {
-        //     let gvi = buttonNode.getComponent(GuideViewItem) || buttonNode.addComponent(GuideViewItem);
-        //     gvi.step.set(1, { scene: this.node, step: 1, tips: '点击Button按钮' });
-        //     this.guide.register(1, buttonNode);
-        // }
-        // if (button001Node) {
-        //     let gvi = button001Node.getComponent(GuideViewItem) || button001Node.addComponent(GuideViewItem);
-        //     gvi.step.set(2, { scene: this.node, step: 2, tips: '点击Button-001按钮' });
-        //     this.guide.register(2, button001Node);
-        // }
-
-        this.guide.GuideModel.last = 3;
+        this.guide.GuideModel.last = 2;
+        this.guide.GuideView.bindScene(this.node);
         this.guide.check(1);
     }
 

@@ -3,7 +3,6 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import { Guide } from '../Guide';
-import { GuideEvent } from '../GuideEvent';
 import { GuideStepData, GuideStepDataBox, GuidePromptData, GuideViewItem } from './GuideViewItem';
 import { GuideViewMaskComp } from './GuideViewMaskComp';
 import { GuideViewPromptComp } from './GuideViewPromptComp';
@@ -24,38 +23,45 @@ export class GuideViewComp extends CCView<Guide> {
     /** 引导提示动画 */
     private prompt: GuideViewPromptComp = null!;
 
-    protected start(): void {
+    async loadRes(): Promise<void> {
         if (this.ent.GuideModel.step >= this.ent.GuideModel.last) {
             return;
         }
 
-        this.res.loadDir('gui/guide', (err: Error | null) => {
-            if (err) console.error('新手引导资源加载失败');
+        return new Promise((resolve, reject) => {
+            oops.res.loadDir('gui/guide', (err: Error | null) => {
+                if (err) {
+                    console.error('新手引导资源加载失败');
+                    reject(err);
+                    return;
+                }
 
-            // 新手引导配置
-            this.ent.GuideModel.prompts = oops.res.get('gui/guide/config', JsonAsset)!.json as Record<
-                string,
-                GuidePromptData[]
-            >;
+                // 新手引导配置
+                this.ent.GuideModel.prompts = oops.res.get('gui/guide/config', JsonAsset)!.json as Record<
+                    string,
+                    GuidePromptData[]
+                >;
 
-            // 注册显示对象到 ECS 实体中
-            this.mask = oops.gui.guide.addComponent(GuideViewMaskComp);
-            this.ent.add(this.mask);
+                // 注册显示对象到 ECS 实体中
+                this.mask = oops.gui.guide.addComponent(GuideViewMaskComp);
+                this.ent.add(this.mask);
 
-            this.prompt = oops.gui.guide.addComponent(GuideViewPromptComp);
-            this.ent.add(this.prompt);
+                this.prompt = oops.gui.guide.addComponent(GuideViewPromptComp);
+                this.ent.add(this.prompt);
 
-            // 引导点击事件
-            this.onClick = (step: number) => {};
+                // 引导点击事件
+                this.onClick = (step: number) => {};
 
-            // 每触发下一步存盘事件
-            this.onSave = (step: number) => {};
+                // 每触发下一步存盘事件
+                this.onSave = (step: number) => {};
 
-            if (!Guide.Editor) this.event.setEvent(GuideEvent.GuideAutoBind);
+                resolve();
+            });
         });
     }
 
-    private onGuideAutoBind(event: string, scene: Node) {
+    /** 绑定场景中的引导节点（从配置中读取并注册） */
+    bindScene(scene: Node) {
         if (this.ent.GuideModel.step >= this.ent.GuideModel.last) return;
 
         let data: GuidePromptData[] = this.ent.GuideModel.prompts[scene.name];

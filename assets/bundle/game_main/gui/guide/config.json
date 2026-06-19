@@ -5,14 +5,16 @@
             "node": "Button",
             "offsetW": 20,
             "offsetH": 20,
+            "tips": "点击Button按钮",
             "handAPX": 90,
             "handAPY": -65
         },
         {
             "step": 2,
-            "node": "Button-001",
+            "node": "Button001",
             "offsetW": 20,
             "offsetH": 20,
+            "tips": "点击Button-001按钮",
             "handAPX": 90,
             "handAPY": -65
         }

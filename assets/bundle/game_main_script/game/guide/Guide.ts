@@ -42,9 +42,4 @@ export class Guide extends CCEntity {
         this.GuideModel.step = step;
         this.GuideView.check();
     }
-
-    destroy(): void {
-        oops.res.releaseDir('gui/guide');
-        super.destroy();
-    }
 }
