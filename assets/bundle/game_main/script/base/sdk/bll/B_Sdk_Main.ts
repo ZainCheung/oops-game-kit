@@ -2,8 +2,8 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { Sdk } from '../Sdk';
 import { SdkEventName } from '../SdkEvent';
-import { SdkManager } from '../SdkManager';
-import { ISdk } from '../ISdk';
+import { SdkManager } from './SdkManager';
+import { ISdk } from './ISdk';
 import type { INetworkStatusChangeEvent } from '../model/data/SdkData';
 
 export class B_Sdk_Main extends CCBusiness<Sdk> {

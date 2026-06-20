@@ -1,6 +1,6 @@
-/// <reference path="../../../libs/wechat-minigame-typings/index.d.ts" />
+/// <reference path="../../../../libs/wechat-minigame-typings/index.d.ts" />
 
-import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../model/enum/EM_Sdk';
+import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../../model/enum/EM_Sdk';
 import type {
     IAdError,
     IBannerAd,
@@ -34,7 +34,7 @@ import type {
     IUserCloudStorageResult,
     IUserInfoButton,
     IUserInfoResult,
-} from '../model/data/SdkData';
+} from '../../model/data/SdkData';
 import { ISdk } from '../ISdk';
 import { DefaultSdk } from './DefaultSdk';
 

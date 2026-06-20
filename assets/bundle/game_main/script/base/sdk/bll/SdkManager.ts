@@ -1,5 +1,5 @@
 import { sys } from 'cc';
-import { SdkPlatform } from './model/enum/EM_Sdk';
+import { SdkPlatform } from '../model/enum/EM_Sdk';
 import { ISdk } from './ISdk';
 import { DefaultSdk } from './platform/DefaultSdk';
 import { WeChatMiniGameSdk } from './platform/WeChatMiniGameSdk';

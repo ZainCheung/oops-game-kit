@@ -1,4 +1,4 @@
-import { SdkPlatform, SdkVibrateType } from '../model/enum/EM_Sdk';
+import { SdkPlatform, SdkVibrateType } from '../../model/enum/EM_Sdk';
 import { ISdk } from '../ISdk';
 import type {
     IChannelsOption,
@@ -32,7 +32,7 @@ import type {
     IUserInfoResult,
     IBannerAd,
     IBannerAdOption,
-} from '../model/data/SdkData';
+} from '../../model/data/SdkData';
 
 /**
  * 默认 SDK 实现（空实现）
