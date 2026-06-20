@@ -1,7 +1,6 @@
 import type { Color } from 'cc';
 import { _decorator, color, tween } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
-import { JsonUtil } from 'db://oops-framework/core/utils/JsonUtil';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import { ConfigCommonStorage } from '../../common/config/ConfigGameStorage';
@@ -66,8 +65,6 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     private async loadRes() {
         // 并行加载必备资源
         const promises: Promise<void>[] = [];
-
-        promises.push(this.loadTable());
         promises.push(this.loadLanguage());
         await Promise.all(promises);
 
@@ -96,11 +93,6 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     /** 窗口打开失败事件 */
     private onOpenFailure() {
         oops.gui.toast('网络异常请稍后重试');
-    }
-
-    /** 加载 Zip 配置表 */
-    private loadTable(): Promise<void> {
-        return JsonUtil.loadDir();
     }
 
     /** 加载化语言包（可选） */
