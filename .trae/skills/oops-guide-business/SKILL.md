@@ -103,9 +103,28 @@ export class B_[Module]_[Name] extends CCBusiness<[Module]> {
 | init() | **必须**调用 `setWatch()` | **必须**调用 `this.event.setEvent(...)` |
 | 事件注册 | `setWatch()` 中统一 `watch()`，第三个参数必须是 `this` | `this.event.setEvent()` 传入所有事件枚举 |
 | 事件处理签名 | 完全匹配（见下方） | 完全匹配（见下方） |
-| 触发事件 | 使用 `this.emit()` | 使用 `this.emit()` |
+| 触发事件 | 使用 `this.event.emit()` | 使用 `this.event.emit()` |
 | 日志 | `oops.log.logBusiness(msg, module)` | `oops.log.logBusiness(msg, module)` |
 | 导入风格 | `I[Module]EventDataMap`（值导入） | `type I[Module]EventDataMap`（type 导入） |
+
+## 事件触发 API 说明
+
+`CCBusiness` 提供两种事件触发方式，**必须使用新版 API**：
+
+| API | 状态 | 说明 |
+|-----|------|------|
+| `this.event.emit()` | ✅ 推荐使用 | 新版 API，通过事件模块触发 |
+| `this.emit()` | ❌ 已废弃 | 旧版兼容 API（`@deprecated`），内部仍调用 `this.event.emit()` |
+
+> **⚠️ 原因**：`this.emit()` 是旧版兼容方法，已标记 `@deprecated`，未来版本可能移除。所有事件触发统一使用 `this.event.emit()`，与 `this.event.watch()`、`this.event.setEvent()` 等保持一致。
+
+```typescript
+// ✅ 正确 - 使用新版 API
+this.event.emit(SdkEventName.Show, res);
+
+// ❌ 错误 - 使用已废弃的旧版 API
+this.emit(SdkEventName.Show, res);
+```
 
 ## 事件处理方法签名（绝对禁止变形）
 
@@ -144,6 +163,9 @@ this.setEvent(RedDotEventName.Add);  // 应为 this.event.setEvent()
 
 // ❌ 错误 - setEvent 模式导入未使用 type
 import { IRedDotEventDataMap } from '../RedDotEvent';  // 应为 type IRedDotEventDataMap
+
+// ❌ 错误 - 使用已废弃的 this.emit() 而非 this.event.emit()
+this.emit(BackpackEventName.UIUpdate, data);  // 应为 this.event.emit()
 ```
 
 ## 关联规范

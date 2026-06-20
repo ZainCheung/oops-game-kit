@@ -15,3 +15,12 @@ export enum SdkEventName {
     /** 登录失败 */
     LoginFail = 'onSdkLoginFail',
 }
+
+export {
+    type ISdkInitCompleteData,
+    type ISdkShowData,
+    type ISdkHideData,
+    type ISdkErrorData,
+    type ISdkNetworkChangeData,
+    type ISdkEventDataMap,
+} from './SdkEventData';
