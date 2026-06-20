@@ -16,16 +16,14 @@ const LoginProcessConfig: BTNodeJson = {
         { type: 'LoginSdk' },
         { type: 'RequestGameTable' },
         // { type: 'ConnectNet' },
-        { type: 'RequestGameData' }
-    ]
+        { type: 'RequestGameData' },
+    ],
 };
 
 /** 重连流程配置 */
 const ReconnectProcessConfig: BTNodeJson = {
     type: 'Sequence',
-    children: [
-        { type: 'RequestGameData' }
-    ]
+    children: [{ type: 'RequestGameData' }],
 };
 
 /** 账号登录流程逻辑 */

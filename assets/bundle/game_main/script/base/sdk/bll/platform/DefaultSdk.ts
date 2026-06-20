@@ -102,7 +102,8 @@ export class DefaultSdk implements ISdk {
     //#region ========== 登录与用户 ==========
 
     login(): Promise<ILoginResult> {
-        return this.reject<ILoginResult>('login');
+        // 默认平台用于测试环境（H5/编辑器），返回测试登录凭证
+        return Promise.resolve({ code: 'test_login_code' });
     }
 
     checkSession(): Promise<boolean> {
