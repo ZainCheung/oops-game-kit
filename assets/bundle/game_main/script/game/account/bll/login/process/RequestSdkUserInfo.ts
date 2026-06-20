@@ -1,10 +1,11 @@
-import { Node } from 'cc';
+import { Node, UITransform, find, view } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { gsm } from '../../../../common/GameSingletonModule';
 import type { ISdk } from '../../../../../base/sdk/bll/ISdk';
 import type { IUserInfo, IUserInfoResult } from '../../../../../base/sdk/model/IM_Sdk_Data';
 import { LoginProcessBase } from '../LoginProcessBase';
 import { LoginProcessType } from '../LoginEnum';
+import { settings } from 'cc';
 
 /**
  * 获取微信用户信息还有问题等待调试
@@ -37,8 +38,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
             console.timeEnd(label);
             this.success();
-        }
-        catch (err) {
+        } catch (err) {
             console.timeEnd(label);
             console.error('【登录流程】获取用户头像失败', err);
             this.fail();
@@ -55,30 +55,51 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         // 微信平台：先完成用户隐私授权，否则 createUserInfoButton 会返回 errno 1026
         // （前提：已在 mp.weixin.qq.com 后台《用户隐私保护指引》声明「昵称、头像」信息类型）
         try {
-            sdk.onNeedPrivacyAuthorization((res) => {
+            sdk.onNeedPrivacyAuthorization(res => {
                 // 用户需要同意隐私协议：这里直接同意（基础库要求用户有点击行为，
                 // 实际项目建议弹出自定义隐私弹窗，用户点击同意后再 resolve 'agree'）
                 oops.log.trace(`【登录流程】需要隐私授权: ${res.contractName}`);
-                (sdk as any).requirePrivacyAuthorize?.({}).catch(() => { });
+                (sdk as any).requirePrivacyAuthorize?.({}).catch(() => {});
             });
             await sdk.requirePrivacyAuthorize({ demandList: ['userInfo'] });
             oops.log.trace('【登录流程】用户隐私授权已通过');
-        }
-        catch {
+        } catch {
             // 拒绝或后台未配置：不阻断流程，后续 createUserInfoButton 会回退默认数据
             oops.log.trace('【登录流程】隐私授权未通过，使用默认用户信息');
         }
 
-        return new Promise<void>((resolve) => {
-            // 微信平台：创建全屏透明原生按钮
+        return new Promise<void>(resolve => {
+            // 微信平台：根据界面上 btnRequestSdkUserInfo 按钮的矩形，创建同位置的透明原生按钮
+            const btnNode = find('btnRequestSdkUserInfo', uiNode);
+            if (!btnNode) {
+                oops.log.trace('【登录流程】未找到 btnRequestSdkUserInfo 节点，使用默认测试用户信息');
+                gsm.base.sdk.M_Sdk_Main.userInfo = {
+                    nickName: 'Player',
+                    avatarUrl: '',
+                    gender: 0,
+                };
+                gsm.account.B_Account_ViewUI.removeLogin();
+                resolve();
+                return;
+            }
+
+            const uit = btnNode.getComponent(UITransform)!;
+            const worldPos = btnNode.worldPosition;
+            const style = this.wxPositionConversion(
+                uit.contentSize.width,
+                uit.contentSize.height,
+                worldPos.x,
+                worldPos.y
+            );
+
             const btn = sdk.createUserInfoButton({
                 type: 'text',
                 text: '',
                 style: {
-                    left: 0,
-                    top: 0,
-                    width: 9999,
-                    height: 9999,
+                    left: style.left,
+                    top: style.top,
+                    width: style.width,
+                    height: style.height,
                 },
             });
 
@@ -98,10 +119,11 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                             avatarUrl: '',
                             gender: 0,
                         };
-                    }
-                    else {
+                    } else {
                         gsm.base.sdk.M_Sdk_Main.userInfo = res.userInfo;
-                        oops.log.trace(`【登录流程】获取用户信息成功，昵称: ${res.userInfo.nickName}，头像: ${res.userInfo.avatarUrl}`);
+                        oops.log.trace(
+                            `【登录流程】获取用户信息成功，昵称: ${res.userInfo.nickName}，头像: ${res.userInfo.avatarUrl}`
+                        );
                     }
 
                     btn.destroy();
@@ -128,5 +150,27 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             };
             uiNode.on(Node.EventType.TOUCH_END, handler, this);
         });
+    }
+
+    /**
+     * 微信坐标转换（基于左上角（0，0）计算，并且Y向下为正数）
+     * @param width 宽度
+     * @param height 高度
+     * @param xOffset x偏移量(填按钮锚点为中心点的x坐标)
+     * @param yOffset y偏移量(填按钮锚点为中心点的y坐标)
+     * @returns
+     */
+    private wxPositionConversion(
+        width: number = 100,
+        height: number = 100,
+        xOffset: number = 0,
+        yOffset: number = 0
+    ): any {
+        const designSize = { width: 720, height: 1280 };
+        width = width * (screen.width / designSize.width);
+        height = height * (screen.height / designSize.height);
+        const left = screen.width / 2 - width / 2 + xOffset * (screen.width / designSize.width);
+        const top = screen.height / 2 - height / 2 + -yOffset * (screen.height / designSize.height);
+        return { left: left, top: top, width: width, height: height };
     }
 }
