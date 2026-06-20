@@ -1,9 +1,6 @@
 import type { INetworkStatusChangeEvent } from './model/IM_Sdk_Data';
 import { SdkEventName } from './SdkEvent';
 
-/** SDK 初始化完成事件数据 */
-export type ISdkInitCompleteData = void;
-
 /** 切到前台事件数据 */
 export type ISdkShowData = any;
 
@@ -18,7 +15,6 @@ export type ISdkNetworkChangeData = INetworkStatusChangeEvent;
 
 /** SDK 模块事件数据映射 */
 export interface ISdkEventDataMap {
-    [SdkEventName.InitComplete]: ISdkInitCompleteData;
     [SdkEventName.Show]: ISdkShowData;
     [SdkEventName.Hide]: ISdkHideData;
     [SdkEventName.Error]: ISdkErrorData;

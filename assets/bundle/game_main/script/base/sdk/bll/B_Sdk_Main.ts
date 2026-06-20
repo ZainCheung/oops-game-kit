@@ -1,10 +1,9 @@
-import { oops } from 'db://oops-framework/core/Oops';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import type { INetworkStatusChangeEvent } from '../model/IM_Sdk_Data';
 import { Sdk } from '../Sdk';
 import { SdkEventName } from '../SdkEvent';
-import { SdkManager } from './SdkManager';
 import { ISdk } from './ISdk';
-import type { INetworkStatusChangeEvent } from '../model/IM_Sdk_Data';
+import { SdkManager } from './SdkManager';
 
 export class B_Sdk_Main extends CCBusiness<Sdk> {
     /** 缓存的原生事件回调，便于 destroy 时解绑 */
@@ -19,13 +18,7 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
 
         const sdk = SdkManager.getSdk();
 
-        // 2. 更新 Model 数据
-        this.ent.M_Sdk_Main.platform = sdk.getPlatform();
-        this.ent.M_Sdk_Main.isReady = sdk.isReady();
-
-        oops.log.logBusiness(`[SDK] 平台 = ${sdk.getPlatform()}, 准备就绪 = ${sdk.isReady()}`);
-
-        // 3. 转发原生事件到全局事件系统
+        // 2. 转发原生事件到全局事件系统
         this.onShowCb = (res: any) => this.event.emit(SdkEventName.Show, res);
         sdk.onShow(this.onShowCb);
 
@@ -37,9 +30,6 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
 
         this.onNetworkChangeCb = (res: INetworkStatusChangeEvent) => this.event.emit(SdkEventName.NetworkChange, res);
         sdk.onNetworkStatusChange(this.onNetworkChangeCb);
-
-        // 4. 通知初始化完成
-        this.event.emit(SdkEventName.InitComplete);
     }
 
     /** 获取当前平台的 SDK 实现接口 */

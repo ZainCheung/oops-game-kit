@@ -1,7 +1,5 @@
 /** SDK 模块事件枚举 */
 export enum SdkEventName {
-    /** SDK 初始化完成 */
-    InitComplete = 'onSdkInitComplete',
     /** 切到前台 */
     Show = 'onSdkShow',
     /** 切到后台 */
@@ -17,7 +15,6 @@ export enum SdkEventName {
 }
 
 export {
-    type ISdkInitCompleteData,
     type ISdkShowData,
     type ISdkHideData,
     type ISdkErrorData,

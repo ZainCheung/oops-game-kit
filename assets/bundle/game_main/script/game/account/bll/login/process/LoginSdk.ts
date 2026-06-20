@@ -23,11 +23,20 @@ export class LoginSdk extends LoginProcessBase {
         console.time(label);
         try {
             const sdk = gsm.base.sdk.B_Sdk_Main;
+
+            // SDK 未就绪，提示并中止登录流程
+            if (!sdk.getSdk().isReady()) {
+                console.timeEnd(label);
+                oops.gui.toast('SDK 未就绪，请稍后重试');
+                this.fail();
+                return;
+            }
+
             const platform = sdk.getPlatform();
             const result = await sdk.login();
 
-            // 保存 SDK 登录凭证到账号基础数据
-            gsm.account.M_Account_Model.base.token = result.code;
+            // 保存 SDK 登录凭证到 SDK 模块
+            gsm.base.sdk.M_Sdk_Main.token = result.code;
 
             oops.log.trace(`【登录流程】平台 SDK 登录成功，平台: ${platform}，code: ${result.code}`);
             oops.message.dispatchEvent(AccountEventName.LoginSuccessSdk, {
