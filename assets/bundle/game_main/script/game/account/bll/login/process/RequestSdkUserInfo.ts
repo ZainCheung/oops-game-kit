@@ -7,6 +7,7 @@ import { LoginProcessBase } from '../LoginProcessBase';
 import { LoginProcessType } from '../LoginEnum';
 
 /**
+ * 获取微信用户信息还有问题等待调试
  * 获取用户头像/昵称
  * 1. 打开登录界面
  * 2. 微信平台：先请求用户隐私授权，再创建全屏透明原生按钮，用户点击触发授权
