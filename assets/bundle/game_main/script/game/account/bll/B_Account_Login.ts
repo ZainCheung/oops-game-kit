@@ -4,18 +4,20 @@ import { BehaviorTree } from 'db://oops-framework/libs/behavior-tree';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import type { Account } from '../Account';
-import { ConnectNet } from './login/process/ConnectNet';
-import { LoginSdk } from './login/process/LoginSdk';
+import { RequestConnectNet } from './login/process/RequestConnectNet';
 import { RequestGameData } from './login/process/RequestGameData';
 import { RequestGameTable } from './login/process/RequestGameTable';
+import { RequestSdkLogin } from './login/process/RequestSdkLogin';
+import { RequestSdkUserInfo } from './login/process/RequestSdkUserInfo';
 
 /** 登录流程配置 */
 const LoginProcessConfig: BTNodeJson = {
     type: 'Sequence',
     children: [
-        { type: 'LoginSdk' },
+        { type: 'RequestSdkLogin' },
+        { type: 'RequestSdkUserInfo' },
         { type: 'RequestGameTable' },
-        // { type: 'ConnectNet' },
+        // { type: 'RequestConnectNet' },
         { type: 'RequestGameData' },
     ],
 };
@@ -36,9 +38,10 @@ export class B_Account_Login extends CCBusiness<Account> {
 
     protected init() {
         // 注册自定义登录流程节点工厂
-        BehaviorTree.registerFactory('LoginSdk', () => new LoginSdk());
+        BehaviorTree.registerFactory('RequestSdkLogin', () => new RequestSdkLogin());
+        BehaviorTree.registerFactory('RequestSdkUserInfo', () => new RequestSdkUserInfo());
         BehaviorTree.registerFactory('RequestGameTable', () => new RequestGameTable());
-        BehaviorTree.registerFactory('ConnectNet', () => new ConnectNet());
+        BehaviorTree.registerFactory('RequestConnectNet', () => new RequestConnectNet());
         BehaviorTree.registerFactory('RequestGameData', () => new RequestGameData());
 
         // 通过配置创建行为树

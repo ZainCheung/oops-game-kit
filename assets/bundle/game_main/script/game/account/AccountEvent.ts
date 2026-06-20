@@ -4,8 +4,6 @@ import type { CCEntity } from 'db://oops-framework/module/common/CCEntity';
 export enum AccountEventName {
     /** 网络重连接 */
     Reconnect = 'onReconnect',
-    /** 平台 SDK 登录成功 */
-    LoginSuccessSdk = 'onLoginSuccessSdk',
     /** 游戏服务器登录成功 */
     LoginSuccessGame = 'onLoginSuccessGame',
     /** 添加子单例实体 */
@@ -18,16 +16,6 @@ export interface IAccountReconnectData {
     needRelogin?: boolean;
     /** 重连次数 */
     retryCount?: number;
-}
-
-/** 平台 SDK 登录成功事件数据 */
-export interface IAccountLoginSuccessSdkData {
-    /** SDK 用户 ID */
-    userId?: string;
-    /** SDK Token */
-    token?: string;
-    /** 平台类型 */
-    platform?: string;
 }
 
 /** 游戏服务器登录成功事件数据 */
@@ -51,7 +39,6 @@ export interface IAccountAddChildSingletonsData {
 /** 账号模块事件数据映射 */
 export interface IAccountEventDataMap {
     [AccountEventName.Reconnect]: IAccountReconnectData;
-    [AccountEventName.LoginSuccessSdk]: IAccountLoginSuccessSdkData;
     [AccountEventName.LoginSuccessGame]: IAccountLoginSuccessGameData;
     [AccountEventName.AddChildSingletons]: IAccountAddChildSingletonsData;
 }

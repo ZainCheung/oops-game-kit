@@ -18,7 +18,9 @@ export class LoginProcessBase extends Task {
 
     fail() {
         switch (this.type) {
-        case LoginProcessType.LoginSdk:
+        case LoginProcessType.SdkLogin:
+            break;
+        case LoginProcessType.SdkUserInfo:
             break;
         case LoginProcessType.GameTable:
             break;

@@ -9,7 +9,7 @@ import { ProtocolHttp } from '../../../../../base/network/model/enum/EM_Network_
  * 1. 如果成功进入下个流程
  * 2. 如果失败，重复尝试连接 3 次，失败后给提示是否重试
  */
-export class ConnectNet extends LoginProcessBase {
+export class RequestConnectNet extends LoginProcessBase {
     constructor() {
         super(LoginProcessType.ConnectNet);
     }
