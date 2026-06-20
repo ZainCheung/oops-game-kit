@@ -143,4 +143,16 @@ export class SdkManager {
     isReady(): boolean {
         return this.getSdk().isReady();
     }
+
+    /**
+     * 释放 SDK 管理器资源
+     *
+     * 清空工厂表、实例缓存与当前平台引用，便于重新初始化或模块卸载时调用。
+     */
+    destroy(): void {
+        this.factories.clear();
+        this.instances.clear();
+        this._sdk = null;
+        this._platform = SdkPlatform.Unknown;
+    }
 }

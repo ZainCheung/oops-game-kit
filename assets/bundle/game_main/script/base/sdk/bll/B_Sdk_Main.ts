@@ -10,8 +10,10 @@ import type { INetworkStatusChangeEvent } from '../model/IM_Sdk_Data';
 /** 平台 SDK 主业务逻辑 */
 @classname('B_Sdk_Main')
 export class B_Sdk_Main extends CCBusiness<Sdk> {
-    /** SDK 管理器实例 */
-    private sdkManager: SdkManager = new SdkManager();
+    /** SDK 管理器 */
+    private readonly manager: SdkManager = new SdkManager();
+    /** 当前平台的 SDK 实现接口 */
+    readonly sdk: ISdk = this.manager.init();
 
     /** 缓存的原生事件回调，便于 destroy 时解绑 */
     private onShowCb?: (res: any) => void;
@@ -20,51 +22,29 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
     private onNetworkChangeCb?: (res: INetworkStatusChangeEvent) => void;
 
     protected init() {
-        // 1. 初始化 SDK 管理器（自动识别平台）
-        const sdk = this.sdkManager.init();
-        oops.log.logBusiness(`[SDK] 平台 = ${sdk.getPlatform()}, 准备就绪 = ${sdk.isReady()}`);
+        oops.log.logBusiness(`[SDK] 平台 = ${this.sdk.getPlatform()}, 准备就绪 = ${this.sdk.isReady()}`);
 
-        // 2. 转发原生事件到全局事件系统
+        // 转发原生事件到全局事件系统
         this.onShowCb = (res: any) => this.event.emit(SdkEventName.Show, res);
-        sdk.onShow(this.onShowCb);
+        this.sdk.onShow(this.onShowCb);
 
         this.onHideCb = () => this.event.emit(SdkEventName.Hide);
-        sdk.onHide(this.onHideCb);
+        this.sdk.onHide(this.onHideCb);
 
         this.onErrorCb = (err: string) => this.event.emit(SdkEventName.Error, err);
-        sdk.onError(this.onErrorCb);
+        this.sdk.onError(this.onErrorCb);
 
         this.onNetworkChangeCb = (res: INetworkStatusChangeEvent) => this.event.emit(SdkEventName.NetworkChange, res);
-        sdk.onNetworkStatusChange(this.onNetworkChangeCb);
-    }
-
-    /** 获取当前平台的 SDK 实现接口 */
-    getSdk(): ISdk {
-        return this.sdkManager.getSdk();
-    }
-
-    /** 当前平台枚举 */
-    getPlatform() {
-        return this.sdkManager.platform;
-    }
-
-    /** 便捷方法：登录 */
-    login() {
-        return this.getSdk().login();
-    }
-
-    /** 便捷方法：获取系统信息 */
-    getSystemInfo() {
-        return this.getSdk().getSystemInfo();
+        this.sdk.onNetworkStatusChange(this.onNetworkChangeCb);
     }
 
     destroy() {
-        const sdk = this.sdkManager.getSdk();
-        if (this.onShowCb) sdk.offShow(this.onShowCb);
-        if (this.onHideCb) sdk.offHide(this.onHideCb);
-        if (this.onErrorCb) sdk.offError(this.onErrorCb);
-        if (this.onNetworkChangeCb) sdk.offNetworkStatusChange(this.onNetworkChangeCb);
+        if (this.onShowCb) this.sdk.offShow(this.onShowCb);
+        if (this.onHideCb) this.sdk.offHide(this.onHideCb);
+        if (this.onErrorCb) this.sdk.offError(this.onErrorCb);
+        if (this.onNetworkChangeCb) this.sdk.offNetworkStatusChange(this.onNetworkChangeCb);
         this.onShowCb = this.onHideCb = this.onErrorCb = this.onNetworkChangeCb = undefined;
+        this.manager.destroy();
         super.destroy();
     }
 }

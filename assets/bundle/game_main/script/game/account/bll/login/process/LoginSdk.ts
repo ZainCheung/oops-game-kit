@@ -22,10 +22,11 @@ export class LoginSdk extends LoginProcessBase {
         const label = '【登录流程】平台 SDK 登录';
         console.time(label);
         try {
-            const sdk = gsm.base.sdk.B_Sdk_Main;
+            const bll = gsm.base.sdk.B_Sdk_Main;
+            const sdk = bll.sdk;
 
             // SDK 未就绪，提示并中止登录流程
-            if (!sdk.getSdk().isReady()) {
+            if (!sdk.isReady()) {
                 console.timeEnd(label);
                 oops.gui.toast('SDK 未就绪，请稍后重试');
                 this.fail();
@@ -49,7 +50,18 @@ export class LoginSdk extends LoginProcessBase {
         }
         catch (err) {
             console.timeEnd(label);
-            console.error('【登录流程】平台 SDK 登录失败', err);
+            const e = err as any;
+            let errMsg = '';
+            try { errMsg = e?.errMsg ?? ''; } catch {}
+            if (!errMsg) { try { errMsg = e?.message ?? ''; } catch {}
+            }
+            if (!errMsg) { try { errMsg = typeof err === 'string' ? err : ''; } catch {}
+            }
+            if (!errMsg) {
+                try { errMsg = JSON.stringify(err); } catch { errMsg = String(err); }
+            }
+            console.error('【登录流程】平台 SDK 登录失败:', errMsg, err);
+            oops.gui.toast(`SDK 登录失败: ${errMsg}`);
             this.fail();
         }
     }
