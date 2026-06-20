@@ -7,6 +7,11 @@ import { GuideStepData, V_Guide_Item } from './V_Guide_Item';
 
 const { ccclass, property } = _decorator;
 
+/** 遮罩预制体路径 */
+const prefabMask = 'gui/guide/prefab/Mask';
+/** 引导框预制体路径 */
+const prefabBox = 'gui/guide/prefab/Box';
+
 /** 新后引导遮罩逻辑 */
 @ccclass('VC_Guide_Mask')
 @ecs.register('VC_Guide_Mask', false)
@@ -17,7 +22,7 @@ export class VC_Guide_Mask extends CCView<Guide> {
     private holes: { cx: number; cy: number; width: number; height: number }[] = [];
 
     start() {
-        this.mask = ViewUtil.createPrefabNode('gui/guide/prefab/mask');
+        this.mask = ViewUtil.createPrefabNode(prefabMask);
         this.mask.parent = this.node;
         this.bg = this.mask.getChildByName('bg')!;
         this.mask_widget = this.bg.getComponent(Widget)!;
@@ -108,7 +113,7 @@ export class VC_Guide_Mask extends CCView<Guide> {
         var h = uit.contentSize.height + offsetH!;
 
         var offset = 50; // 边框宽度偏移
-        var box = ViewUtil.createPrefabNode('gui/guide/prefab/box');
+        var box = ViewUtil.createPrefabNode(prefabBox);
         box.parent = this.node;
         box.uiTransform.setContentSize(w + offset, h + offset);
         let pos = btn.worldPosition.clone();

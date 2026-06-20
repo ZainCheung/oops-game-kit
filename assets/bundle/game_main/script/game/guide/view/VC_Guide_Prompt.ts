@@ -8,6 +8,9 @@ import { ViewUtil } from 'db://oops-framework/core/utils/ViewUtil';
 
 const { ccclass, property } = _decorator;
 
+/** 提示框预制体路径 */
+const prefabPrompt = 'gui/guide/prefab/Prompt';
+
 /** 新手引导提示逻辑 */
 @ccclass('VC_Guide_Prompt')
 @ecs.register('VC_Guide_Prompt', false)
@@ -16,7 +19,7 @@ export class VC_Guide_Prompt extends CCView<Guide> {
     private content: Label = null!;
 
     start() {
-        this.prompt = ViewUtil.createPrefabNode('gui/guide/prefab/prompt');
+        this.prompt = ViewUtil.createPrefabNode(prefabPrompt);
         this.prompt.parent = oops.gui.guide;
         this.content = find('bg_text/content', this.prompt)!.uiLabel;
         this.hide();
