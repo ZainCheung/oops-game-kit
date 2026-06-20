@@ -1,6 +1,7 @@
 import { JsonAsset } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { InitializeEventName } from '../../initialize/InitializeEvent';
 import type { IInitializeEventDataMap } from '../../initialize/InitializeEvent';
 import type { Guide } from '../Guide';
@@ -11,6 +12,7 @@ import { VC_Guide_Mask } from '../view/VC_Guide_Mask';
 import { VC_Guide_Prompt } from '../view/VC_Guide_Prompt';
 
 /** 新手引导主业务逻辑 */
+@classname('B_Guide_Main')
 export class B_Guide_Main extends CCBusiness<Guide> {
     protected init() {
         this.event.setEvent(

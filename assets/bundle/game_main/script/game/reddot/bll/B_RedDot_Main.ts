@@ -1,6 +1,7 @@
 import type { Node } from 'cc';
 import { isValid } from 'cc';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { EM_RedDotType } from '../model/enum/EM_RedDot';
 import type { IM_RedDot_Node } from '../model/interface/IM_RedDot_Node';
 import type { RedDot } from '../RedDot';
@@ -14,6 +15,7 @@ const Separator = '/';
  * 1、实现功能的业务逻辑代码
  * 2、实现功能逻辑代码分离（如果业务复杂可选用 ecs.ComblockSystem 分离逻辑代码)
  */
+@classname('B_RedDot_Main')
 export class B_RedDot_Main extends CCBusiness<RedDot> {
     /** 初始化红点数据结构 */
     protected init() {

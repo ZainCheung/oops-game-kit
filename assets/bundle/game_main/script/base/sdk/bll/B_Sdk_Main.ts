@@ -1,11 +1,14 @@
 import { oops } from 'db://oops-framework/core/Oops';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { Sdk } from '../Sdk';
 import { SdkEventName } from '../SdkEvent';
 import { SdkManager } from './SdkManager';
 import { ISdk } from './ISdk';
 import type { INetworkStatusChangeEvent } from '../model/IM_Sdk_Data';
 
+/** 平台 SDK 主业务逻辑 */
+@classname('B_Sdk_Main')
 export class B_Sdk_Main extends CCBusiness<Sdk> {
     /** SDK 管理器实例 */
     private sdkManager: SdkManager = new SdkManager();

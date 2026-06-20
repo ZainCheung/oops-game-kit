@@ -3,6 +3,7 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { ButtonInterceptor } from 'db://oops-framework/libs/gui/button/ButtonInterceptor';
 import ButtonSimple from 'db://oops-framework/libs/gui/button/ButtonSimple';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { InitializeEventName } from '../../../game/initialize/InitializeEvent';
 import type { IInitializeEventDataMap } from '../../../game/initialize/InitializeEvent';
 import { Button } from '../Button';
@@ -13,6 +14,7 @@ const audio_bundle = 'game_common';
 const audio_path = 'gui/button/audio/Click';
 
 /** 通用按钮主业务逻辑 */
+@classname('B_Button_Main')
 export class B_Button_Main extends CCBusiness<Button> {
     protected init() {
         this.event.setEvent(InitializeEventName.LoadComplete);

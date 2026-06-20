@@ -1,11 +1,13 @@
 import { oops } from 'db://oops-framework/core/Oops';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { EM_RedDotStorage, EM_RedDotType } from '../model/enum/EM_RedDot';
 import type { RedDot } from '../RedDot';
 import { RedDotEventName, type IRedDotEventDataMap } from '../RedDotEvent';
 import { B_RedDot_Main } from './B_RedDot_Main';
 
 /** 红点功能事件驱动类 */
+@classname('B_RedDot_Event')
 export class B_RedDot_Event extends CCBusiness<RedDot> {
     /** 初始化红点数据结构 */
     protected init() {
