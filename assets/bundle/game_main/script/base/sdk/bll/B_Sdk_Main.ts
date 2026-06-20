@@ -42,11 +42,11 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
         sdk.onError(this._onErrorCb);
 
         this._onNetworkChangeCb = (res: INetworkStatusChangeEvent) =>
-            oops.message.emit(SdkEventName.NetworkChange, res);
+            this.event.emit(SdkEventName.NetworkChange, res);
         sdk.onNetworkStatusChange(this._onNetworkChangeCb);
 
         // 3. 通知初始化完成
-        oops.message.emit(SdkEventName.InitComplete);
+        this.event.emit(SdkEventName.InitComplete);
     }
 
     /** 获取当前平台的 SDK 实现接口 */
