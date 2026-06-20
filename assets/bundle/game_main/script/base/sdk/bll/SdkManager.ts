@@ -19,25 +19,26 @@ import { WeChatMiniGameSdk } from './platform/WeChatMiniGameSdk';
  *
  * 接入新平台：
  * ```ts
- * SdkManager.register(SdkPlatform.DouYinMiniGame, () => new DouYinMiniGameSdk());
+ * const manager = new SdkManager();
+ * manager.register(SdkPlatform.DouYinMiniGame, () => new DouYinMiniGameSdk());
  * ```
  */
 export class SdkManager {
     /** 已注册的平台工厂表 */
-    private static factories = new Map<SdkPlatform, () => ISdk>();
+    private factories = new Map<SdkPlatform, () => ISdk>();
     /** 单例缓存 */
-    private static instances = new Map<SdkPlatform, ISdk>();
+    private instances = new Map<SdkPlatform, ISdk>();
     /** 当前平台实现 */
-    private static _sdk: ISdk | null = null;
+    private _sdk: ISdk | null = null;
     /** 当前平台类型 */
-    private static _platform: SdkPlatform = SdkPlatform.Unknown;
+    private _platform: SdkPlatform = SdkPlatform.Unknown;
 
-    static {
+    constructor() {
         // 注册默认平台实现
-        SdkManager.register(SdkPlatform.WeChatMiniGame, () => new WeChatMiniGameSdk());
+        this.register(SdkPlatform.WeChatMiniGame, () => new WeChatMiniGameSdk());
         // H5/未知平台使用 DefaultSdk
-        SdkManager.register(SdkPlatform.H5, () => new DefaultSdk(SdkPlatform.H5));
-        SdkManager.register(SdkPlatform.Unknown, () => new DefaultSdk(SdkPlatform.Unknown));
+        this.register(SdkPlatform.H5, () => new DefaultSdk(SdkPlatform.H5));
+        this.register(SdkPlatform.Unknown, () => new DefaultSdk(SdkPlatform.Unknown));
     }
 
     /**
@@ -45,13 +46,13 @@ export class SdkManager {
      * @param platform 平台类型
      * @param factory  工厂函数（返回该平台的 SDK 实例）
      */
-    static register(platform: SdkPlatform, factory: () => ISdk): void {
-        SdkManager.factories.set(platform, factory);
+    register(platform: SdkPlatform, factory: () => ISdk): void {
+        this.factories.set(platform, factory);
         // 清掉旧的缓存实例，下次获取时用新工厂
-        SdkManager.instances.delete(platform);
+        this.instances.delete(platform);
         // 如果当前已选用的平台被覆盖，重置 _sdk
-        if (SdkManager._platform === platform) {
-            SdkManager._sdk = null;
+        if (this._platform === platform) {
+            this._sdk = null;
         }
     }
 
@@ -63,7 +64,7 @@ export class SdkManager {
      *
      * @returns 当前平台枚举
      */
-    static detectPlatform(): SdkPlatform {
+    detectPlatform(): SdkPlatform {
         const p = sys.platform;
         const P = sys.Platform;
 
@@ -103,23 +104,23 @@ export class SdkManager {
      * 初始化 SDK 管理器（探测平台并创建实例）
      * 通常在游戏启动时调用一次。
      */
-    static init(): ISdk {
-        if (SdkManager._sdk) return SdkManager._sdk;
-        SdkManager._platform = SdkManager.detectPlatform();
-        SdkManager._sdk = SdkManager.getOrCreate(SdkManager._platform);
-        return SdkManager._sdk;
+    init(): ISdk {
+        if (this._sdk) return this._sdk;
+        this._platform = this.detectPlatform();
+        this._sdk = this.getOrCreate(this._platform);
+        return this._sdk;
     }
 
     /**
      * 获取/创建指定平台的 SDK 实例（单例）
      */
-    private static getOrCreate(platform: SdkPlatform): ISdk {
-        let instance = SdkManager.instances.get(platform);
+    private getOrCreate(platform: SdkPlatform): ISdk {
+        let instance = this.instances.get(platform);
         if (instance) return instance;
         const factory =
-            SdkManager.factories.get(platform) ?? SdkManager.factories.get(SdkPlatform.Unknown)!;
+            this.factories.get(platform) ?? this.factories.get(SdkPlatform.Unknown)!;
         instance = factory();
-        SdkManager.instances.set(platform, instance);
+        this.instances.set(platform, instance);
         return instance;
     }
 
@@ -127,19 +128,19 @@ export class SdkManager {
      * 获取当前平台的 SDK 实现接口
      * （若未调用 init，会自动调用一次）
      */
-    static getSdk(): ISdk {
-        if (!SdkManager._sdk) SdkManager.init();
-        return SdkManager._sdk!;
+    getSdk(): ISdk {
+        if (!this._sdk) this.init();
+        return this._sdk!;
     }
 
     /** 当前平台枚举 */
-    static get platform(): SdkPlatform {
-        if (!SdkManager._sdk) SdkManager.init();
-        return SdkManager._platform;
+    get platform(): SdkPlatform {
+        if (!this._sdk) this.init();
+        return this._platform;
     }
 
     /** 当前 SDK 是否已就绪 */
-    static isReady(): boolean {
-        return SdkManager.getSdk().isReady();
+    isReady(): boolean {
+        return this.getSdk().isReady();
     }
 }

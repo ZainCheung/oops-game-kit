@@ -7,6 +7,9 @@ import { ISdk } from './ISdk';
 import type { INetworkStatusChangeEvent } from '../model/IM_Sdk_Data';
 
 export class B_Sdk_Main extends CCBusiness<Sdk> {
+    /** SDK 管理器实例 */
+    private sdkManager: SdkManager = new SdkManager();
+
     /** 缓存的原生事件回调，便于 destroy 时解绑 */
     private onShowCb?: (res: any) => void;
     private onHideCb?: () => void;
@@ -15,7 +18,7 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
 
     protected init() {
         // 1. 初始化 SDK 管理器（自动识别平台）
-        const sdk = SdkManager.getSdk();
+        const sdk = this.sdkManager.init();
         oops.log.logBusiness(`[SDK] 平台 = ${sdk.getPlatform()}, 准备就绪 = ${sdk.isReady()}`);
 
         // 2. 转发原生事件到全局事件系统
@@ -34,12 +37,12 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
 
     /** 获取当前平台的 SDK 实现接口 */
     getSdk(): ISdk {
-        return SdkManager.getSdk();
+        return this.sdkManager.getSdk();
     }
 
     /** 当前平台枚举 */
     getPlatform() {
-        return SdkManager.platform;
+        return this.sdkManager.platform;
     }
 
     /** 便捷方法：登录 */
@@ -53,7 +56,7 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
     }
 
     destroy() {
-        const sdk = SdkManager.getSdk();
+        const sdk = this.sdkManager.getSdk();
         if (this.onShowCb) sdk.offShow(this.onShowCb);
         if (this.onHideCb) sdk.offHide(this.onHideCb);
         if (this.onErrorCb) sdk.offError(this.onErrorCb);

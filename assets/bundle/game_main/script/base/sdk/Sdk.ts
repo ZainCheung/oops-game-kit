@@ -7,7 +7,6 @@ import './SdkEvent';
 @ecs.register('Sdk')
 export class Sdk extends CCEntity {
     M_Sdk_Main!: M_Sdk_Main;
-
     B_Sdk_Main!: B_Sdk_Main;
 
     protected init() {
