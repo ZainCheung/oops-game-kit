@@ -5,6 +5,7 @@ import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import type { Account } from '../Account';
 import { RequestConnectNet } from './login/process/RequestConnectNet';
+import { RequestEnterGame } from './login/process/RequestEnterGame';
 import { RequestGameData } from './login/process/RequestGameData';
 import { RequestGameTable } from './login/process/RequestGameTable';
 import { RequestSdkLogin } from './login/process/RequestSdkLogin';
@@ -19,6 +20,7 @@ const LoginProcessConfig: BTNodeJson = {
         { type: 'RequestGameTable' },
         // { type: 'RequestConnectNet' },
         { type: 'RequestGameData' },
+        { type: 'RequestEnterGame' },
     ],
 };
 
@@ -43,6 +45,7 @@ export class B_Account_Login extends CCBusiness<Account> {
         BehaviorTree.registerFactory('RequestGameTable', () => new RequestGameTable());
         BehaviorTree.registerFactory('RequestConnectNet', () => new RequestConnectNet());
         BehaviorTree.registerFactory('RequestGameData', () => new RequestGameData());
+        BehaviorTree.registerFactory('RequestEnterGame', () => new RequestEnterGame());
 
         // 通过配置创建行为树
         this.loginProcess = new BehaviorTree(BehaviorTree.fromJSON(LoginProcessConfig));

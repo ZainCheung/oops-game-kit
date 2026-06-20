@@ -6,7 +6,6 @@ import { CCView } from 'db://oops-framework/module/common/CCView';
 import { ConfigCommonStorage } from '../../common/config/ConfigGameStorage';
 import type { Initialize } from '../Initialize';
 import { InitializeEventName } from '../InitializeEvent';
-import { VC_Initialize_Loading } from './VC_Initialize_Loading';
 
 const { ccclass, property } = _decorator;
 
@@ -78,16 +77,10 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     /** 尝试进入加载界面（需要资源加载、动画都完成） */
     private tryEnter() {
         if (this.loadComplete && this.waitComplete) {
-            this.waitAnim(this.endColor, this.startColor, () => {
-                this.enter();
+            this.waitAnim(this.endColor, this.startColor, async () => {
+                await this.event.emitAsync(InitializeEventName.LoadComplete);
             });
         }
-    }
-
-    private async enter() {
-        await this.event.emitAsync(InitializeEventName.LoadComplete);
-        await this.ent.addUi(VC_Initialize_Loading);
-        this.remove();
     }
 
     /** 窗口打开失败事件 */

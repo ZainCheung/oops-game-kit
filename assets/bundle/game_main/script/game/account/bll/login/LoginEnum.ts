@@ -10,5 +10,7 @@ export enum LoginProcessType {
     /** 请求游戏配置表数据失败 */
     GameTable,
     /** 请求游戏账号数据 */
-    GameData
+    GameData,
+    /** 进入游戏失败 */
+    EnterGame
 }

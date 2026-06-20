@@ -28,6 +28,8 @@ export class LoginProcessBase extends Task {
             break;
         case LoginProcessType.GameData:
             break;
+        case LoginProcessType.EnterGame:
+            break;
         }
         console.log('登录失败', this.type);
     }
