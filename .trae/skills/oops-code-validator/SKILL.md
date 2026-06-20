@@ -140,9 +140,9 @@ private onEventName<K extends ModuleEventName.EventName>(event: K, data: IModule
 2. 禁止凭记忆或假设编造方法名
 3. 框架自动管理的功能（事件释放、按钮解绑）禁止手动调用释放方法
 
-### 规则6：declare global 检查（EventData 文件）
+### 规则6：declare global 检查（Event 文件）
 
-- `[Module]EventData.ts` 必须包含 `declare global` 块
+- `[Module]Event.ts` 必须包含 `declare global` 块
 - 必须扩展 `OopsFramework.TypedEventMap`
 
 ### 规则7：属性初始化风格检查
@@ -190,10 +190,11 @@ private onEventName<K extends ModuleEventName.EventName>(event: K, data: IModule
 - [ ] **reset() 中禁止调用** **`this.unwatchAll()`** — 框架自动管理
 - [ ] **只调用确认存在的方法**，禁止假设方法存在
 
-### EventData 层
+### Event 层
 
 - [ ] 必须包含 `declare global` 块
 - [ ] `declare global` 中命名空间必须是 `OopsFramework`
 - [ ] `TypedEventMap` 必须 `extends IBackpackEventDataMap`
+- [ ] 事件枚举与事件数据在**同一文件** `[Module]Event.ts` 中
 
 ### 框架导入检查（所有文件）

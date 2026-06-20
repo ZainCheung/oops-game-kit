@@ -48,8 +48,7 @@ triggers:
 ```
 prompt/
 ├── Prompt.ts                  # 模块入口（Entity）
-├── PromptEvent.ts             # 事件枚举与类型导出
-├── PromptEventData.ts         # 事件数据接口定义
+├── PromptEvent.ts             # 事件枚举与事件数据接口
 └── bll/
     └── B_Prompt_Main.ts       # 核心业务逻辑（4种弹窗处理）
 ```

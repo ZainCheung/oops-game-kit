@@ -1,7 +1,7 @@
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCEntity } from 'db://oops-framework/module/common/CCEntity';
 import { B_Prompt_Main } from './bll/B_Prompt_Main';
-import '../../game/account/AccountEventData';
+import '../../game/account/AccountEvent';
 
 /** Prompt模块实体 */
 @ecs.register('Prompt')

@@ -95,8 +95,7 @@ extensions/oops-plugin-framework/assets/    # 框架源码根目录
 ```
 [模块名]/                       # 目录名小写（如：backpack/）
 ├── [模块名].ts                # 模块入口（CCEntity），首字母大写（如：Backpack.ts）
-├── [模块名]Event.ts           # 事件定义
-├── [模块名]EventData.ts       # 事件数据类型
+├── [模块名]Event.ts           # 事件定义与事件数据
 ├── model/                     # 数据层
 │   ├── M_[模块]_Model.ts
 │   ├── M_[模块]_Config.ts
@@ -148,8 +147,7 @@ extensions/oops-plugin-framework/assets/    # 框架源码根目录
 | **Type (类型)** | `TM_` / `TB_` / `TV_` | `TM_Backpack_Data.ts` | model层TM, bll层TB, view层TV |
 | **Config (配置)** | `CM_` / `CB_` / `CV_` | `CM_Backpack_Table.ts` | model层CM, bll层CB, view层CV |
 | **Interface (接口)** | `IM_` / `IB_` / `IV_` | `IM_Backpack_Data.ts` | model层IM, bll层IB, view层IV |
-| **Event (事件)** | 无 | `BackpackEvent.ts` | 事件定义 |
-| **EventData (事件数据)** | 无 | `BackpackEventData.ts` | 事件数据定义 |
+| **Event (事件)** | 无 | `BackpackEvent.ts` | 事件定义与事件数据 |
 
 ### 3.1 层级前缀对照表
 
@@ -178,8 +176,7 @@ extensions/oops-plugin-framework/assets/    # 框架源码根目录
 - TM_Backpack_Data.ts         (Type-背包模块-数据类型)
 - CM_Backpack_Table.ts        (Config-背包模块-配置表)
 - IM_Backpack_Data.ts         (Interface-背包模块-数据接口)
-- BackpackEvent.ts            (Event-背包事件)
-- BackpackEventData.ts        (EventData-背包事件数据)
+- BackpackEvent.ts            (Event-背包事件与事件数据)
 ```
 
 ---

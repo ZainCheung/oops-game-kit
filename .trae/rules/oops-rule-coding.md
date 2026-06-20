@@ -405,7 +405,7 @@ export class V_[Module]_[Name] extends GameComponent {
 
 ## 8. Event 层元模板
 
-### 8.1 事件枚举元模板
+### 8.1 事件元模板（单文件模式）
 
 ```typescript
 // [Module]Event.ts
@@ -415,19 +415,6 @@ export enum [Module]EventName {
     /** [描述] */
     [EventKey] = '[EventValue]',
 }
-
-export {
-    type I[Module][EventKey]Data,
-    type I[Module]EventDataMap,
-} from './[Module]EventData';
-```
-
-> **⚠️ 注意**：`export { ... }` 重导出语法中**必须**加 `type` 关键字。类型仅在编译时使用，使用 `type` 可明确标识导出性质。
-
-### 8.2 事件数据元模板
-
-```typescript
-// [Module]EventData.ts
 
 /** [描述]事件数据 */
 export interface I[Module][EventKey]Data {
@@ -447,15 +434,16 @@ declare global {
 }
 ```
 
-### 8.3 强制要求
+### 8.2 强制要求
 
 | 检查项 | 要求 |
 |--------|------|
+| 枚举 | 使用 `export enum [Module]EventName` |
 | 枚举值 | 字符串值格式 `on[Module][Action]` |
-| 数据接口 | 命名 `I[Module][Action]Data` |
-| 映射接口 | 命名 `I[Module]EventDataMap` |
+| 数据接口 | 命名 `I[Module][Action]Data`，与枚举定义在同一文件 |
+| 映射接口 | 命名 `I[Module]EventDataMap`，与枚举定义在同一文件 |
 | declare global | **必须包含**，扩展 `OopsFramework.TypedEventMap` |
-| 导出方式 | `export { type ... }`，重导出必须加 `type` 关键字 |
+| 文件数量 | 事件枚举与事件数据合并为**单个文件** `[Module]Event.ts` |
 
 ---
 
@@ -533,4 +521,4 @@ AI 生成每个文件前，必须逐项确认：
 - [ ] 枚举值格式 `on[Module][Action]`
 - [ ] 包含 `declare global` 块
 - [ ] `OopsFramework.TypedEventMap extends I[Module]EventDataMap`
-- [ ] `export { type ... }`，重导出必须加 `type` 关键字
+- [ ] 事件枚举与事件数据在**同一文件** `[Module]Event.ts` 中

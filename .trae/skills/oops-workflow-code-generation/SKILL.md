@@ -216,8 +216,7 @@ MCP 工具调用
 ```
 backpack/
 ├── Backpack.ts                    # Entity 层
-├── BackpackEvent.ts               # 事件枚举
-├── BackpackEventData.ts           # 事件数据接口
+├── BackpackEvent.ts               # 事件枚举与事件数据
 ├── bll/
 │   ├── B_Backpack_Main.ts         # 业务逻辑
 │   ├── B_Backpack_ViewUI.ts       # 视图管理（MCP生成，AI禁止修改）

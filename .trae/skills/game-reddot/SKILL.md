@@ -46,8 +46,7 @@ triggers:
 ```
 reddot/
 ├── RedDot.ts                  # 红点模块入口（Entity）
-├── RedDotEvent.ts             # 红点事件枚举与类型导出
-├── RedDotEventData.ts         # 红点事件数据接口定义
+├── RedDotEvent.ts             # 红点事件枚举与事件数据接口
 ├── bll/
 │   ├── B_RedDot_Main.ts       # 红点核心逻辑（树结构、更新、绑定）
 │   └── B_RedDot_Event.ts      # 红点事件驱动（添加、删除、更新、绑定、确认）
