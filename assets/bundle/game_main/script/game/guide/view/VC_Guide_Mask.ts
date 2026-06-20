@@ -61,7 +61,10 @@ export class VC_Guide_Mask extends CCView<Guide> {
         this.holes.splice(0, this.holes.length);
         for (let i = this.node.children.length - 1; i >= 0; i--) {
             const node = this.node.children[i];
-            node.name == 'box' && node.destroy();
+            if (node.name === 'box') {
+                node.removeFromParent();
+                node.destroy();
+            }
         }
         // 绘制引导可点击区域
         var gvi = btn.getComponent(V_Guide_Item)!;
@@ -114,6 +117,7 @@ export class VC_Guide_Mask extends CCView<Guide> {
 
         var offset = 50; // 边框宽度偏移
         var box = ViewUtil.createPrefabNode(prefabBox);
+        box.name = 'box';
         box.parent = this.node;
         box.uiTransform.setContentSize(w + offset, h + offset);
         let pos = btn.worldPosition.clone();
