@@ -9,7 +9,8 @@ import { LoginProcessType } from '../LoginEnum';
 /**
  * 获取用户头像/昵称
  * 1. 打开登录界面
- * 2. 微信平台创建全屏透明原生按钮，用户点击触发授权
+ * 2. 微信平台：先请求用户隐私授权，再创建全屏透明原生按钮，用户点击触发授权
+ *    注意：需在 mp.weixin.qq.com 后台《用户隐私保护指引》声明「昵称、头像」信息类型
  * 3. 非微信平台监听 Cocos 按钮触摸事件，点击后填充测试数据
  */
 export class RequestSdkUserInfo extends LoginProcessBase {
@@ -49,7 +50,24 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      * 微信平台：创建全屏透明原生按钮，用户点击触发授权回调
      * 非微信平台：监听 Cocos 节点触摸事件，点击后填充测试数据
      */
-    private requestUserInfo(sdk: ISdk, uiNode: Node): Promise<void> {
+    private async requestUserInfo(sdk: ISdk, uiNode: Node): Promise<void> {
+        // 微信平台：先完成用户隐私授权，否则 createUserInfoButton 会返回 errno 1026
+        // （前提：已在 mp.weixin.qq.com 后台《用户隐私保护指引》声明「昵称、头像」信息类型）
+        try {
+            sdk.onNeedPrivacyAuthorization((res) => {
+                // 用户需要同意隐私协议：这里直接同意（基础库要求用户有点击行为，
+                // 实际项目建议弹出自定义隐私弹窗，用户点击同意后再 resolve 'agree'）
+                oops.log.trace(`【登录流程】需要隐私授权: ${res.contractName}`);
+                (sdk as any).requirePrivacyAuthorize?.({}).catch(() => { });
+            });
+            await sdk.requirePrivacyAuthorize({ demandList: ['userInfo'] });
+            oops.log.trace('【登录流程】用户隐私授权已通过');
+        }
+        catch {
+            // 拒绝或后台未配置：不阻断流程，后续 createUserInfoButton 会回退默认数据
+            oops.log.trace('【登录流程】隐私授权未通过，使用默认用户信息');
+        }
+
         return new Promise<void>((resolve) => {
             // 微信平台：创建全屏透明原生按钮
             const btn = sdk.createUserInfoButton({
