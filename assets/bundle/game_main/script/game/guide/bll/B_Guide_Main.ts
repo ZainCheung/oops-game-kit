@@ -2,7 +2,7 @@ import { JsonAsset } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { InitializeEventName } from '../../initialize/InitializeEvent';
-import type { IInitializeEventDataMap } from '../../initialize/InitializeEventData';
+import type { IInitializeEventDataMap } from '../../initialize/InitializeEvent';
 import type { Guide } from '../Guide';
 import { GuideEventName, type IGuideEventDataMap } from '../GuideEvent';
 import { GuidePromptData } from '../view/V_Guide_Item';

@@ -4,7 +4,7 @@ import { ButtonInterceptor } from 'db://oops-framework/libs/gui/button/ButtonInt
 import ButtonSimple from 'db://oops-framework/libs/gui/button/ButtonSimple';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { InitializeEventName } from '../../../game/initialize/InitializeEvent';
-import type { IInitializeEventDataMap } from '../../../game/initialize/InitializeEventData';
+import type { IInitializeEventDataMap } from '../../../game/initialize/InitializeEvent';
 import { Button } from '../Button';
 
 /** 按钮音效资源包名 */
