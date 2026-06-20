@@ -114,9 +114,11 @@ export class M_[Module]_Main extends ecs.Comp {
 
 ```typescript
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { [Module] } from '../[Module]';
 import { [Module]EventName, I[Module]EventDataMap } from '../[Module]Event';
 
+@classname('B_[Module]_Main')
 export class B_[Module]_Main extends CCBusiness<[Module]> {
     protected init() {
         this.setWatch();
@@ -144,9 +146,11 @@ export class B_[Module]_Main extends CCBusiness<[Module]> {
 
 ```typescript
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { [Module] } from '../[Module]';
 import { [Module]EventName, type I[Module]EventDataMap } from '../[Module]Event';
 
+@classname('B_[Module]_[Name]')
 export class B_[Module]_[Name] extends CCBusiness<[Module]> {
     protected init() {
         this.event.setEvent(
@@ -176,11 +180,12 @@ export class B_[Module]_[Name] extends CCBusiness<[Module]> {
 
 | 检查项 | watch 模式（3.1） | setEvent 模式（3.1b） |
 |--------|-------------------|----------------------|
+| **@classname 装饰器** | **必须**添加 `@classname('B_[Module]_Main')`，名称与类名一致 | **必须**添加 `@classname('B_[Module]_[Name]')`，名称与类名一致 |
 | 继承 | 必须继承 `CCBusiness<[Module]>` | 必须继承 `CCBusiness<[Module]>` |
 | init() | **必须**调用 `setWatch()` | **必须**调用 `this.event.setEvent(...)` |
 | 事件注册 | `setWatch()` 中统一 `watch()`，第三个参数必须是 `this` | `this.event.setEvent()` 传入所有事件枚举 |
 | 事件处理签名 | **必须完全匹配**：`private onXxx<K extends XxxEventName.Xxx>(event: K, data: IXxxEventDataMap[K]): void` | **必须完全匹配**：`private onXxx<K extends XxxEventName.Xxx>(event: K, data: IXxxEventDataMap[K]): void` |
-| 触发事件 | 使用 `this.emit()` | 使用 `this.emit()` |
+| 触发事件 | 使用 `this.event.emit()` | 使用 `this.event.emit()` |
 | 日志 | Business 层使用 `oops.log.logBusiness(msg, module)` | Business 层使用 `oops.log.logBusiness(msg, module)` |
 | 导入风格 | `I[Module]EventDataMap`（值导入） | `type I[Module]EventDataMap`（type 导入） |
 
@@ -457,6 +462,7 @@ declare global {
 | `oops` | `db://oops-framework/core/Oops` |
 | `CCEntity` | `db://oops-framework/module/common/CCEntity` |
 | `CCBusiness` | `db://oops-framework/module/common/CCBusiness` |
+| `classname` | `db://oops-framework/module/decorator/ClassNameDecorator` |
 | `CCView` | `db://oops-framework/module/common/CCView` |
 | `GameComponent` | `db://oops-framework/module/common/GameComponent` |
 | `gui` | `db://oops-framework/core/gui/Gui` |
@@ -488,10 +494,11 @@ AI 生成每个文件前，必须逐项确认：
 
 ### Business 层
 - [ ] 继承 `CCBusiness<[Module]>`
+- [ ] **必须**添加 `@classname('B_[Module]_[Name]')` 装饰器，名称与类名一致
 - [ ] **watch 模式**：`init()` 调用 `setWatch()`，`watch()` 第三个参数是 `this`
 - [ ] **setEvent 模式**：`init()` 调用 `this.event.setEvent(...)`，导入使用 `type I[Module]EventDataMap`
 - [ ] 事件处理签名完全匹配元模板
-- [ ] 使用 `this.emit()` 触发事件
+- [ ] 使用 `this.event.emit()` 触发事件
 - [ ] 删除所有未使用的导入
 
 ### ViewUI / ViewPrefab 层

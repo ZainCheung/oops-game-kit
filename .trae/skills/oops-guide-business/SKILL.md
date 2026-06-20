@@ -37,9 +37,11 @@ triggers:
 
 ```typescript
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { [Module] } from '../[Module]';
 import { [Module]EventName, I[Module]EventDataMap } from '../[Module]Event';
 
+@classname('B_[Module]_Main')
 export class B_[Module]_Main extends CCBusiness<[Module]> {
     protected init() {
         this.setWatch();
@@ -67,9 +69,11 @@ export class B_[Module]_Main extends CCBusiness<[Module]> {
 
 ```typescript
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { [Module] } from '../[Module]';
 import { [Module]EventName, type I[Module]EventDataMap } from '../[Module]Event';
 
+@classname('B_[Module]_[Name]')
 export class B_[Module]_[Name] extends CCBusiness<[Module]> {
     protected init() {
         this.event.setEvent(
@@ -99,6 +103,7 @@ export class B_[Module]_[Name] extends CCBusiness<[Module]> {
 
 | 检查项 | watch 模式 | setEvent 模式 |
 |--------|-----------|--------------|
+| **@classname 装饰器** | **必须**添加 `@classname('B_[Module]_Main')`，名称与类名一致 | **必须**添加 `@classname('B_[Module]_[Name]')`，名称与类名一致 |
 | 继承 | 必须继承 `CCBusiness<[Module]>` | 必须继承 `CCBusiness<[Module]>` |
 | init() | **必须**调用 `setWatch()` | **必须**调用 `this.event.setEvent(...)` |
 | 事件注册 | `setWatch()` 中统一 `watch()`，第三个参数必须是 `this` | `this.event.setEvent()` 传入所有事件枚举 |
@@ -166,6 +171,37 @@ import { IRedDotEventDataMap } from '../RedDotEvent';  // 应为 type IRedDotEve
 
 // ❌ 错误 - 使用已废弃的 this.emit() 而非 this.event.emit()
 this.emit(BackpackEventName.UIUpdate, data);  // 应为 this.event.emit()
+
+// ❌ 错误 - 缺少 @classname 装饰器（打包混淆类名后，实体上 B_[Module]_Main 属性为 undefined）
+export class B_Backpack_Main extends CCBusiness<Backpack> {  // 缺少 @classname('B_Backpack_Main')！
+
+// ❌ 错误 - @classname 名称与类名不一致
+@classname('BackpackMain')
+export class B_Backpack_Main extends CCBusiness<Backpack> {  // 应为 @classname('B_Backpack_Main')
+```
+
+## @classname 装饰器说明（强制）
+
+**所有 `CCBusiness` 子类必须添加 `@classname` 装饰器，注册名与类名完全一致。**
+
+```typescript
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
+
+@classname('B_Backpack_Main')   // 必须与类名一致
+export class B_Backpack_Main extends CCBusiness<Backpack> { ... }
+```
+
+**原因**：`CCEntity.addBusiness()` 通过 `getClassName(cls)` 作为属性名将业务组件挂载到实体上（`Reflect.set(this, getClassName(cls), business)`）。未加装饰器时回退到 `ctor.name`，生产构建（微信小游戏等）压缩混淆类名后，`B_Backpack_Main` 变成单字母（如 `t`），导致 `entity.B_Backpack_Main` 取到 `undefined`，运行时崩溃。
+
+参考实现：`assets/bundle/game_main/script/base/button/bll/B_Button_Main.ts`
+
+```typescript
+import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
+
+@classname('B_Button_Main')
+export class B_Button_Main extends CCBusiness<Button> {
+    ...
+}
 ```
 
 ## 关联规范

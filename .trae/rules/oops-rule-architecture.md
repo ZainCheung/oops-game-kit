@@ -35,8 +35,8 @@ triggers:
 | **View（视图层）** | 原则1：优先直接调用 Business API | `this.ent.B_Backpack_Main.update(1001, 5)` |
 | **View（视图层）** | 原则2：仅当需要响应其他模块通知时才使用事件监听 | `this.watch(BackpackEventName.UIUpdate, ...)` |
 | **Business（业务层）** | 对外 API：供 View 直接调用 | `update()`、`use()`、`remove()` |
-| **Business（业务层）** | 内部事件：通知同模块 View 更新 | `this.emit(BackpackEventName.UIUpdate)` |
-| **Business（业务层）** | 跨模块事件：通知其他模块（降低耦合） | `this.emit(RedDotEventName.Add, redDotData)` |
+| **Business（业务层）** | 内部事件：通知同模块 View 更新 | `this.event.emit(BackpackEventName.UIUpdate)` |
+| **Business（业务层）** | 跨模块事件：通知其他模块（降低耦合） | `this.event.emit(RedDotEventName.Add, redDotData)` |
 
 **调用关系（简化）**：
 `View（用户操作）` → `直接调用` → `Business（处理业务）`
@@ -46,9 +46,9 @@ triggers:
 | 场景 | 推荐方式 | 说明 |
 |------|---------|------|
 | **同模块 View → Business** | 直接调用 API | `this.ent.B_Backpack_Main.update(1001, 5)` |
-| **同模块 Business → View** | 模块内事件 | `this.emit(BackpackEventName.UIUpdate)` |
+| **同模块 Business → View** | 模块内事件 | `this.event.emit(BackpackEventName.UIUpdate)` |
 | **同模块 View ↔ View** | 直接引用 | `this.ent.VC_Backpack_Main.refresh(props)` |
-| **跨模块通信** | 全局事件 | `this.emit(RedDotEventName.Add, redDotData)` |
+| **跨模块通信** | 全局事件 | `this.event.emit(RedDotEventName.Add, redDotData)` |
 | **View 响应数据变化** | 事件监听 | `this.watch(BackpackEventName.UIUpdate, ...)` |
 
 **关键原则**：
@@ -128,7 +128,7 @@ update(id: number, amount: number): void {
     }
     
     // 2. 通知 View 更新（被动通知，不是直接调用 View 方法）
-    this.emit(BackpackEventName.UIUpdate, { prop, listId: undefined });
+    this.event.emit(BackpackEventName.UIUpdate, { prop, listId: undefined });
 }
 ```
 
@@ -141,7 +141,7 @@ init() {
         key: EM_BackpackRedDot.BackpackKey,
         path: EM_BackpackRedDot.BackpackPath,
     };
-    this.emit(RedDotEventName.Add, redDotAddData);
+    this.event.emit(RedDotEventName.Add, redDotAddData);
     this.setWatch();
 }
 
@@ -168,7 +168,7 @@ View 需要与其他组件交互？
     │   this.watch(ModuleEventName.XXX, ...)
     │
     └─ 跨模块通信 ──► 使用全局事件
-        this.emit(GlobalEventName.XXX)
+        this.event.emit(GlobalEventName.XXX)
 ```
 
 ### 详细决策流程
@@ -183,10 +183,10 @@ View 需要与其他组件交互？
     │   this.ent.VC_Backpack_Main.refresh(props)
     │
     ├─ Business → View ──► 模块内事件
-    │   this.emit(BackpackEventName.UIUpdate)
+    │   this.event.emit(BackpackEventName.UIUpdate)
     │
     └─ 跨模块 ──► 全局事件
-        this.emit(RedDotEventName.Add, redDotData)
+        this.event.emit(RedDotEventName.Add, redDotData)
 ```
 
 ---
@@ -197,7 +197,7 @@ View 需要与其他组件交互？
 |------|------|----------|------------|
 | Entity | `[Module]` | `CCEntity` | `@ecs.register('[Module]')` |
 | Model | `M_[Module]_Model` | `ecs.Comp` | `@ecs.register('M_[Module]_Model')` |
-| Business | `B_[Module]_[Name]` | `CCBusiness<[Module]>` | 无 |
+| Business | `B_[Module]_[Name]` | `CCBusiness<[Module]>` | `@classname('B_[Module]_[Name]')` |
 | View (ECS) | `VC_[Module]_[Name]` | `CCView<[Module]>` | `@ecs.register('VC_[Module]_[Name]', false)` + `@gui.register(...)` |
 
 ---
