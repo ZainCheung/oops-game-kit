@@ -219,14 +219,21 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 hide: () => btn.hide(),
                 destroy: () => btn.destroy(),
                 onTap: (callback) => {
-                    (btn as any).onTap((res: WechatMinigame.GetUserInfoSuccessCallbackResult) => {
+                    (btn as any).onTap((res: any) => {
+                        // 新版基础库可能返回空 userInfo（用户拒绝或未授权）
+                        const info = res?.userInfo;
+                        if (!info) {
+                            console.warn('[WeChatSdk] createUserInfoButton onTap: userInfo 为空', res);
+                            callback({ userInfo: null });
+                            return;
+                        }
                         callback({
                             userInfo: {
-                                nickName: res.userInfo.nickName,
-                                avatarUrl: res.userInfo.avatarUrl,
-                                gender: res.userInfo.gender,
-                                language: res.userInfo.language,
-                                raw: res.userInfo,
+                                nickName: info.nickName,
+                                avatarUrl: info.avatarUrl,
+                                gender: info.gender,
+                                language: info.language,
+                                raw: info,
                             },
                             rawData: res.rawData,
                             signature: res.signature,

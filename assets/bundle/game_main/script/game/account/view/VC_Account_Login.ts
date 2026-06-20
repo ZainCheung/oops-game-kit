@@ -13,11 +13,11 @@ const { ccclass, property } = _decorator;
 @gui.register('VC_Account_Login', { layer: LayerType.UI, prefab: 'gui/account/prefab/VC_Account_Login' })
 export class VC_Account_Login extends CCView<Account> {
     start() {
-        this.button.bind();
+        // this.button.bind();
     }
 
     private btnRequestSdkUserInfo() {
-        
+       
     }
 
     /** 释放内存 */
