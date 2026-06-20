@@ -50,18 +50,7 @@ export class LoginSdk extends LoginProcessBase {
         }
         catch (err) {
             console.timeEnd(label);
-            const e = err as any;
-            let errMsg = '';
-            try { errMsg = e?.errMsg ?? ''; } catch {}
-            if (!errMsg) { try { errMsg = e?.message ?? ''; } catch {}
-            }
-            if (!errMsg) { try { errMsg = typeof err === 'string' ? err : ''; } catch {}
-            }
-            if (!errMsg) {
-                try { errMsg = JSON.stringify(err); } catch { errMsg = String(err); }
-            }
-            console.error('【登录流程】平台 SDK 登录失败:', errMsg, err);
-            oops.gui.toast(`SDK 登录失败: ${errMsg}`);
+            console.error('【登录流程】平台 SDK 登录失败', err);
             this.fail();
         }
     }
