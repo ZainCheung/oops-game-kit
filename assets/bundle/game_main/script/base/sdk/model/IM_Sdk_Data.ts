@@ -64,8 +64,8 @@ export interface IUserInfo {
  * 获取用户信息返回结果
  */
 export interface IUserInfoResult {
-    /** 用户信息 */
-    userInfo: IUserInfo;
+    /** 用户信息（用户拒绝授权或基础库行为变化时可能为空） */
+    userInfo?: IUserInfo;
     /** 不包含敏感信息的原始数据字符串（用于签名校验） */
     rawData?: string;
     /** 签名 */

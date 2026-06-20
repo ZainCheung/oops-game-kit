@@ -112,7 +112,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 SDKVersion: info.SDKVersion,
                 raw: info,
             });
-        } catch (e) {
+        }
+        catch (e) {
             return Promise.reject(e);
         }
     }
@@ -214,17 +215,24 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 lang: option.lang ?? 'zh_CN',
                 withCredentials: option.withCredentials ?? false,
             });
+
+            // 维护外部 callback 到 wx 内部包装监听的映射，保证 offTap 能正确移除
+            const listeners = new Map<(res: IUserInfoResult) => void, (res: any) => void>();
+
             return {
                 show: () => btn.show(),
                 hide: () => btn.hide(),
-                destroy: () => btn.destroy(),
+                destroy: () => {
+                    listeners.clear();
+                    btn.destroy();
+                },
                 onTap: (callback) => {
-                    (btn as any).onTap((res: any) => {
+                    const wrapped = (res: any) => {
                         // 新版基础库可能返回空 userInfo（用户拒绝或未授权）
                         const info = res?.userInfo;
                         if (!info) {
                             console.warn('[WeChatSdk] createUserInfoButton onTap: userInfo 为空', res);
-                            callback({ userInfo: null });
+                            callback({ userInfo: undefined });
                             return;
                         }
                         callback({
@@ -241,13 +249,21 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                             iv: res.iv,
                             cloudID: res.cloudID,
                         });
-                    });
+                    };
+                    listeners.set(callback, wrapped);
+                    (btn as any).onTap(wrapped);
                 },
                 offTap: (callback) => {
-                    if (callback) (btn as any).offTap(callback as any);
+                    if (!callback) return;
+                    const wrapped = listeners.get(callback);
+                    if (wrapped) {
+                        (btn as any).offTap(wrapped);
+                        listeners.delete(callback);
+                    }
                 },
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[WeChatSdk] createUserInfoButton 失败', e);
             return null;
         }
@@ -287,7 +303,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 imageUrl: option?.imageUrl,
                 query: option?.query,
             });
-        } else {
+        }
+        else {
             this.notSupported('shareToTimeline');
         }
     }
@@ -322,7 +339,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 } as any,
             });
             return this.wrapBannerAd(ad, option);
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[WeChatSdk] createBannerAd 失败', e);
             return null;
         }
@@ -394,7 +412,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                     if (cb) (ad as any).offLoad(cb);
                 },
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[WeChatSdk] createRewardedVideoAd 失败', e);
             return null;
         }
@@ -420,7 +439,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                     if (cb) (ad as any).offClose(cb);
                 },
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[WeChatSdk] createInterstitialAd 失败', e);
             return null;
         }
@@ -455,7 +475,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                     if (cb) ad.offResize(cb);
                 },
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[WeChatSdk] createGridAd 失败', e);
             return null;
         }
@@ -486,7 +507,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                     if (cb) ad.offLoad(cb);
                 },
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[WeChatSdk] createCustomAd 失败', e);
             return null;
         }
@@ -700,7 +722,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                         }),
                     fail: () => resolve({ needAuthorization: false }),
                 });
-            } catch {
+            }
+            catch {
                 resolve({ needAuthorization: false });
             }
         });
@@ -757,7 +780,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 onUpdateFailed: (cb) => m.onUpdateFailed(cb),
                 applyUpdate: () => m.applyUpdate(),
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[WeChatSdk] getUpdateManager 失败', e);
             return null;
         }
@@ -791,7 +815,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 onStop: (cb) => (m.onStop ? m.onStop(cb) : undefined),
                 onError: (cb) => (m.onError ? m.onError((err: any) => cb(this.mapAdError(err))) : undefined),
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[WeChatSdk] getGameRecorderManager 失败', e);
             return null;
         }
@@ -808,7 +833,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 setFilterMsg: (msg) => m.setFilterMsg(msg),
                 addFilterMsg: (msg) => m.addFilterMsg(msg),
             };
-        } catch {
+        }
+        catch {
             return null;
         }
     }
@@ -820,7 +846,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     canIUse(apiName: string): boolean {
         try {
             return (wx as any).canIUse(apiName);
-        } catch {
+        }
+        catch {
             return false;
         }
     }

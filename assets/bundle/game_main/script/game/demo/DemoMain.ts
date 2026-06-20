@@ -19,7 +19,7 @@ export class DemoMain extends GameComponent {
         this.button.bind();
 
         // 注册新手引导
-        this.event.emit(GuideEventName.AutoBind, { ui: this.node });
+        // this.event.emit(GuideEventName.AutoBind, { ui: this.node });
 
         // 显示红点（count=1）
         this.event.emit(RedDotEventName.Update, { key: 'Demo', count: 1 });
@@ -31,7 +31,7 @@ export class DemoMain extends GameComponent {
         // runAllEcsDemos();
         oops.gui.toast('ABC');
 
-        console.log("Button")
+        console.log('Button');
 
         // 点击后取消红点（通过事件确认红点，由 B_RedDot_Event 处理）
         this.event.emit(RedDotEventName.Confirm, { key: 'Demo', save: false });
@@ -42,7 +42,7 @@ export class DemoMain extends GameComponent {
             title: '加载中',
             content: '请稍后...',
         });
-        console.log("Button001")
+        console.log('Button001');
     }
 
     loading() {
@@ -50,8 +50,17 @@ export class DemoMain extends GameComponent {
             title: '加载中',
             content: '请稍后...',
         });
-        console.log("loading")
+        console.log('loading');
     }
 
-    reset(): void { }
+    /** 插屏广告 */
+    btnA1() {}
+
+    /** 激励广告 */
+    btnA2() {}
+
+    /** banner广告 */
+    btnA3() {}
+
+    reset(): void {}
 }
