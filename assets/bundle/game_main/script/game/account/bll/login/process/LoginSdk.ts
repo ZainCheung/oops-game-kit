@@ -19,7 +19,7 @@ export class LoginSdk extends LoginProcessBase {
     }
 
     protected async execute() {
-        const label = '【登录流程】平台 SDK 账号登录';
+        const label = '【登录流程】平台 SDK 登录';
         console.time(label);
         try {
             const sdk = gsm.base.sdk.B_Sdk_Main;
