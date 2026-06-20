@@ -31,7 +31,7 @@ import type {
     IUserInfoResult,
     IBannerAd,
     IBannerAdOption,
-} from '../model/data/SdkData';
+} from '../model/IM_Sdk_Data';
 
 /**
  * 平台无关 SDK 接口

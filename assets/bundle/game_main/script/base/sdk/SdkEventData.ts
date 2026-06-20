@@ -1,4 +1,4 @@
-import type { INetworkStatusChangeEvent } from './model/data/SdkData';
+import type { INetworkStatusChangeEvent } from './model/IM_Sdk_Data';
 import { SdkEventName } from './SdkEvent';
 
 /** SDK 初始化完成事件数据 */

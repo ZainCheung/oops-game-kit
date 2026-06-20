@@ -1,4 +1,4 @@
-import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../enum/EM_Sdk';
+import { SdkNetworkType, SdkPlatform } from './enum/EM_Sdk';
 
 /**
  * 系统信息（平台无关的精简版，各平台实现时自行映射）
@@ -428,8 +428,3 @@ export interface IUpdateManager {
     onUpdateFailed(callback: () => void): void;
     applyUpdate(): void;
 }
-
-/**
- * 振动类型别名（用于参数）
- */
-export type VibrateType = SdkVibrateType;

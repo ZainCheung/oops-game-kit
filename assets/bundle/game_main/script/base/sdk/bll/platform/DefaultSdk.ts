@@ -32,7 +32,7 @@ import type {
     IUserInfoResult,
     IBannerAd,
     IBannerAdOption,
-} from '../../model/data/SdkData';
+} from '../../model/IM_Sdk_Data';
 
 /**
  * 默认 SDK 实现（空实现）

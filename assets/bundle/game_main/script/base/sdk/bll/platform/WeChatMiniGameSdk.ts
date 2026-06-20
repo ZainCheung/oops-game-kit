@@ -34,7 +34,7 @@ import type {
     IUserCloudStorageResult,
     IUserInfoButton,
     IUserInfoResult,
-} from '../../model/data/SdkData';
+} from '../../model/IM_Sdk_Data';
 import { ISdk } from '../ISdk';
 import { DefaultSdk } from './DefaultSdk';
 

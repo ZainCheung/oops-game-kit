@@ -4,7 +4,7 @@ import { Sdk } from '../Sdk';
 import { SdkEventName } from '../SdkEvent';
 import { SdkManager } from './SdkManager';
 import { ISdk } from './ISdk';
-import type { INetworkStatusChangeEvent } from '../model/data/SdkData';
+import type { INetworkStatusChangeEvent } from '../model/IM_Sdk_Data';
 
 export class B_Sdk_Main extends CCBusiness<Sdk> {
     /** 缓存的原生事件回调，便于 destroy 时解绑 */
