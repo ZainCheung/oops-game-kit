@@ -18,23 +18,21 @@ export class LoginProcessBase extends Task {
 
     fail() {
         switch (this.type) {
-        case LoginProcessType.SdkLogin:
-            break;
-        case LoginProcessType.SdkUserInfo:
-            break;
-        case LoginProcessType.GameTable:
-            break;
-        case LoginProcessType.ConnectNet:
-            break;
-        case LoginProcessType.GameData:
-            break;
-        case LoginProcessType.EnterGame:
-            break;
+            case LoginProcessType.SdkLogin:
+                break;
+            case LoginProcessType.SdkUserInfo:
+                break;
+            case LoginProcessType.GameTable:
+                break;
+            case LoginProcessType.ConnectNet:
+                break;
+            case LoginProcessType.GameData:
+                break;
+            case LoginProcessType.EnterGame:
+                break;
         }
         console.log('登录失败', this.type);
     }
 
-    protected execute() {
-
-    }
+    protected execute() {}
 }

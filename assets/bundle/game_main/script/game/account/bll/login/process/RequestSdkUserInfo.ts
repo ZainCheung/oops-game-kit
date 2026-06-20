@@ -1,11 +1,10 @@
-import { Node, UITransform, find, view } from 'cc';
+import { Node, UITransform, find } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
-import { gsm } from '../../../../common/GameSingletonModule';
 import type { ISdk } from '../../../../../base/sdk/bll/ISdk';
 import type { IUserInfo, IUserInfoResult } from '../../../../../base/sdk/model/IM_Sdk_Data';
-import { LoginProcessBase } from '../LoginProcessBase';
+import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
-import { settings } from 'cc';
+import { LoginProcessBase } from '../LoginProcessBase';
 
 /**
  * 获取微信用户信息还有问题等待调试
