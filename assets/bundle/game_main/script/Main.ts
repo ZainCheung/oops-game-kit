@@ -5,6 +5,7 @@ import { Root } from 'db://oops-framework/core/Root';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { gsm } from './game/common/GameSingletonModule';
 import { Initialize } from './game/initialize/Initialize';
+import { Account } from './game/account/Account';
 
 const { ccclass, property } = _decorator;
 
@@ -24,6 +25,7 @@ export class Main extends Root {
     }
 
     protected run() {
+        gsm.account = ecs.getEntity(Account);
         gsm.initialize = ecs.getEntity(Initialize);
         gsm.initialize.load(this.initial);
     }

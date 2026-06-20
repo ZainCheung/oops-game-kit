@@ -4,10 +4,7 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { JsonUtil } from 'db://oops-framework/core/utils/JsonUtil';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
-import { Account } from '../../account/Account';
-import { AccountEvent } from '../../account/AccountEvent';
 import { ConfigCommonStorage } from '../../common/config/ConfigGameStorage';
-import { gsm } from '../../common/GameSingletonModule';
 import type { Initialize } from '../Initialize';
 import { InitializeEventName } from '../InitializeEvent';
 import { VC_Initialize_Loading } from './VC_Initialize_Loading';
@@ -22,13 +19,11 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     private waitComplete = false;
     /** 资源加载完成 */
     private loadComplete = false;
-    /** 是否登录成功 */
-    private isLoginSuccess = false;
 
     //#region 体验动画相关自定义逻辑
     private startColor = color(255, 0, 0, 0);
     private endColor = color(255, 0, 0, 255);
-    private duration = 0;
+    private duration = 0.5;
 
     // TODO: 这里实现的效果为动画播放完，初始化完成则进入第一个界面；如果动画未播放完，初始化完成时，会等动画播放完进入第一个界面（注：动画逻辑可自定义，注意资源要尽可能小，让玩家更快看到提示画面）
     private waitAnim(startColor: Color, endColor: Color, callback: Function) {
@@ -63,28 +58,9 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     //#endregion
 
     start() {
-        this.event.setEvent(AccountEvent.LoginSuccessGame);
-        this.startLogin();
         this.wait();
         this.loadRes();
     }
-
-    //#region 登录流程
-
-    /** 开始登录流程 */
-    private startLogin() {
-        const account = ecs.getEntity(Account);
-        gsm.account = account;
-        account.B_Account_Login.login();
-    }
-
-    /** 登录成功回调 */
-    private onLoginSuccessGame() {
-        this.isLoginSuccess = true;
-        this.event.emit(InitializeEventName.LoginComplete); // 登录完成事件
-        this.tryEnter();
-    }
-    //#endregion
 
     /** 游戏必备资源加载 */
     private async loadRes() {
@@ -99,13 +75,12 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
         oops.gui.setOpenFailure(this.onOpenFailure);
 
         this.loadComplete = true;
-        await this.event.emitAsync(InitializeEventName.LoadComplete); // 资源加载完成事件
         this.tryEnter();
     }
 
-    /** 尝试进入加载界面（需要登录、资源加载、动画都完成） */
+    /** 尝试进入加载界面（需要资源加载、动画都完成） */
     private tryEnter() {
-        if (this.isLoginSuccess && this.loadComplete && this.waitComplete) {
+        if (this.loadComplete && this.waitComplete) {
             this.waitAnim(this.endColor, this.startColor, () => {
                 this.enter();
             });
@@ -113,6 +88,7 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     }
 
     private async enter() {
+        await this.event.emitAsync(InitializeEventName.LoadComplete);
         await this.ent.addUi(VC_Initialize_Loading);
         this.remove();
     }

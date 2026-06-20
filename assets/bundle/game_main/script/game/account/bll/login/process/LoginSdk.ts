@@ -1,7 +1,7 @@
 import { oops } from 'db://oops-framework/core/Oops';
 import { LoginProcessBase } from '../LoginProcessBase';
 import { LoginProcessType } from '../LoginEnum';
-import { AccountEvent } from '../../../AccountEvent';
+import { AccountEventName } from '../../../AccountEvent';
 
 /**
  * 平台 SDK 账号登录
@@ -15,7 +15,7 @@ export class LoginSdk extends LoginProcessBase {
 
     protected execute() {
         oops.log.trace('【登录流程】平台 SDK 账号登录成功');
-        oops.message.dispatchEvent(AccountEvent.LoginSuccessSdk);
+        oops.message.dispatchEvent(AccountEventName.LoginSuccessSdk);
         this.success();
     }
 }

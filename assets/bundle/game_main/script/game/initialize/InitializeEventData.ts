@@ -1,7 +1,13 @@
+/** 登录完成事件数据 */
+export type IInitializeLoginCompleteData = void;
+
+/** 初始化资源加载完成事件数据 */
+export type IInitializeLoadCompleteData = void;
+
 /** 初始化模块事件数据映射 */
 export interface IInitializeEventDataMap {
-    onInitializeLoginComplete: void;
-    onInitializeLoadComplete: void;
+    onInitializeLoginComplete: IInitializeLoginCompleteData;
+    onInitializeLoadComplete: IInitializeLoadCompleteData;
 }
 
 // 扩展全局事件类型

@@ -1,6 +1,6 @@
 
 import { oops } from 'db://oops-framework/core/Oops';
-import { AccountEvent } from '../../../../game/account/AccountEvent';
+import { AccountEventName } from '../../../../game/account/AccountEvent';
 import type { INetworkTips, IResponseProtocol } from './core/NetInterface';
 
 /** 游戏网络事件界面提示逻辑 */
@@ -22,7 +22,7 @@ export class NetGameTips implements INetworkTips {
 
     /** 重连接提示 */
     reconnectTips(): void {
-        oops.message.dispatchEvent(AccountEvent.Reconnect);
+        oops.message.dispatchEvent(AccountEventName.Reconnect);
     }
 
     /** 请求提示 */

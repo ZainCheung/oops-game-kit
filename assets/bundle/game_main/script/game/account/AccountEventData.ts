@@ -1,4 +1,5 @@
 import type { CCEntity } from 'db://oops-framework/module/common/CCEntity';
+import { AccountEventName } from './AccountEvent';
 
 /** 网络重连接事件数据 */
 export interface IAccountReconnectData {
@@ -36,19 +37,12 @@ export interface IAccountAddChildSingletonsData {
     entity?: CCEntity;
 }
 
-/**
- * 账号模块事件数据映射
- * 用于强类型事件系统，将事件名与对应的数据类型关联
- */
+/** 账号模块事件数据映射 */
 export interface IAccountEventDataMap {
-    /** 网络重连接事件 */
-    onReconnect: IAccountReconnectData;
-    /** 平台 SDK 登录成功事件 */
-    onLoginSuccessSdk: IAccountLoginSuccessSdkData;
-    /** 游戏服务器登录成功事件 */
-    onLoginSuccessGame: IAccountLoginSuccessGameData;
-    /** 添加子单例实体事件 */
-    onAddChildSingletons: IAccountAddChildSingletonsData;
+    [AccountEventName.Reconnect]: IAccountReconnectData;
+    [AccountEventName.LoginSuccessSdk]: IAccountLoginSuccessSdkData;
+    [AccountEventName.LoginSuccessGame]: IAccountLoginSuccessGameData;
+    [AccountEventName.AddChildSingletons]: IAccountAddChildSingletonsData;
 }
 
 // 扩展全局事件类型
