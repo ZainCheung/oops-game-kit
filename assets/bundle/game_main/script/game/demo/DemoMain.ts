@@ -2,9 +2,10 @@ import { _decorator } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
 import { PromptEventName } from '../../base/prompt/PromptEvent';
-import { GuideEventName } from '../guide/GuideEvent';
 import { debounce } from 'db://oops-framework/module/decorator/DebounceDecorator';
 import { RedDotEventName } from '../reddot/RedDotEvent';
+import { gsm } from '../common/GameSingletonModule';
+import type { IBannerAd } from '../../base/sdk/model/IM_Sdk_Data';
 
 const { ccclass } = _decorator;
 
@@ -15,6 +16,9 @@ const { ccclass } = _decorator;
 /** 教程列表 */
 @ccclass('DemoMain')
 export class DemoMain extends GameComponent {
+    /** Banner 广告实例（用于 toggle 显示/隐藏） */
+    private bannerAd: IBannerAd | null = null;
+
     protected async onLoad(): Promise<void> {
         this.button.bind();
 
@@ -54,13 +58,87 @@ export class DemoMain extends GameComponent {
     }
 
     /** 插屏广告 */
-    btnA1() {}
+    btnA1() {
+        const sdk = gsm.base.sdk.B_Sdk_Main.sdk;
+        oops.gui.toast('创建插屏广告...');
+        const ad = sdk.createInterstitialAd({ adUnitId: 'demo_interstitial_adunit' });
+        if (!ad) {
+            oops.gui.toast('当前平台不支持插屏广告');
+            return;
+        }
+        ad.onError((err) => {
+            oops.gui.toast(`插屏广告错误: ${err.errCode}`);
+            console.error('[Demo] 插屏广告错误', err);
+        });
+        ad.load()
+            .then(() => ad.show())
+            .then(() => oops.gui.toast('插屏广告展示成功'))
+            .catch((err) => oops.gui.toast(`插屏广告展示失败: ${err}`));
+    }
 
     /** 激励广告 */
-    btnA2() {}
+    btnA2() {
+        const sdk = gsm.base.sdk.B_Sdk_Main.sdk;
+        oops.gui.toast('创建激励广告...');
+        const ad = sdk.createRewardedVideoAd({ adUnitId: 'demo_rewarded_adunit' });
+        if (!ad) {
+            oops.gui.toast('当前平台不支持激励广告');
+            return;
+        }
+        const onClose = (res: { isEnded: boolean }) => {
+            oops.gui.toast(res.isEnded ? '激励广告播放完成，发放奖励' : '激励广告提前关闭，不发放奖励');
+            ad.offClose(onClose);
+        };
+        ad.onClose(onClose);
+        ad.onError((err) => {
+            oops.gui.toast(`激励广告错误: ${err.errCode}`);
+            console.error('[Demo] 激励广告错误', err);
+        });
+        ad.load()
+            .then(() => ad.show())
+            .then(() => oops.gui.toast('激励广告展示成功'))
+            .catch((err) => oops.gui.toast(`激励广告展示失败: ${err}`));
+    }
 
     /** banner广告 */
-    btnA3() {}
+    btnA3() {
+        const sdk = gsm.base.sdk.B_Sdk_Main.sdk;
+        if (this.bannerAd) {
+            this.bannerAd.hide();
+            this.bannerAd.destroy();
+            this.bannerAd = null;
+            oops.gui.toast('Banner 广告已关闭');
+            return;
+        }
+        oops.gui.toast('创建 Banner 广告...');
+        const ad = sdk.createBannerAd({
+            adUnitId: 'demo_banner_adunit',
+            left: 0,
+            top: 0,
+            width: 300,
+        });
+        if (!ad) {
+            oops.gui.toast('当前平台不支持 Banner 广告');
+            return;
+        }
+        this.bannerAd = ad;
+        ad.onError((err) => {
+            oops.gui.toast(`Banner 广告错误: ${err.errCode}`);
+            console.error('[Demo] Banner 广告错误', err);
+        });
+        ad.show()
+            .then(() => oops.gui.toast('Banner 广告展示成功，再次点击关闭'))
+            .catch((err) => {
+                oops.gui.toast(`Banner 广告展示失败: ${err}`);
+                this.bannerAd = null;
+            });
+    }
 
-    reset(): void {}
+    reset(): void {
+        if (this.bannerAd) {
+            this.bannerAd.hide();
+            this.bannerAd.destroy();
+            this.bannerAd = null;
+        }
+    }
 }
