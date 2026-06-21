@@ -91,14 +91,15 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 worldPos.y
             );
 
+            // 参考 marsdk 微信实现：使用 type:'image' + 透明背景色，确保按钮完全透明覆盖在 Cocos 按钮区域上
             const btn = sdk.createUserInfoButton({
-                type: 'text',
-                text: '',
+                type: 'image',
                 style: {
                     left: style.left,
                     top: style.top,
                     width: style.width,
                     height: style.height,
+                    backgroundColor: 'rgba(255, 255, 255, 0)', // 透明
                 },
             });
 
@@ -133,7 +134,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 return;
             }
 
-            // 非微信平台：监听 Cocos 节点触摸事件，点击后填充测试数据
+            // 非微信平台：监听 btnRequestSdkUserInfo 按钮触摸事件，点击后填充测试数据
+            // 与微信平台行为统一：只有点击按钮区域才触发获取用户信息
             const handler = () => {
                 const testUserInfo: IUserInfo = {
                     nickName: 'TestUser',
@@ -142,12 +144,12 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 };
                 gsm.base.sdk.M_Sdk_Main.userInfo = testUserInfo;
                 oops.log.trace(`【登录流程】获取用户信息成功（测试），昵称: ${testUserInfo.nickName}`);
-                uiNode.off(Node.EventType.TOUCH_END, handler, this);
-                // 关闭登录界面
+                btnNode.off(Node.EventType.TOUCH_END, handler, this);
+                // 关闭登录界面，继续后续登录流程
                 gsm.account.B_Account_ViewUI.removeLogin();
                 resolve();
             };
-            uiNode.on(Node.EventType.TOUCH_END, handler, this);
+            btnNode.on(Node.EventType.TOUCH_END, handler, this);
         });
     }
 
