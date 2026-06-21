@@ -21,15 +21,10 @@ export class B_Button_Main extends CCBusiness<Button> {
     }
 
     /** 初始化资源加载完成，注册按钮音效 */
-    private onInitializeLoadComplete<K extends InitializeEventName.LoadComplete>(
+    private async onInitializeLoadComplete<K extends InitializeEventName.LoadComplete>(
         event: K,
         data: IInitializeEventDataMap[K]
-    ): void {
-        this.registerButtonSounds();
-    }
-
-    /** 注册按钮音效 */
-    private async registerButtonSounds(): Promise<void> {
+    ): Promise<void> {
         const ac = await oops.res.load(audio_bundle, audio_path, AudioClip);
         if (!ac) {
             oops.log.logBusiness('按钮音效资源加载失败');
