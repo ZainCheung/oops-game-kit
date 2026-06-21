@@ -2,6 +2,7 @@ import { sys } from 'cc';
 import { SdkPlatform } from '../model/enum/EM_Sdk';
 import { ISdk } from './ISdk';
 import { DefaultSdk } from './platform/DefaultSdk';
+import { DouYinMiniGameSdk } from './platform/DouYinMiniGameSdk';
 import { WeChatMiniGameSdk } from './platform/WeChatMiniGameSdk';
 
 /**
@@ -36,6 +37,7 @@ export class SdkManager {
     constructor() {
         // 注册默认平台实现
         this.register(SdkPlatform.WeChatMiniGame, () => new WeChatMiniGameSdk());
+        this.register(SdkPlatform.DouYinMiniGame, () => new DouYinMiniGameSdk());
         // H5/未知平台使用 DefaultSdk
         this.register(SdkPlatform.H5, () => new DefaultSdk(SdkPlatform.H5));
         this.register(SdkPlatform.Unknown, () => new DefaultSdk(SdkPlatform.Unknown));

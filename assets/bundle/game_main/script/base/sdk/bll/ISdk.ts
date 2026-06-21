@@ -1,4 +1,4 @@
-import { SdkPlatform, SdkVibrateType } from '../model/enum/EM_Sdk';
+import { SdkVibrateType } from '../model/enum/EM_Sdk';
 import type {
     IChannelsOption,
     ICustomAd,
@@ -21,6 +21,8 @@ import type {
     IRealtimeLogManager,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
+    ISceneOption,
+    ISceneResult,
     IShareOption,
     IShareToTimelineOption,
     ISubscribeMessageResult,
@@ -50,9 +52,6 @@ import type {
  */
 export interface ISdk {
     //#region ========== 平台与生命周期 ==========
-
-    /** 返回当前平台类型 */
-    getPlatform(): SdkPlatform;
 
     /** 获取系统信息 */
     getSystemInfo(): Promise<ISystemInfo>;
@@ -159,10 +158,11 @@ export interface ISdk {
 
     //#region ========== 本地存储（KV） ==========
 
-    setStorage(key: string, data: any): Promise<void>;
-    getStorage<T = any>(key: string): Promise<T>;
-    removeStorage(key: string): Promise<void>;
-    clearStorage(): Promise<void>;
+    /**
+     * 获取存储信息。
+     * 注意：基础的 set/get/remove/clear 请使用 Cocos 引擎的 `sys.localStorage`，
+     * 此接口仅保留引擎无法提供的存储信息查询能力。
+     */
     getStorageInfo(): Promise<{ keys: string[]; currentSize: number; limitSize: number }>;
 
     //#endregion
@@ -196,9 +196,6 @@ export interface ISdk {
 
     /** 是否保持屏幕常亮 */
     setKeepScreenOn(keepScreenOn: boolean): Promise<void>;
-
-    /** 触发 GC（仅小游戏平台有效） */
-    triggerGC(): void;
 
     //#endregion
 
@@ -271,6 +268,22 @@ export interface ISdk {
 
     /** 获取实时日志管理器 */
     getRealtimeLogManager(): IRealtimeLogManager | null;
+
+    //#endregion
+
+    //#region ========== 抖音侧边栏场景（仅抖音小游戏支持）==========
+
+    /**
+     * 检测是否支持指定场景（如抖音侧边栏）。
+     * 仅抖音小游戏有效，其它平台返回 reject。
+     */
+    checkScene(option: ISceneOption): Promise<ISceneResult>;
+
+    /**
+     * 跳转到指定场景（如抖音侧边栏）。
+     * 仅抖音小游戏有效，其它平台返回 reject。
+     */
+    navigateToScene(option: ISceneOption): Promise<ISceneResult>;
 
     //#endregion
 

@@ -26,6 +26,8 @@ import type {
     IRealtimeLogManager,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
+    ISceneOption,
+    ISceneResult,
     IShareOption,
     IShareToTimelineOption,
     ISubscribeMessageResult,
@@ -91,10 +93,6 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     //#endregion
 
     //#region ========== 平台与生命周期 ==========
-
-    getPlatform(): SdkPlatform {
-        return SdkPlatform.WeChatMiniGame;
-    }
 
     getSystemInfo(): Promise<ISystemInfo> {
         try {
@@ -558,24 +556,6 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#region ========== 本地存储 ==========
 
-    setStorage(key: string, data: any): Promise<void> {
-        return this.promisify<void>(wx.setStorage.bind(wx), { key, data }).then(() => undefined);
-    }
-
-    getStorage<T = any>(key: string): Promise<T> {
-        return this.promisify<{ data: T }>(wx.getStorage.bind(wx), { key }).then(
-            (res) => res.data
-        );
-    }
-
-    removeStorage(key: string): Promise<void> {
-        return this.promisify<void>(wx.removeStorage.bind(wx), { key }).then(() => undefined);
-    }
-
-    clearStorage(): Promise<void> {
-        return this.promisify<void>(wx.clearStorage.bind(wx)).then(() => undefined);
-    }
-
     getStorageInfo(): Promise<{ keys: string[]; currentSize: number; limitSize: number }> {
         return Promise.resolve(wx.getStorageInfoSync());
     }
@@ -642,10 +622,6 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         return this.promisify<void>(wx.setKeepScreenOn.bind(wx), { keepScreenOn }).then(
             () => undefined
         );
-    }
-
-    triggerGC(): void {
-        if (typeof wx.triggerGC === 'function') wx.triggerGC();
     }
 
     //#endregion
@@ -837,6 +813,19 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         catch {
             return null;
         }
+    }
+
+    //#endregion
+
+    //#region ========== 抖音侧边栏场景 ==========
+
+    checkScene(_option: ISceneOption): Promise<ISceneResult> {
+        // 微信不支持抖音侧边栏场景
+        return this.reject<ISceneResult>('checkScene');
+    }
+
+    navigateToScene(_option: ISceneOption): Promise<ISceneResult> {
+        return this.reject<ISceneResult>('navigateToScene');
     }
 
     //#endregion

@@ -22,6 +22,8 @@ import type {
     IRealtimeLogManager,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
+    ISceneOption,
+    ISceneResult,
     IShareOption,
     IShareToTimelineOption,
     ISubscribeMessageResult,
@@ -63,10 +65,6 @@ export class DefaultSdk implements ISdk {
     }
 
     //#region ========== 平台与生命周期 ==========
-
-    getPlatform(): SdkPlatform {
-        return this._platform;
-    }
 
     getSystemInfo(): Promise<ISystemInfo> {
         return Promise.resolve({
@@ -179,18 +177,6 @@ export class DefaultSdk implements ISdk {
 
     //#region ========== 本地存储 ==========
 
-    setStorage(_key: string, _data: any): Promise<void> {
-        return this.reject('setStorage');
-    }
-    getStorage<T = any>(_key: string): Promise<T> {
-        return this.reject<T>('getStorage');
-    }
-    removeStorage(_key: string): Promise<void> {
-        return this.reject('removeStorage');
-    }
-    clearStorage(): Promise<void> {
-        return this.reject('clearStorage');
-    }
     getStorageInfo(): Promise<{ keys: string[]; currentSize: number; limitSize: number }> {
         return Promise.resolve({ keys: [], currentSize: 0, limitSize: 0 });
     }
@@ -225,7 +211,6 @@ export class DefaultSdk implements ISdk {
     setKeepScreenOn(_keepScreenOn: boolean): Promise<void> {
         return Promise.resolve();
     }
-    triggerGC(): void {}
 
     //#endregion
 
@@ -310,6 +295,18 @@ export class DefaultSdk implements ISdk {
             setFilterMsg: (_msg: string) => {},
             addFilterMsg: (_msg: string) => {},
         };
+    }
+
+    //#endregion
+
+    //#region ========== 抖音侧边栏场景 ==========
+
+    checkScene(_option: ISceneOption): Promise<ISceneResult> {
+        return this.reject<ISceneResult>('checkScene');
+    }
+
+    navigateToScene(_option: ISceneOption): Promise<ISceneResult> {
+        return this.reject<ISceneResult>('navigateToScene');
     }
 
     //#endregion

@@ -428,3 +428,23 @@ export interface IUpdateManager {
     onUpdateFailed(callback: () => void): void;
     applyUpdate(): void;
 }
+
+/**
+ * 场景跳转/检测参数（主要用于抖音侧边栏场景）
+ */
+export interface ISceneOption {
+    /** 场景标识，如 'sidebar' */
+    scene: string;
+    /** 额外参数 */
+    [key: string]: any;
+}
+
+/**
+ * 场景跳转/检测结果
+ */
+export interface ISceneResult {
+    /** 是否支持/成功 */
+    success: boolean;
+    /** 原始数据 */
+    raw?: any;
+}
