@@ -50,11 +50,11 @@ export class DemoMain extends GameComponent {
     }
 
     loading() {
-        oops.message.emit(PromptEventName.Alert, {
-            title: '加载中',
-            content: '请稍后...',
-        });
-        console.log('loading');
+        // oops.message.emit(PromptEventName.Alert, {
+        //     title: '加载中',
+        //     content: '请稍后...',
+        // });
+        oops.gui.toast('loading');
     }
 
     /** 插屏广告 */
@@ -66,14 +66,14 @@ export class DemoMain extends GameComponent {
             oops.gui.toast('当前平台不支持插屏广告');
             return;
         }
-        ad.onError((err) => {
+        ad.onError(err => {
             oops.gui.toast(`插屏广告错误: ${err.errCode}`);
             console.error('[Demo] 插屏广告错误', err);
         });
         ad.load()
             .then(() => ad.show())
             .then(() => oops.gui.toast('插屏广告展示成功'))
-            .catch((err) => oops.gui.toast(`插屏广告展示失败: ${err}`));
+            .catch(err => oops.gui.toast(`插屏广告展示失败: ${err}`));
     }
 
     /** 激励广告 */
@@ -90,14 +90,14 @@ export class DemoMain extends GameComponent {
             ad.offClose(onClose);
         };
         ad.onClose(onClose);
-        ad.onError((err) => {
+        ad.onError(err => {
             oops.gui.toast(`激励广告错误: ${err.errCode}`);
             console.error('[Demo] 激励广告错误', err);
         });
         ad.load()
             .then(() => ad.show())
             .then(() => oops.gui.toast('激励广告展示成功'))
-            .catch((err) => oops.gui.toast(`激励广告展示失败: ${err}`));
+            .catch(err => oops.gui.toast(`激励广告展示失败: ${err}`));
     }
 
     /** banner广告 */
@@ -122,13 +122,13 @@ export class DemoMain extends GameComponent {
             return;
         }
         this.bannerAd = ad;
-        ad.onError((err) => {
+        ad.onError(err => {
             oops.gui.toast(`Banner 广告错误: ${err.errCode}`);
             console.error('[Demo] Banner 广告错误', err);
         });
         ad.show()
             .then(() => oops.gui.toast('Banner 广告展示成功，再次点击关闭'))
-            .catch((err) => {
+            .catch(err => {
                 oops.gui.toast(`Banner 广告展示失败: ${err}`);
                 this.bannerAd = null;
             });
