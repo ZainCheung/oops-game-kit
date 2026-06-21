@@ -1,4 +1,4 @@
-import { Color, Graphics, Node, UITransform, Vec3, find, view } from 'cc';
+import { Color, Graphics, Node, UITransform, Vec3, find, screen, view } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import type { ISdk } from '../../../../../base/sdk/ISdk';
 import type { IUserInfoResult } from '../../../../../base/sdk/SdkTypes';
@@ -188,12 +188,11 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      * - H5：screen.width/height 是物理像素（含 devicePixelRatio），需用 window.innerWidth/innerHeight
      * - 原生：screen.width/height 即逻辑像素
      *
-     * 使用 view.getCanvasSize() 获取 Cocos 画布的逻辑尺寸，跨平台行为一致。
+     * 使用 screen.windowSize 获取 Cocos 画布的逻辑尺寸，跨平台行为一致。
      */
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     private getScreenLogicalSize(): { width: number; height: number } {
         try {
-            const size = view.getCanvasSize();
+            const size = screen.windowSize;
             if (size && size.width > 0 && size.height > 0) {
                 return { width: size.width, height: size.height };
             }
