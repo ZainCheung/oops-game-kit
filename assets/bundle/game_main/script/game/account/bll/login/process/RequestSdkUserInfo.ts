@@ -152,7 +152,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 });
             }
 
-            // 路径 B：Cocos 按钮点击（模拟器或原生按钮未拦截时走这里）
+            // 路径 B：Cocos 按钮点击（模拟器或原生按钮未拦截时走这里）模拟器和真机都走这。。。。。。
             // 主动调用 sdk.getUserInfo() 获取用户信息，不依赖原生按钮
             const onCocosBtnTap = async () => {
                 console.log('【登录流程】Cocos 按钮被点击，主动调用 getUserInfo');
