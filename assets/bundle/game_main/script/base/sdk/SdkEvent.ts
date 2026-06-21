@@ -1,4 +1,4 @@
-import type { INetworkStatusChangeEvent } from './model/IM_Sdk_Data';
+import type { INetworkStatusChangeEvent } from './SdkTypes';
 
 /** SDK 模块事件枚举 */
 export enum SdkEventName {

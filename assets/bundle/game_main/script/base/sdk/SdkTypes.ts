@@ -1,4 +1,4 @@
-import { SdkNetworkType, SdkPlatform } from './enum/EM_Sdk';
+import { SdkNetworkType, SdkPlatform } from './SdkEnum';
 
 /**
  * 系统信息（平台无关的精简版，各平台实现时自行映射）

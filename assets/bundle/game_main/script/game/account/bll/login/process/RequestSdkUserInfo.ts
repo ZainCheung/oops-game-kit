@@ -1,7 +1,7 @@
 import { Color, Graphics, Node, UITransform, Vec3, find, view } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
-import type { ISdk } from '../../../../../base/sdk/bll/ISdk';
-import type { IUserInfoResult } from '../../../../../base/sdk/model/IM_Sdk_Data';
+import type { ISdk } from '../../../../../base/sdk/ISdk';
+import type { IUserInfoResult } from '../../../../../base/sdk/SdkTypes';
 import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
@@ -32,7 +32,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             }
 
             // 2. 等待用户点击按钮获取用户信息（阻塞直到点击完成）
-            const sdk = gsm.base.sdk.B_Sdk_Main.sdk;
+            const sdk = gsm.base.sdk.main.sdk;
             await this.requestUserInfo(sdk, uiNode);
 
             console.timeEnd(label);
@@ -72,7 +72,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             const btnNode = find('btnRequestSdkUserInfo', uiNode);
             if (!btnNode) {
                 oops.log.trace('【登录流程】未找到 btnRequestSdkUserInfo 节点，使用默认测试用户信息');
-                gsm.base.sdk.M_Sdk_Main.userInfo = {
+                gsm.base.sdk.model.userInfo = {
                     nickName: 'Player',
                     avatarUrl: '',
                     gender: 0,
@@ -137,12 +137,12 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 nativeBtn.onTap((res: IUserInfoResult) => {
                     console.log('【登录流程】原生按钮 onTap 回调:', JSON.stringify(res));
                     if (res?.userInfo) {
-                        gsm.base.sdk.M_Sdk_Main.userInfo = res.userInfo;
+                        gsm.base.sdk.model.userInfo = res.userInfo;
                         oops.log.trace(
                             `【登录流程】获取用户信息成功（原生按钮），昵称: ${res.userInfo.nickName}`
                         );
                     } else {
-                        gsm.base.sdk.M_Sdk_Main.userInfo = {
+                        gsm.base.sdk.model.userInfo = {
                             nickName: 'Player',
                             avatarUrl: '',
                             gender: 0,
@@ -160,7 +160,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     const res = await sdk.getUserInfo();
                     console.log('【登录流程】getUserInfo 返回:', JSON.stringify(res));
                     if (res?.userInfo) {
-                        gsm.base.sdk.M_Sdk_Main.userInfo = res.userInfo;
+                        gsm.base.sdk.model.userInfo = res.userInfo;
                         oops.log.trace(
                             `【登录流程】获取用户信息成功（getUserInfo），昵称: ${res.userInfo.nickName}`
                         );
@@ -169,7 +169,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     }
                 } catch (e) {
                     console.warn('【登录流程】getUserInfo 失败，使用默认数据', e);
-                    gsm.base.sdk.M_Sdk_Main.userInfo = {
+                    gsm.base.sdk.model.userInfo = {
                         nickName: 'Player',
                         avatarUrl: '',
                         gender: 0,

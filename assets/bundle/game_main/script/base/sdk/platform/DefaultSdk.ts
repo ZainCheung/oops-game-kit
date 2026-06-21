@@ -1,4 +1,4 @@
-import { SdkPlatform, SdkVibrateType } from '../../model/enum/EM_Sdk';
+import { SdkPlatform, SdkVibrateType } from '../SdkEnum';
 import { ISdk } from '../ISdk';
 import type {
     IChannelsOption,
@@ -34,7 +34,7 @@ import type {
     IUserInfoResult,
     IBannerAd,
     IBannerAdOption,
-} from '../../model/IM_Sdk_Data';
+} from '../SdkTypes';
 
 /**
  * 默认 SDK 实现（空实现）
@@ -175,13 +175,6 @@ export class DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 本地存储 ==========
-
-    getStorageInfo(): Promise<{ keys: string[]; currentSize: number; limitSize: number }> {
-        return Promise.resolve({ keys: [], currentSize: 0, limitSize: 0 });
-    }
-
-    //#endregion
 
     //#region ========== 设备能力 ==========
 

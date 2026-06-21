@@ -1,10 +1,10 @@
-import { SdkPlatform } from '../model/enum/EM_Sdk';
+import { SdkPlatform } from './SdkEnum';
 import type {
     IBannerAd,
     ICustomAd,
     IInterstitialAd,
     IRewardedVideoAd,
-} from '../model/IM_Sdk_Data';
+} from './SdkTypes';
 import { ISdk } from './ISdk';
 
 /**
@@ -76,7 +76,7 @@ const DEFAULT_ADS_UNIT_ID_CONFIG: ISdkAdsUnitIdConfig = {
  *
  * 使用方式：
  * ```ts
- * const ads = oops.sdk.B_Sdk_Main.adsManager;
+ * const ads = gsm.base.sdk.main.adsManager;
  * ads.setUnitIdConfig(myConfig);
  * ads.preInitAllAds();
  * ads.showRewardedVideoAds((isRewarded) => { ... });

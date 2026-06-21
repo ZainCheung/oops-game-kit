@@ -1,4 +1,4 @@
-import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../../model/enum/EM_Sdk';
+import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
     IBannerAd,
@@ -34,7 +34,7 @@ import type {
     IUserCloudStorageResult,
     IUserInfoButton,
     IUserInfoResult,
-} from '../../model/IM_Sdk_Data';
+} from '../SdkTypes';
 import { ISdk } from '../ISdk';
 import { DefaultSdk } from './DefaultSdk';
 
@@ -469,13 +469,6 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 本地存储 ==========
-
-    getStorageInfo(): Promise<{ keys: string[]; currentSize: number; limitSize: number }> {
-        return Promise.resolve(this.tt.getStorageInfoSync());
-    }
-
-    //#endregion
 
     //#region ========== 设备能力 ==========
 

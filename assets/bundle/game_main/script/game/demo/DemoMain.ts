@@ -5,7 +5,7 @@ import { PromptEventName } from '../../base/prompt/PromptEvent';
 import { debounce } from 'db://oops-framework/module/decorator/DebounceDecorator';
 import { RedDotEventName } from '../reddot/RedDotEvent';
 import { gsm } from '../common/GameSingletonModule';
-import type { IBannerAd } from '../../base/sdk/model/IM_Sdk_Data';
+import type { IBannerAd } from '../../base/sdk/SdkTypes';
 
 const { ccclass } = _decorator;
 
@@ -59,7 +59,7 @@ export class DemoMain extends GameComponent {
 
     /** 插屏广告 */
     btnA1() {
-        const sdk = gsm.base.sdk.B_Sdk_Main.sdk;
+        const sdk = gsm.base.sdk.main.sdk;
         oops.gui.toast('创建插屏广告...');
         const ad = sdk.createInterstitialAd({ adUnitId: 'demo_interstitial_adunit' });
         if (!ad) {
@@ -78,7 +78,7 @@ export class DemoMain extends GameComponent {
 
     /** 激励广告 */
     btnA2() {
-        const sdk = gsm.base.sdk.B_Sdk_Main.sdk;
+        const sdk = gsm.base.sdk.main.sdk;
         oops.gui.toast('创建激励广告...');
         const ad = sdk.createRewardedVideoAd({ adUnitId: 'demo_rewarded_adunit' });
         if (!ad) {
@@ -102,7 +102,7 @@ export class DemoMain extends GameComponent {
 
     /** banner广告 */
     btnA3() {
-        const sdk = gsm.base.sdk.B_Sdk_Main.sdk;
+        const sdk = gsm.base.sdk.main.sdk;
         if (this.bannerAd) {
             this.bannerAd.hide();
             this.bannerAd.destroy();

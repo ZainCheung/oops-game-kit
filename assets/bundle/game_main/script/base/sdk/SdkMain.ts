@@ -1,16 +1,22 @@
 import { oops } from 'db://oops-framework/core/Oops';
-import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
-import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
-import { Sdk } from '../Sdk';
-import { SdkEventName } from '../SdkEvent';
+import { SdkEventName } from './SdkEvent';
 import { SdkAdsManager } from './SdkAdsManager';
 import { SdkManager } from './SdkManager';
 import { ISdk } from './ISdk';
-import type { INetworkStatusChangeEvent } from '../model/IM_Sdk_Data';
+import type { Sdk } from './Sdk';
+import type { INetworkStatusChangeEvent } from './SdkTypes';
 
-/** 平台 SDK 主业务逻辑 */
-@classname('B_Sdk_Main')
-export class B_Sdk_Main extends CCBusiness<Sdk> {
+/**
+ * 平台 SDK 主业务逻辑
+ *
+ * 职责：
+ * 1. 通过 {@link SdkManager} 识别平台并创建对应 {@link ISdk} 实现。
+ * 2. 转发原生生命周期事件（onShow/onHide/onError/网络变化）到全局事件系统。
+ * 3. 提供 {@link SdkAdsManager} 高级广告管理能力。
+ */
+export class SdkMain {
+    /** 所属 SDK 模块（用于回写模型数据） */
+    private readonly sdkModule: Sdk;
     /** SDK 管理器 */
     private readonly manager: SdkManager = new SdkManager();
     /** 当前平台的 SDK 实现接口 */
@@ -24,7 +30,12 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
     private onErrorCb?: (err: string) => void;
     private onNetworkChangeCb?: (res: INetworkStatusChangeEvent) => void;
 
-    protected init() {
+    constructor(sdkModule: Sdk) {
+        this.sdkModule = sdkModule;
+        this.init();
+    }
+
+    private init() {
         oops.log.logBusiness(`[SDK] 平台 = ${this.manager.platform}, 准备就绪 = ${this.sdk.isReady()}`);
 
         // 转发原生事件到全局事件系统
@@ -35,22 +46,23 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
                 res.launch_from === 'homepage' &&
                 res.location === 'sidebar_card'
             ) {
-                this.entity.M_Sdk_Main.isFromBytedanceSideBar = true;
+                this.sdkModule.model.isFromBytedanceSideBar = true;
             }
-            this.event.emit(SdkEventName.Show, res);
+            oops.message.emit(SdkEventName.Show, res);
         };
         this.sdk.onShow(this.onShowCb);
 
-        this.onHideCb = () => this.event.emit(SdkEventName.Hide);
+        this.onHideCb = () => oops.message.emit(SdkEventName.Hide);
         this.sdk.onHide(this.onHideCb);
 
-        this.onErrorCb = (err: string) => this.event.emit(SdkEventName.Error, err);
+        this.onErrorCb = (err: string) => oops.message.emit(SdkEventName.Error, err);
         this.sdk.onError(this.onErrorCb);
 
-        this.onNetworkChangeCb = (res: INetworkStatusChangeEvent) => this.event.emit(SdkEventName.NetworkChange, res);
+        this.onNetworkChangeCb = (res: INetworkStatusChangeEvent) => oops.message.emit(SdkEventName.NetworkChange, res);
         this.sdk.onNetworkStatusChange(this.onNetworkChangeCb);
     }
 
+    /** 销毁，解绑原生事件并释放广告资源 */
     destroy() {
         if (this.onShowCb) this.sdk.offShow(this.onShowCb);
         if (this.onHideCb) this.sdk.offHide(this.onHideCb);
@@ -59,6 +71,5 @@ export class B_Sdk_Main extends CCBusiness<Sdk> {
         this.onShowCb = this.onHideCb = this.onErrorCb = this.onNetworkChangeCb = undefined;
         this.adsManager.destroyAll();
         this.manager.destroy();
-        super.destroy();
     }
 }

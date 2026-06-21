@@ -8,7 +8,7 @@ import { Sdk } from './sdk/Sdk';
 export class Base {
     /** 网络模块 */
     readonly network: Network;
-    /** 平台 SDK 模块 */
+    /** 平台 SDK 模块（单例，不再使用 ECS） */
     readonly sdk: Sdk;
 
     constructor() {
@@ -16,6 +16,6 @@ export class Base {
         ecs.getEntity(Prompt);
 
         this.network = ecs.getEntity(Network);
-        this.sdk = ecs.getEntity(Sdk);
+        this.sdk = Sdk.instance;
     }
 }

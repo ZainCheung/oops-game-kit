@@ -1,6 +1,6 @@
-/// <reference path="../../../../libs/wechat-minigame-typings/index.d.ts" />
+/// <reference path="../../../libs/wechat-minigame-typings/index.d.ts" />
 
-import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../../model/enum/EM_Sdk';
+import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
     IBannerAd,
@@ -36,7 +36,7 @@ import type {
     IUserCloudStorageResult,
     IUserInfoButton,
     IUserInfoResult,
-} from '../../model/IM_Sdk_Data';
+} from '../SdkTypes';
 import { ISdk } from '../ISdk';
 import { DefaultSdk } from './DefaultSdk';
 
@@ -48,8 +48,8 @@ import { DefaultSdk } from './DefaultSdk';
  *
  * 调用方式：
  * ```ts
- * // 通过 SdkManager 获取（推荐）
- * const sdk = oops.sdk.manager.getSdk();
+ * // 通过 SDK 单例模块获取（推荐）
+ * const sdk = gsm.base.sdk.main.sdk;
  * const result = await sdk.login();
  * ```
  *
@@ -554,13 +554,6 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 本地存储 ==========
-
-    getStorageInfo(): Promise<{ keys: string[]; currentSize: number; limitSize: number }> {
-        return Promise.resolve(wx.getStorageInfoSync());
-    }
-
-    //#endregion
 
     //#region ========== 设备能力 ==========
 

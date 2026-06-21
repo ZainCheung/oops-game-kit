@@ -1,4 +1,4 @@
-import { SdkVibrateType } from '../model/enum/EM_Sdk';
+import { SdkVibrateType } from './SdkEnum';
 import type {
     IChannelsOption,
     ICustomAd,
@@ -33,7 +33,7 @@ import type {
     IUserInfoResult,
     IBannerAd,
     IBannerAdOption,
-} from '../model/IM_Sdk_Data';
+} from './SdkTypes';
 
 /**
  * 平台无关 SDK 接口
@@ -156,16 +156,6 @@ export interface ISdk {
 
     //#endregion
 
-    //#region ========== 本地存储（KV） ==========
-
-    /**
-     * 获取存储信息。
-     * 注意：基础的 set/get/remove/clear 请使用 Cocos 引擎的 `sys.localStorage`，
-     * 此接口仅保留引擎无法提供的存储信息查询能力。
-     */
-    getStorageInfo(): Promise<{ keys: string[]; currentSize: number; limitSize: number }>;
-
-    //#endregion
 
     //#region ========== 设备能力 ==========
 
