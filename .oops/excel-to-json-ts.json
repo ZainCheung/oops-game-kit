@@ -1,0 +1,5 @@
+{
+  "excelDir": "excel",
+  "jsonDir": "assets\\bundle\\game_main\\config",
+  "tsDir": "assets\\bundle\\game_main\\script\\game\\common\\table"
+}
