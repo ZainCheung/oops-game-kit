@@ -292,7 +292,7 @@
             margin-bottom: 15px;
         }
 
-        /* 响应式设计 */
+        /* 响应式设计 - 手机端优化 */
         @media (max-width: 1024px) {
             .container {
                 flex-direction: column;
@@ -302,29 +302,220 @@
                 width: 100%;
                 height: auto;
                 position: relative;
+                padding: 20px 15px;
+            }
+
+            .sidebar h2 {
+                font-size: 20px;
+                margin-bottom: 15px;
+                cursor: pointer;
+            }
+
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .nav-item {
+                margin-bottom: 0;
+            }
+
+            .nav-link {
+                padding: 8px 12px;
+                font-size: 12px;
+                border-radius: 6px;
             }
 
             .content {
                 max-height: none;
+                padding: 20px 15px;
             }
         }
 
         @media (max-width: 768px) {
+            body {
+                background: #fff;
+            }
+
+            .container {
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .sidebar {
+                background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            }
+
+            .sidebar h2 {
+                font-size: 18px;
+            }
+
+            .nav-menu {
+                gap: 6px;
+            }
+
+            .nav-link {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
             .content {
-                padding: 20px;
+                padding: 15px 10px;
+            }
+
+            .header {
+                padding: 20px 15px;
+                margin-bottom: 20px;
             }
 
             .header h1 {
-                font-size: 24px;
+                font-size: 20px;
+                margin-bottom: 15px;
             }
 
-            .section-title {
-                font-size: 24px;
+            .header-info {
+                gap: 6px;
+                font-size: 12px;
             }
 
             .header-info-item {
+                padding: 6px 10px;
                 flex-direction: column;
                 text-align: center;
+            }
+
+            .section {
+                margin-bottom: 30px;
+                padding: 15px 10px;
+                border-radius: 10px;
+            }
+
+            .section-title {
+                font-size: 18px;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+            }
+
+            .subsection-title {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+
+            .subsection-subtitle {
+                font-size: 14px;
+                margin-bottom: 10px;
+                margin-top: 15px;
+            }
+
+            /* 表格手机端优化 */
+            table {
+                margin: 15px 0;
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 5px;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            th {
+                font-size: 12px;
+                padding: 10px 5px;
+            }
+
+            /* 表格横向滚动 */
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* 图片手机端优化 */
+            .image-container {
+                margin: 20px 0;
+            }
+
+            .image-container img {
+                border-radius: 8px;
+            }
+
+            .image-caption {
+                font-size: 12px;
+                margin-top: 10px;
+            }
+
+            /* 列表手机端优化 */
+            ul, ol {
+                margin: 15px 0;
+                padding-left: 20px;
+            }
+
+            li {
+                margin-bottom: 8px;
+                padding-left: 5px;
+                font-size: 13px;
+            }
+
+            /* 代码块手机端优化 */
+            pre {
+                padding: 15px 10px;
+                font-size: 12px;
+                overflow-x: auto;
+            }
+
+            code {
+                font-size: 12px;
+            }
+
+            /* 段落手机端优化 */
+            p {
+                margin-bottom: 10px;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            /* 强调文本 */
+            strong {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar h2 {
+                font-size: 16px;
+            }
+
+            .nav-link {
+                padding: 5px 8px;
+                font-size: 10px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .header-info {
+                font-size: 11px;
+            }
+
+            .section-title {
+                font-size: 16px;
+            }
+
+            .subsection-title {
+                font-size: 14px;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 6px 4px;
+            }
+
+            li, p {
+                font-size: 12px;
             }
         }
 
@@ -374,7 +565,6 @@
                 <li class="nav-item"><a href="#section9" class="nav-link">九、数值设计</a></li>
                 <li class="nav-item"><a href="#section10" class="nav-link">十、版本规划与更新记录</a></li>
                 <li class="nav-item"><a href="#section11" class="nav-link">十一、待确认事项</a></li>
-                <li class="nav-item"><a href="#section12" class="nav-link">十二、附录</a></li>
             </ul>
         </nav>
 
@@ -2320,46 +2510,6 @@
                     </tbody>
                 </table>
             </section>
-
-            <!-- 第十二章 -->
-            <section id="section12" class="section">
-                <h2 class="section-title">十二、附录</h2>
-
-                <div class="subsection">
-                    <h3 class="subsection-title">12.1 官方参考资料</h3>
-                    <h4 class="subsection-subtitle">12.1.1 官方公告与资讯</h4>
-                    <ul>
-                        <li><a href="https://www.taptap.cn/app/748237/topic" target="_blank">TapTap《疯狂神射手》官方论坛</a></li>
-                        <li><a href="https://www.taptap.cn/moment/815967588457647193" target="_blank">《疯狂神射手》6 月 16 日更新维护公告 - TapTap</a></li>
-                        <li><a href="https://www.taptap.cn/moment/813004044707563790" target="_blank">《疯狂神射手》6 月 9 日合服公告 - TapTap</a></li>
-                        <li><a href="https://www.taptap.cn/moment/808048251843383012" target="_blank">《疯狂神射手》5 月 26 日更新公告 - TapTap</a></li>
-                        <li><a href="https://www.taptap.cn/moment/700422324624557352" target="_blank">《疯狂神射手》野外试炼-狩猎挑战 - TapTap</a></li>
-                        <li><a href="https://www.taptap.cn/moment/709374211252028466" target="_blank">【狩猎小报】更新前瞻-组队玩法+宝石系统即将上线 - TapTap</a></li>
-                        <li><a href="https://www.gaoshouyou.com/zhuanqu/967076.html" target="_blank">《疯狂神射手》6 月 16 日更新维护公告 - 高手游</a></li>
-                        <li><a href="https://www.gaoshouyou.com/zhuanqu/961576.html" target="_blank">《疯狂神射手》5 月 26 日更新公告 - 高手游</a></li>
-                        <li><a href="https://www.gaoshouyou.com/zhuanqu/965060.html" target="_blank">《疯狂神射手》6 月 9 日合服公告 - 高手游</a></li>
-                    </ul>
-                    <h4 class="subsection-subtitle">12.1.2 游戏下载与资料页</h4>
-                    <ul>
-                        <li><a href="https://www.7k7k.com/wxgame/2756.htm" target="_blank">7k7k《疯狂神射手》微信小游戏</a></li>
-                        <li><a href="https://www.f71.com/game/326790.html" target="_blank">飞游网《疯狂神射手》v1.0.1.6 资料</a></li>
-                        <li><a href="https://www.jb51.net/game/994708.html" target="_blank">脚本之家《疯狂神射手》官方版 v1.0.1.7</a></li>
-                        <li><a href="https://www.duote.com/android/1174715.html" target="_blank">多特手游网《疯狂神射手》官方正版</a></li>
-                    </ul>
-                </div>
-
-                <div class="subsection">
-                    <h3 class="subsection-title">12.2 文档维护说明</h3>
-                    <p>本文档基于<strong>官方 TapTap 论坛</strong>、<strong>官方合作媒体公告</strong>以及<strong>微信小游戏官方入口</strong>整理，聚焦截至 2026 年 6 月 22 日已确认的最新版本内容。</p>
-                    <p><strong>文档维护建议</strong>：</p>
-                    <ul>
-                        <li>定期同步官方公告，更新版本信息</li>
-                        <li>补充待确认事项的具体规则</li>
-                        <li>完善数值表格</li>
-                        <li>持续迭代优化文档结构</li>
-                    </ul>
-                </div>
-            </section>
         </main>
     </div>
 
@@ -2435,6 +2585,43 @@
         setTimeout(() => {
             document.querySelector('#section1').classList.add('visible');
         }, 100);
+
+        // 手机端表格横向滚动处理
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('table').forEach(table => {
+                // 创建包裹层
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                wrapper.style.cssText = 'overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 15px 0;';
+                
+                // 将表格包裹起来
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            });
+        }
+
+        // 监听窗口大小变化，动态调整表格包裹
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('table').forEach(table => {
+                    if (!table.parentNode.classList.contains('table-wrapper')) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'table-wrapper';
+                        wrapper.style.cssText = 'overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 15px 0;';
+                        table.parentNode.insertBefore(wrapper, table);
+                        wrapper.appendChild(table);
+                    }
+                });
+            } else {
+                document.querySelectorAll('.table-wrapper').forEach(wrapper => {
+                    const table = wrapper.querySelector('table');
+                    if (table) {
+                        wrapper.parentNode.insertBefore(table, wrapper);
+                        wrapper.remove();
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
