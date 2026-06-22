@@ -448,3 +448,31 @@ export interface ISceneResult {
     /** 原始数据 */
     raw?: any;
 }
+
+//#region ========== SDK 事件回调 ==========
+
+/** SDK 切到前台回调 */
+export type SdkShowCallback = (res: any) => void;
+
+/** SDK 切到后台回调 */
+export type SdkHideCallback = () => void;
+
+/** SDK 全局错误回调 */
+export type SdkErrorCallback = (err: string) => void;
+
+/** SDK 网络状态变化回调 */
+export type SdkNetworkChangeCallback = (res: INetworkStatusChangeEvent) => void;
+
+/** SDK 事件回调集合 */
+export interface ISdkEventCallbacks {
+    /** 切到前台回调 */
+    onShow?: SdkShowCallback;
+    /** 切到后台回调 */
+    onHide?: SdkHideCallback;
+    /** 全局错误回调 */
+    onError?: SdkErrorCallback;
+    /** 网络状态变化回调 */
+    onNetworkChange?: SdkNetworkChangeCallback;
+}
+
+//#endregion
