@@ -171,29 +171,170 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         lang?: 'en' | 'zh_CN' | 'zh_TW';
         withCredentials?: boolean;
     }): Promise<IUserInfoResult> {
+        // zw3: 先尝试 wx.getUserInfo（如果用户已在 mp 后台授权过隐私协议，这里能直接拿到）；
+        //      拿不到则创建全屏透明原生按钮，等用户点击触发 onTap 拿到真实 userInfo。
+        const lang = option?.lang ?? 'zh_CN';
+        console.log('[WeChatSdk-zw3] getUserInfo: 开始获取用户信息, lang=' + lang);
+
+        return this.tryWxGetUserInfo(lang).then((r) => {
+            if (r.userInfo) {
+                console.log('[WeChatSdk-zw3] getUserInfo: wx.getUserInfo 拿到数据, nickName=' + r.userInfo.nickName);
+                return r;
+            }
+            console.warn('[WeChatSdk-zw3] getUserInfo: wx.getUserInfo 拿不到数据，降级到 createUserInfoButton 全屏兜底');
+            return this.getUserInfoViaButton(lang, 60000);
+        });
+    }
+
+    /**
+     * 调用 wx.getUserInfo，加空保护（未授权时 res.userInfo 可能为空）
+     */
+    private tryWxGetUserInfo(lang: 'en' | 'zh_CN' | 'zh_TW'): Promise<IUserInfoResult> {
         return this.promisify<WechatMinigame.GetUserInfoSuccessCallbackResult>(
             wx.getUserInfo.bind(wx),
-            {
-                lang: option?.lang ?? 'zh_CN',
-                withCredentials: option?.withCredentials ?? false,
+            { lang, withCredentials: false }
+        ).then((res) => {
+            if (!res || !res.userInfo || !res.userInfo.nickName) {
+                console.warn('[WeChatSdk-zw3] wx.getUserInfo 返回但 userInfo 为空');
+                return { userInfo: undefined };
             }
-        ).then((res) => ({
-            userInfo: {
-                nickName: res.userInfo.nickName,
-                avatarUrl: res.userInfo.avatarUrl,
-                gender: res.userInfo.gender,
-                language: res.userInfo.language,
-                country: res.userInfo.country,
-                province: res.userInfo.province,
-                city: res.userInfo.city,
-                raw: res.userInfo,
-            },
-            rawData: res.rawData,
-            signature: res.signature,
-            encryptedData: res.encryptedData,
-            iv: res.iv,
-            cloudID: res.cloudID,
-        }));
+            return {
+                userInfo: {
+                    nickName: res.userInfo.nickName,
+                    avatarUrl: res.userInfo.avatarUrl,
+                    gender: res.userInfo.gender,
+                    language: res.userInfo.language,
+                    country: res.userInfo.country,
+                    province: res.userInfo.province,
+                    city: res.userInfo.city,
+                    raw: res.userInfo,
+                },
+                rawData: res.rawData,
+                signature: res.signature,
+                encryptedData: res.encryptedData,
+                iv: res.iv,
+                cloudID: res.cloudID,
+            };
+        }).catch((e) => {
+            console.warn('[WeChatSdk-zw3] wx.getUserInfo 调用失败:', e);
+            return { userInfo: undefined };
+        });
+    }
+
+    /**
+     * 通过创建全屏透明原生按钮 + onTap 获取真实用户信息
+     *
+     * 背景：微信新基础库下，wx.getUserInfo / wx.getUserProfile 在用户未授权时
+     * resolve 但 userInfo 为空。唯一能拿到真实数据的方式是 createUserInfoButton
+     * + 用户点击触发 onTap（用户点击原生按钮自带"用户行为上下文"，不会被基础库拒绝）。
+     *
+     * 此方法会创建一个全屏透明原生按钮，等用户点击后销毁并返回用户信息。
+     * 业务层只需调用 sdk.getUserInfo() 即可，无需自己管理原生按钮生命周期。
+     */
+    private getUserInfoViaButton(
+        lang: 'en' | 'zh_CN' | 'zh_TW',
+        timeoutMs: number = 60000
+    ): Promise<IUserInfoResult> {
+        return new Promise((resolve) => {
+            console.log('[WeChatSdk-zw3] getUserInfoViaButton: 开始创建全屏透明原生按钮');
+            if (typeof wx === 'undefined' || typeof wx.createUserInfoButton !== 'function') {
+                console.warn('[WeChatSdk-zw3] createUserInfoButton 不可用');
+                resolve({ userInfo: undefined });
+                return;
+            }
+
+            let resolved = false;
+            let btn: any = null;
+            const safeResolve = (result: IUserInfoResult) => {
+                if (resolved) return;
+                resolved = true;
+                try { if (btn) btn.destroy(); } catch {}
+                resolve(result);
+            };
+
+            // 全屏透明按钮，覆盖整个屏幕
+            let screenW = 0, screenH = 0;
+            try {
+                const info = wx.getSystemInfoSync();
+                screenW = info.screenWidth;
+                screenH = info.screenHeight;
+            } catch {
+                screenW = 375;
+                screenH = 667;
+            }
+
+            try {
+                btn = wx.createUserInfoButton({
+                    type: 'text',
+                    text: '',
+                    style: {
+                        left: 0,
+                        top: 0,
+                        width: screenW,
+                        height: screenH,
+                        backgroundColor: 'rgba(0,0,0,0)',
+                        borderColor: 'rgba(0,0,0,0)',
+                        color: 'rgba(0,0,0,0)',
+                        textAlign: 'center',
+                        fontSize: 1,
+                        borderRadius: 0,
+                        lineHeight: 1,
+                    },
+                    lang: lang ?? 'zh_CN',
+                    withCredentials: false,
+                });
+            } catch (e) {
+                console.warn('[WeChatSdk-zw3] createUserInfoButton 创建失败:', e);
+                resolve({ userInfo: undefined });
+                return;
+            }
+
+            if (!btn) {
+                console.warn('[WeChatSdk-zw3] createUserInfoButton 返回 null');
+                resolve({ userInfo: undefined });
+                return;
+            }
+
+            try { btn.show(); } catch (e) {
+                console.warn('[WeChatSdk-zw3] btn.show 失败:', e);
+            }
+            console.log('[WeChatSdk-zw3] getUserInfoViaButton: 全屏透明按钮已 show，等待用户点击');
+
+            btn.onTap((res: any) => {
+                console.log('[WeChatSdk-zw3] createUserInfoButton onTap 触发, res=' + JSON.stringify(res));
+                if (res && res.userInfo && res.userInfo.nickName) {
+                    const info = res.userInfo;
+                    safeResolve({
+                        userInfo: {
+                            nickName: info.nickName,
+                            avatarUrl: info.avatarUrl,
+                            gender: info.gender,
+                            language: info.language,
+                            country: info.country,
+                            province: info.province,
+                            city: info.city,
+                            raw: info,
+                        },
+                        rawData: res.rawData,
+                        signature: res.signature,
+                        encryptedData: res.encryptedData,
+                        iv: res.iv,
+                        cloudID: res.cloudID,
+                    });
+                } else {
+                    console.warn('[WeChatSdk-zw3] onTap 但 userInfo 为空（用户拒绝）');
+                    safeResolve({ userInfo: undefined });
+                }
+            });
+
+            // 超时兜底
+            setTimeout(() => {
+                if (!resolved) {
+                    console.warn(`[WeChatSdk-zw3] getUserInfoViaButton 超时 (${timeoutMs}ms)`);
+                    safeResolve({ userInfo: undefined });
+                }
+            }, timeoutMs);
+        });
     }
 
     createUserInfoButton(option: {
