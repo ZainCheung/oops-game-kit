@@ -339,6 +339,7 @@
         @media (max-width: 1024px) {
             .container {
                 flex-direction: column;
+                overflow: visible;
             }
 
             .sidebar {
@@ -346,6 +347,7 @@
                 height: auto;
                 position: relative;
                 padding: 20px 15px;
+                overflow-y: visible;
             }
 
             .sidebar h2 {
@@ -373,6 +375,7 @@
             .content {
                 max-height: none;
                 padding: 20px 15px;
+                overflow-y: visible;
             }
 
             .doc-switch {
@@ -394,10 +397,12 @@
             .container {
                 border-radius: 0;
                 box-shadow: none;
+                overflow: visible;
             }
 
             .sidebar {
                 background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+                overflow-y: visible;
             }
 
             .sidebar h2 {
@@ -415,6 +420,7 @@
 
             .content {
                 padding: 15px 10px;
+                overflow-y: visible;
             }
 
             .header {
@@ -589,6 +595,14 @@
         .section.visible {
             opacity: 1;
             transform: translateY(0);
+        }
+
+        /* 平板和手机端禁用滚动动画，直接显示所有内容 */
+        @media (max-width: 1024px) {
+            .section {
+                opacity: 1;
+                transform: none;
+            }
         }
 
         /* 打印样式 */
@@ -878,7 +892,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p><strong>团队规模</strong>：5 人（AI辅助开发，效率提升 50%）</p>
+                    <p><strong>团队规模</strong>：5 人（AI辅助开发）</p>
                 </div>
             </section>
 
@@ -1014,7 +1028,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p><strong>团队规模</strong>：7 人（AI辅助开发，效率提升 50%）</p>
+                    <p><strong>团队规模</strong>：7 人（AI辅助开发）</p>
                 </div>
             </section>
 
@@ -1155,7 +1169,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p><strong>团队规模</strong>：8 人（AI辅助开发，效率提升 50%）</p>
+                    <p><strong>团队规模</strong>：8 人（AI辅助开发）</p>
                 </div>
             </section>
 
@@ -1296,7 +1310,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p><strong>团队规模</strong>：9 人（AI辅助开发，效率提升 50%）</p>
+                    <p><strong>团队规模</strong>：9 人（AI辅助开发）</p>
                 </div>
             </section>
 
@@ -1437,7 +1451,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p><strong>团队规模</strong>：9 人（AI辅助开发，效率提升 50%）</p>
+                    <p><strong>团队规模</strong>：9 人（AI辅助开发）</p>
                 </div>
             </section>
 
@@ -1583,7 +1597,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p><strong>团队规模</strong>：10 人（AI辅助开发，效率提升 50%）</p>
+                    <p><strong>团队规模</strong>：10 人（AI辅助开发）</p>
                 </div>
             </section>
 

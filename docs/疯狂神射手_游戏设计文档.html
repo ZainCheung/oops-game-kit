@@ -327,6 +327,7 @@
         @media (max-width: 1024px) {
             .container {
                 flex-direction: column;
+                overflow: visible;
             }
 
             .sidebar {
@@ -334,6 +335,7 @@
                 height: auto;
                 position: relative;
                 padding: 20px 15px;
+                overflow-y: visible;
             }
 
             .sidebar h2 {
@@ -361,6 +363,7 @@
             .content {
                 max-height: none;
                 padding: 20px 15px;
+                overflow-y: visible;
             }
 
             .doc-switch {
@@ -382,10 +385,12 @@
             .container {
                 border-radius: 0;
                 box-shadow: none;
+                overflow: visible;
             }
 
             .sidebar {
                 background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+                overflow-y: visible;
             }
 
             .sidebar h2 {
@@ -403,6 +408,7 @@
 
             .content {
                 padding: 15px 10px;
+                overflow-y: visible;
             }
 
             .header {
@@ -571,18 +577,6 @@
             }
         }
 
-        /* 滚动动画 */
-        .section {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.5s ease;
-        }
-
-        .section.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
         /* 打印样式 */
         @media print {
             .sidebar {
@@ -591,11 +585,6 @@
 
             .content {
                 max-height: none;
-            }
-
-            .section {
-                opacity: 1;
-                transform: none;
             }
         }
     </style>
@@ -2619,7 +2608,9 @@
         });
 
         // 添加滚动动画
+        const contentArea = document.querySelector('.content');
         const observerOptions = {
+            root: contentArea,
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
         };
