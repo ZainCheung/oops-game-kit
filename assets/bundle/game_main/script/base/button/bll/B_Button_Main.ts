@@ -11,7 +11,7 @@ import { Button } from '../Button';
 /** 按钮音效资源包名 */
 const audio_bundle = 'game_common';
 /** 按钮音效资源路径 */
-const audio_path = 'gui/button/audio/Click';
+const audio_path = 'gui/button/audio/ButtonClick';
 
 /** 通用按钮主业务逻辑 */
 @classname('B_Button_Main')
