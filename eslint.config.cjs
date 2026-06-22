@@ -82,7 +82,7 @@ module.exports = [
       }],
       'semi': ['error', 'always'],
       'quotes': ['error', 'single'],
-      'brace-style': ['error', 'stroustrup'], // stroustrup风格：else/else if 单独占一行
+      'brace-style': 'off',
       'comma-spacing': ['error', { 'before': false, 'after': true }],
       'space-before-blocks': ['error', 'always'],
       'space-before-function-paren': ['error', {

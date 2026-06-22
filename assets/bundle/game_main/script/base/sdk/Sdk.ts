@@ -1,6 +1,12 @@
 import { SdkMain } from './SdkMain';
 import { SdkModel } from './SdkModel';
-import type { ISdkEventCallbacks, SdkErrorCallback, SdkHideCallback, SdkNetworkChangeCallback, SdkShowCallback } from './SdkTypes';
+import type {
+    ISdkEventCallbacks,
+    SdkErrorCallback,
+    SdkHideCallback,
+    SdkNetworkChangeCallback,
+    SdkShowCallback,
+} from './SdkTypes';
 
 /**
  * 平台 SDK 单例模块
