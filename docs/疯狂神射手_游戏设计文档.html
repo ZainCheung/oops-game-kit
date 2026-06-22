@@ -292,6 +292,37 @@
             margin-bottom: 15px;
         }
 
+        /* 文档切换导航 */
+        .doc-switch {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .doc-switch-btn {
+            padding: 12px 25px;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .doc-switch-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .doc-switch-btn.active {
+            background: linear-gradient(90deg, #3498db 0%, #2ecc71 100%);
+            border-color: transparent;
+        }
+
         /* 响应式设计 - 手机端优化 */
         @media (max-width: 1024px) {
             .container {
@@ -330,6 +361,16 @@
             .content {
                 max-height: none;
                 padding: 20px 15px;
+            }
+
+            .doc-switch {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .doc-switch-btn {
+                padding: 10px 20px;
+                font-size: 13px;
             }
         }
 
@@ -383,6 +424,17 @@
                 padding: 6px 10px;
                 flex-direction: column;
                 text-align: center;
+            }
+
+            .doc-switch {
+                flex-direction: column;
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .doc-switch-btn {
+                padding: 8px 15px;
+                font-size: 12px;
             }
 
             .section {
@@ -573,12 +625,15 @@
             <!-- 文档头部 -->
             <header class="header">
                 <h1>🎯 疯狂神射手 游戏设计文档</h1>
+                <div class="doc-switch">
+                    <a href="疯狂神射手_游戏设计文档.html" class="doc-switch-btn active">📖 游戏设计文档</a>
+                    <a href="疯狂神射手_分阶段开发计划.html" class="doc-switch-btn">🚀 分阶段开发计划</a>
+                </div>
                 <div class="header-info">
                     <div class="header-info-item"><strong>文档版本：</strong>v1.0</div>
                     <div class="header-info-item"><strong>整理日期：</strong>2026-06-22</div>
                     <div class="header-info-item"><strong>适用版本：</strong>v1.0.1.7 及后续热更新</div>
                     <div class="header-info-item"><strong>游戏类型：</strong>3D 第一人称模拟狩猎 / 狙击竞技 / 微信小游戏</div>
-
                 </div>
             </header>
 
