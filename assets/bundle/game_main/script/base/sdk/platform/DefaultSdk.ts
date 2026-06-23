@@ -121,11 +121,18 @@ export class DefaultSdk implements ISdk {
 
     //#region ========== 分享 ==========
 
+    /**
+     * 默认平台（H5 / 编辑器 / 未知）下不响应分享接口，只输出一次性警告。
+     *
+     * 注：上一版直接 `notSupported` 会打 ERROR 级别日志（高频调用时刷屏）；
+     * 当前实际场景中分享按钮只在微信/抖音小游戏里点，H5 等平台调用属于正常兜底，
+     * 改为 warn 级别即可。
+     */
     shareAppMessage(_option?: IShareOption): void {
-        this.notSupported('shareAppMessage');
+        console.warn(`[SDK] 当前平台(${this._platform})不支持 shareAppMessage，仅在微信/抖音小游戏有效`);
     }
     onShareAppMessage(_callback: (option?: IShareOption) => IShareOption | void): void {
-        this.notSupported('onShareAppMessage');
+        console.warn(`[SDK] 当前平台(${this._platform})不支持 onShareAppMessage`);
     }
     shareToTimeline(_option?: IShareToTimelineOption): void {
         this.notSupported('shareToTimeline');
@@ -249,6 +256,12 @@ export class DefaultSdk implements ISdk {
         return Promise.resolve();
     }
     onNeedPrivacyAuthorization(_callback: (res: { contractName: string; [k: string]: any }) => void): void {}
+
+    requestPrivacyAuthorize(_option?: { demandList?: string[]; [k: string]: any }): Promise<void> {
+        return Promise.resolve();
+    }
+
+    resetPrivacyAuthorization(): void {}
 
     //#endregion
 

@@ -412,23 +412,45 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#region ========== 分享 ==========
 
+    /**
+     * 主动拉起转发（分享给好友）
+     *
+     * 设计：使用业务层指定的**预制图片**（option.presetImageUrl）作为转发卡片封面，
+     * **不**调用 `wx.canvasToTempFilePath` 把当前 Cocos 画面截图分享出去。
+     *
+     * 调用示例：
+     * ```ts
+     * sdk.shareAppMessage({
+     *     title: '一起来玩',
+     *     presetImageUrl: 'https://example.com/share.png', // 或 'images/share.png'（小游戏本地资源）
+     * });
+     * ```
+     */
     shareAppMessage(option?: IShareOption): void {
+        const imageUrl = option?.presetImageUrl ?? option?.imageUrl;
         wx.shareAppMessage({
             title: option?.title,
-            imageUrl: option?.imageUrl,
+            imageUrl,
             query: option?.path,
             ...(option?.withShareTicket ? { withShareTicket: true } : {}),
         });
     }
 
+    /**
+     * 监听用户点击右上角转发
+     *
+     * 回调返回 {@link IShareOption} 时，使用 `presetImageUrl` 作为转发卡片封面。
+     * 不返回 / 返回空对象时，微信会展示通用转发卡片（不含自定义封面）。
+     */
     onShareAppMessage(
         callback: (option?: IShareOption) => IShareOption | void
     ): void {
         wx.onShareAppMessage(() => {
             const result = callback() || {};
+            const imageUrl = result.presetImageUrl ?? result.imageUrl;
             return {
                 title: result.title,
-                imageUrl: result.imageUrl,
+                imageUrl,
                 query: result.path,
                 ...(result.withShareTicket ? { withShareTicket: true } : {}),
             } as any;

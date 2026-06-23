@@ -230,6 +230,12 @@ export interface ISdk {
     /** 监听需要隐私授权 */
     onNeedPrivacyAuthorization(callback: (res: { contractName: string; [k: string]: any }) => void): void;
 
+    /** 统一请求隐私授权（确保只注册一次监听器，防止重复打印） */
+    requestPrivacyAuthorize(option?: { demandList?: string[]; [k: string]: any }): Promise<void>;
+
+    /** 重置隐私授权状态 */
+    resetPrivacyAuthorization(): void;
+
     //#endregion
 
     //#region ========== 视频号 ==========
