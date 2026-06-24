@@ -172,7 +172,7 @@
       "__id__": 4
     },
     "asset": {
-      "__uuid__": "7328f70c-041b-4efb-953b-df9c7e1fcfaa",
+      "__uuid__": "70acaf0c-58d6-43c8-a388-dc21675c63c2",
       "__expectedType__": "cc.Prefab"
     },
     "fileId": "8fbA9th01LEqWuDmeWt05o",
@@ -183,7 +183,7 @@
   },
   {
     "__type__": "cc.PrefabInstance",
-    "fileId": "b1R91cjb9IR7frndXHuXEM",
+    "fileId": "237MrCtnVIFZgV2neyDTuT",
     "prefabRootNode": null,
     "mountedChildren": [],
     "mountedComponents": [],
@@ -211,7 +211,7 @@
     "propertyPath": [
       "_name"
     ],
-    "value": "world"
+    "value": "VC_World_Main"
   },
   {
     "__type__": "cc.TargetInfo",

@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "7328f70c-041b-4efb-953b-df9c7e1fcfaa",
+  "uuid": "70acaf0c-58d6-43c8-a388-dc21675c63c2",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "world"
+    "syncNodeName": "VC_World_Main"
   }
 }
