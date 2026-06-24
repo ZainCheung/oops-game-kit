@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的花园世界——等级分段体验反馈与心理学设计分析</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        /* 左侧导航栏 */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar h2 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            text-align: center;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 10px 15px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg, #3498db 0%, #2ecc71 100%);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* 右侧内容区域 */
+        .content {
+            flex: 1;
+            padding: 40px 50px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        /* 文档头部 */
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        /* 章节样式 */
+        .section {
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #3498db;
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 700;
+        }
+
+        .subsection {
+            margin-bottom: 30px;
+        }
+
+        .subsection-title {
+            font-size: 20px;
+            color: #34495e;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .subsection-subtitle {
+            font-size: 16px;
+            color: #34495e;
+            margin-bottom: 10px;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        /* 反馈卡片 */
+        .feedback-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px 25px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .feedback-card.positive {
+            border-left: 5px solid #2ecc71;
+        }
+
+        .feedback-card.negative {
+            border-left: 5px solid #e74c3c;
+        }
+
+        .feedback-card-title {
+            font-size: 16px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .feedback-card.positive .feedback-card-title {
+            color: #27ae60;
+        }
+
+        .feedback-card.negative .feedback-card-title {
+            color: #c0392b;
+        }
+
+        .feedback-card-content {
+            color: #555;
+            font-size: 14px;
+        }
+
+        /* 关键节点卡片 */
+        .node-card {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+            border-left: 5px solid #e74c3c;
+            border-radius: 10px;
+            padding: 20px 25px;
+            margin: 20px 0;
+        }
+
+        .node-card-title {
+            font-size: 18px;
+            color: #c0392b;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        /* 风险等级标签 */
+        .risk-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .risk-tag.high {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .risk-tag.mid {
+            background: #f39c12;
+            color: #fff;
+        }
+
+        .risk-tag.low {
+            background: #ecf0f1;
+            color: #7f8c8d;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        th {
+            background: linear-gradient(90deg, #3498db 0%, #2ecc71 100%);
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            padding-left: 5px;
+        }
+
+        /* 强调文本 */
+        strong {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        /* 引用块 */
+        blockquote {
+            border-left: 4px solid #3498db;
+            padding: 10px 20px;
+            margin: 15px 0;
+            background: #f9f9f9;
+            border-radius: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        /* 段落样式 */
+        p {
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        /* ASCII 曲线图 */
+        .curve-diagram {
+            background: #2c3e50;
+            color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                overflow: visible;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 20px 15px;
+                overflow-y: visible;
+            }
+
+            .sidebar h2 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .nav-item {
+                margin-bottom: 0;
+            }
+
+            .nav-link {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .content {
+                max-height: none;
+                padding: 20px 15px;
+                overflow-y: visible;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                background: #fff;
+            }
+
+            .container {
+                border-radius: 0;
+                box-shadow: none;
+                overflow: visible;
+            }
+
+            .header {
+                padding: 20px 15px;
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .section {
+                margin-bottom: 30px;
+                padding: 15px 12px;
+                border-radius: 10px;
+            }
+
+            .section-title {
+                font-size: 18px;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+            }
+
+            .subsection-title {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+
+            .content {
+                padding: 15px 10px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 5px;
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            ul, ol {
+                padding-left: 20px;
+            }
+
+            li {
+                font-size: 13px;
+            }
+
+            p {
+                font-size: 13px;
+            }
+
+            blockquote {
+                font-size: 13px;
+            }
+
+            .curve-diagram {
+                padding: 15px;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 16px;
+            }
+
+            .subsection-title {
+                font-size: 14px;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 6px 4px;
+            }
+
+            .curve-diagram {
+                font-size: 9px;
+            }
+        }
+
+        /* 滚动动画 */
+        .section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1024px) {
+            .section {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* 打印样式 */
+        @media print {
+            .sidebar {
+                display: none;
+            }
+
+            .content {
+                max-height: none;
+            }
+
+            .section {
+                opacity: 1;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧导航栏 -->
+        <nav class="sidebar">
+            <h2>📋 目录导航</h2>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#section1" class="nav-link">一、功能解锁总览表</a></li>
+                <li class="nav-item"><a href="#section2" class="nav-link">二、新手引导期（Lv.1-3）</a></li>
+                <li class="nav-item"><a href="#section3" class="nav-link">三、探索建立期（Lv.3-10）</a></li>
+                <li class="nav-item"><a href="#section4" class="nav-link">四、成长变现期（Lv.10-16）</a></li>
+                <li class="nav-item"><a href="#section5" class="nav-link">五、转型加速期（Lv.16-26）</a></li>
+                <li class="nav-item"><a href="#section6" class="nav-link">六、高阶成熟期（Lv.26-33）</a></li>
+                <li class="nav-item"><a href="#section7" class="nav-link">七、深度沉浸期（Lv.33+）</a></li>
+                <li class="nav-item"><a href="#section8" class="nav-link">八、心理体验曲线图</a></li>
+                <li class="nav-item"><a href="#section9" class="nav-link">九、关键心理节点设计精析</a></li>
+                <li class="nav-item"><a href="#section10" class="nav-link">十、总结</a></li>
+            </ul>
+        </nav>
+
+        <!-- 右侧内容区域 -->
+        <main class="content">
+            <!-- 文档头部 -->
+            <header class="header">
+                <h1>🌸 我的花园世界——等级分段体验反馈与心理学设计分析</h1>
+            </header>
+
+            <!-- 一、功能解锁总览表 -->
+            <section id="section1" class="section">
+                <h2 class="section-title">一、功能解锁总览表</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>等级/阶段</th>
+                                <th>解锁功能</th>
+                                <th>解锁花卉/配方</th>
+                                <th>核心系统入口</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Lv.1</td>
+                                <td>基础教学、初始 2 块地</td>
+                                <td>向日葵、小雏菊</td>
+                                <td>种花区</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.1-3（主线）</td>
+                                <td>培育室</td>
+                                <td>玫瑰</td>
+                                <td>培育系统</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.3-5（主线）</td>
+                                <td>材料商店</td>
+                                <td>—</td>
+                                <td>商店系统</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.5-7（主线）</td>
+                                <td>花艺制作</td>
+                                <td>—</td>
+                                <td>花艺系统</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.7+</td>
+                                <td>自动浇水装置</td>
+                                <td>—</td>
+                                <td>自动化工具</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.10</td>
+                                <td>秘密花园场景</td>
+                                <td>限定稀有花种</td>
+                                <td>隐藏关卡</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.15（主线 15 关）</td>
+                                <td>花境共生系统</td>
+                                <td>暖阳绽放组合（向日葵+金盏菊+雏菊）</td>
+                                <td>共生系统</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.16</td>
+                                <td>—</td>
+                                <td>紫绣球</td>
+                                <td>进阶种植</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.17</td>
+                                <td>—</td>
+                                <td>山茶花</td>
+                                <td>进阶种植</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.21+</td>
+                                <td>土地成本跃升（10万金币/块）</td>
+                                <td>—</td>
+                                <td>经济压力节点</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.25</td>
+                                <td>宠物系统</td>
+                                <td>—</td>
+                                <td>宠物养成</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.26</td>
+                                <td>组团订单（团单）</td>
+                                <td>红马蹄莲</td>
+                                <td>社交订单</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.30</td>
+                                <td>高阶内容入口</td>
+                                <td>—</td>
+                                <td>控级节点</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.31</td>
+                                <td>鲜花进阶系统</td>
+                                <td>—</td>
+                                <td>花卉突破</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.33</td>
+                                <td>—</td>
+                                <td>粉色风信子</td>
+                                <td>高阶种植</td>
+                            </tr>
+                            <tr>
+                                <td>后期</td>
+                                <td>花灵系统</td>
+                                <td>精灵花+花灵商店</td>
+                                <td>花灵召唤/派遣</td>
+                            </tr>
+                            <tr>
+                                <td>后期</td>
+                                <td>圣树守护者剧情</td>
+                                <td>—</td>
+                                <td>隐藏剧情</td>
+                            </tr>
+                            <tr>
+                                <td>后期</td>
+                                <td>全服花廊共建</td>
+                                <td>—</td>
+                                <td>跨服社交</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 二、阶段一：新手引导期 -->
+            <section id="section2" class="section">
+                <h2 class="section-title">二、阶段一：新手引导期（Lv.1-3，约 0-1 天）</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">2.1 解锁内容</h3>
+                    <ul>
+                        <li>初始 2 块土地</li>
+                        <li>基础花种：向日葵（10 min 产阳光）、小雏菊（20 min 售金币）</li>
+                        <li>培育室</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">2.2 玩家实际体验反馈（来自网上）</h3>
+
+                    <div class="feedback-card positive">
+                        <div class="feedback-card-title">✅ 正面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"跟着新手引导，7 分钟就能完成'育花→卖花'循环"——18183</blockquote>
+                            <blockquote>"不用氪金，跟着节奏走，7 天就能顺利度过新手期"——知乎</blockquote>
+                        </div>
+                    </div>
+
+                    <div class="feedback-card negative">
+                        <div class="feedback-card-title">⚠️ 负面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"很多玩家在新手期容易陷入资源短缺、玩法迷茫的困境"——知乎攻略</blockquote>
+                            <blockquote>"新手玩家很容易犯的一个错，只想着那些值钱的花，比如玫瑰"——大海游戏</blockquote>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">2.3 心理学设计分析</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>心理机制</th>
+                                    <th>设计意图</th>
+                                    <th>心理体验</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>即时满足（Instant Gratification）</strong></td>
+                                    <td>向日葵 10 分钟即可收获，小雏菊 20 分钟即可卖掉</td>
+                                    <td>玩家在极短的时间内获得"种下→收获→得到回报"的完整闭环，触发多巴胺释放，建立"这个游戏有回报"的初始信任</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>胜任感（Competence）</strong></td>
+                                    <td>操作极简——单指点击播种、浇水、收获，零失误惩罚</td>
+                                    <td>满足自我决定理论（SDT）中的"胜任需求"：玩家感到自己能掌控这个虚拟世界，不会因操作失败而产生挫败感</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>好奇驱动（Curiosity）</strong></td>
+                                    <td>培育室解锁——展示"你还可以培育更高级的花"</td>
+                                    <td>利用蔡格尼克效应（未完成任务的记忆更深刻）：玩家看到新系统入口但尚未解锁，产生"接下来还有什么"的期待</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>进度可视化（Progress Visibility）</strong></td>
+                                    <td>土地从 2 块→逐步解锁、花卉从 1 种→多种</td>
+                                    <td>每完成一个任务都有可视化的改变（土地增多、花园变大），让玩家直观感受到"我在变强/变富有"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 三、阶段二：探索建立期 -->
+            <section id="section3" class="section">
+                <h2 class="section-title">三、阶段二：探索建立期（Lv.3-10，约第 1-7 天）</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.1 解锁内容</h3>
+                    <ul>
+                        <li>Lv.3-5：材料商店</li>
+                        <li>Lv.5-7：花艺制作系统</li>
+                        <li>Lv.7+：自动浇水装置</li>
+                        <li>Lv.10：秘密花园场景</li>
+                        <li>主线任务推进，解锁更多土地（第 4 块 100 阳光，第 5 块 200 阳光）</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.2 玩家实际体验反馈</h3>
+
+                    <div class="feedback-card positive">
+                        <div class="feedback-card-title">✅ 正面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"自动浇水彻底解放双手，离线也能照料"——知乎进阶攻略</blockquote>
+                            <blockquote>"新手引导结束后，优先完成日常任务，快速积累金币与道具"——知乎</blockquote>
+                        </div>
+                    </div>
+
+                    <div class="feedback-card negative">
+                        <div class="feedback-card-title">⚠️ 负面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"前 3 天容易资源不足，土地开多了根本顾不过来，很多花直接枯萎，产量直接往下跌"——大海游戏</blockquote>
+                            <blockquote>"新手推荐的开地方式有坑：每天就那么点时间来照料，地多根本顾不过来"——大海游戏</blockquote>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.3 心理学设计分析</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>心理机制</th>
+                                    <th>设计意图</th>
+                                    <th>心理体验</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>自主性（Autonomy）</strong></td>
+                                    <td>玩家开始有选择权：先开地 or 先升级工具？种向日葵刷阳光 or 小雏菊赚金币？</td>
+                                    <td>满足 SDT 的"自主需求"：玩家开始形成自己的策略偏好，从"被引导者"转变为"决策者"</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>心流（Flow）</strong></td>
+                                    <td>难度与能力匹配：操作简单但策略选择开始多样化（分时种植、订单优先）</td>
+                                    <td>进入心流状态：任务难度刚好在能力边界上，不会太简单无聊，也不会太难焦虑</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>间歇性奖励（Variable Reward）</strong></td>
+                                    <td>宝箱随机奖励、隐藏彩蛋（清理石头/便便出惊喜）、种子碎片随机掉落</td>
+                                    <td>利用斯金纳箱效应——随机奖励比固定奖励更容易让人上瘾，每次收获都有"也许这次出稀有"的期待</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>沉没成本（Sunk Cost）</strong></td>
+                                    <td>玩家投入的时间与精力转化为花园的规模</td>
+                                    <td>花园越大越不舍得放弃——"我都花了这么多心血，不能半途而废"</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>自动化满足</strong></td>
+                                    <td>自动浇水装置解锁：从"手动辛苦照料"到"自动运转"的升级快感</td>
+                                    <td>"勤劳→解放"的转折点体验：前面手动浇水积累的"苦"，在自动化解锁那一刻转化为强烈的满足感</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 四、阶段三：成长变现期 -->
+            <section id="section4" class="section">
+                <h2 class="section-title">四、阶段三：成长变现期（Lv.10-16，约第 7-20 天）</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.1 解锁内容</h3>
+                    <ul>
+                        <li>Lv.10：秘密花园（限定稀有花种种植场景）</li>
+                        <li>Lv.15（主线）：花境共生系统——暖阳绽放组合</li>
+                        <li>Lv.16：紫绣球（中周期、高收益花种）</li>
+                        <li>花坊系统（主线任务引导兑换）</li>
+                        <li>宫廷特供订单（每日 3 次，收益为普通订单 3 倍）</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.2 玩家实际体验反馈</h3>
+
+                    <div class="feedback-card positive">
+                        <div class="feedback-card-title">✅ 正面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"花境共生太香了！暖阳组合成熟时间缩短 40%，零氪也能爽"——知乎暖冬攻略</blockquote>
+                            <blockquote>"度过新手期后，玩法重心从'资源积累'转向'高效变现'"——百家号</blockquote>
+                        </div>
+                    </div>
+
+                    <div class="feedback-card negative">
+                        <div class="feedback-card-title">⚠️ 负面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"等级升高后特供船花需求从 300 增至 400，顾客订单新增高难度花瓶"——知乎攻略</blockquote>
+                            <blockquote>"很多玩家急着换花坊的花、培养花坊的花，浪费资源又浪费时间"——大海游戏（花坊兑换误区）</blockquote>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.3 心理学设计分析</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>心理机制</th>
+                                    <th>设计意图</th>
+                                    <th>心理体验</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>掌控感升级（Enhanced Mastery）</strong></td>
+                                    <td>共生系统让玩家从"随机种植"升级为"有策略的组合种植"</td>
+                                    <td>从"新手乱种"到"高手搭配"的自我认知跃迁——玩家感觉自己掌握了更深层的系统规律</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>社交绑定（Social Commitment）</strong></td>
+                                    <td>好友互动开始产生实质性收益（帮助浇水得金币、互助 Buff、种子互换）</td>
+                                    <td>利用"互惠原则"：接受了别人的帮助，就有心理压力要回报，从而形成稳定的社交习惯</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>目标梯度效应（Goal Gradient）</strong></td>
+                                    <td>宫廷特供订单的 3 倍收益让完成订单变得"值得追求"</td>
+                                    <td>目标越近越有动力：每日 3 次宫廷特供成为"必做清单"，驱动日活跃</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>适度挫败→成长空间</strong></td>
+                                    <td>土地成本开始攀升（第 5 块 200 阳光）+ 高难度订单出现</td>
+                                    <td>在玩家已产生沉没成本后，适当引入"不够用"的感觉——不是绝望，而是"我还可以再努力一点"的挑战驱动</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>收藏驱动（Collection Drive）</strong></td>
+                                    <td>秘密花园解锁限定花种、多个栖息地卡牌收集</td>
+                                    <td>利用"禀赋效应"——已拥有 80% 的收集，差 20% 就会产生强烈补齐欲望</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 五、阶段四：转型加速期 -->
+            <section id="section5" class="section">
+                <h2 class="section-title">五、阶段四：转型加速期（Lv.16-26，约第 10-30 天）</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">5.1 解锁内容</h3>
+                    <ul>
+                        <li>Lv.16：紫绣球、快速周转流启动</li>
+                        <li>Lv.17：山茶花</li>
+                        <li>Lv.21+：土地成本从阳光转为金币（最高 10 万/块）——经济压力质变</li>
+                        <li>Lv.25：宠物系统</li>
+                        <li>Lv.26：组团订单 + 红马蹄莲 + 高价值流派启动</li>
+                        <li>花坊悬赏：红鹤芋、粉乒乓菊、迎春花</li>
+                        <li>公会系统全面参与</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">5.2 玩家实际体验反馈</h3>
+
+                    <div class="feedback-card positive">
+                        <div class="feedback-card-title">✅ 正面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"零氪也能日入 2 万金币！快速周转流每 2 小时收割一次"——百家号</blockquote>
+                            <blockquote>"26 级后囤花专门做团单，又轻松赚得又多"——大海游戏</blockquote>
+                            <blockquote>"加入活跃公会后，白嫖资源不手软"——知乎</blockquote>
+                        </div>
+                    </div>
+
+                    <div class="feedback-card negative">
+                        <div class="feedback-card-title">⚠️ 负面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"30 级前需谨慎升级，升阶后特供船花需求从 300 增至 400"——知乎避坑指南</blockquote>
+                            <blockquote>"花坊悬赏的高难度花瓶（需要 9 种花材），非氪金玩家建议暂不领取"——暖冬攻略</blockquote>
+                            <blockquote>"等级控制是平民玩家的核心点"——大海游戏</blockquote>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">5.3 心理学设计分析</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>心理机制</th>
+                                    <th>设计意图</th>
+                                    <th>心理体验</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>身份认同（Identity Formation）</strong></td>
+                                    <td>种植流派成型：快速周转流（佛系）vs 高价值流（肝帝）</td>
+                                    <td>玩家开始给自己贴标签："我是佛系玩家""我是效率党"——这种身份认同加深了游戏融入感</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>社交归属感（Belonging）</strong></td>
+                                    <td>公会系统提供稳定社群、宠物系统提供情感陪伴</td>
+                                    <td>满足马斯洛需求层次的"归属与爱"：公会成员互相帮助、宠物作为陪伴角色，降低孤独感</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>损失厌恶（Loss Aversion）</strong></td>
+                                    <td>等级提升太快会导致资源断层、退单率激增</td>
+                                    <td>设计者通过"升级惩罚"引导玩家主动控级——玩家害怕损失，于是更谨慎地规划，反而延长了游戏生命周期</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>成就可积累性（Cumulative Achievement）</strong></td>
+                                    <td>宠物成长、花坊币积累、土地逐步扩建</td>
+                                    <td>每天上线都有"可量化的进步"（金币+XXXX、花坊币+XX），这种微小但持续的成长感是长期留存的关键</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>参照群体效应（Reference Group）</strong></td>
+                                    <td>公会竞赛、排行榜</td>
+                                    <td>看到公会其他成员或排行榜上的高级玩家，产生"我也想要那样"的社会比较驱动</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 六、阶段五：高阶成熟期 -->
+            <section id="section6" class="section">
+                <h2 class="section-title">六、阶段五：高阶成熟期（Lv.26-33，约第 20-60 天）</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">6.1 解锁内容</h3>
+                    <ul>
+                        <li>Lv.26：组团订单（28 级？实际为 26 级）+ 红马蹄莲</li>
+                        <li>Lv.30：高阶内容全面开放（控级关键节点）</li>
+                        <li>Lv.31：鲜花进阶系统 + 花之精粹</li>
+                        <li>Lv.33：粉色风信子</li>
+                        <li>花灵系统（种植精灵花+副花召唤，好友助力提升概率）</li>
+                        <li>月夜凝香共生组合（夜来香+茉莉+昙花）</li>
+                        <li>灵韵共生组合（蓝花楹+虞美人+薰衣草）</li>
+                        <li>跨服花园评比</li>
+                        <li>全服花廊共建</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">6.2 玩家实际体验反馈</h3>
+
+                    <div class="feedback-card positive">
+                        <div class="feedback-card-title">✅ 正面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"花灵是游戏隐藏福利，召唤成功可换稀有花种和大量资源"——知乎进阶攻略</blockquote>
+                            <blockquote>"31 级鲜花进阶，属性不满意可用金币+花之精粹改良"——知乎</blockquote>
+                            <blockquote>"全服花廊人气突破 100 万，全员领永久花境边框+800 钻石"——知乎暖冬攻略</blockquote>
+                        </div>
+                    </div>
+
+                    <div class="feedback-card negative">
+                        <div class="feedback-card-title">⚠️ 负面体验（来自 TapTap 玩家真实投诉）</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"二测以来，增加了氪金项目，玩着玩着就发现坑很多"——TapTap 玩家云隐</blockquote>
+                            <blockquote>"300 抽没有保底""900 抽不出花"——TapTap 抽卡 Bug 反馈</blockquote>
+                            <blockquote>"奖励重复获——保底重复获得已有奖励多次"——TapTap</blockquote>
+                            <blockquote>"返利单一且量少，价值不高，氪金体验感不好"——TapTap</blockquote>
+                            <blockquote>"好友上限仅 100 人、无搜索功能、无备注，加好友难度大"——TapTap</blockquote>
+                            <blockquote>"邀请绑定不可解除、被邀请人无任何奖励"——TapTap</blockquote>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">6.3 心理学设计分析</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>心理机制</th>
+                                    <th>设计意图</th>
+                                    <th>心理体验</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>群体归属与集体目标（Collective Goal）</strong></td>
+                                    <td>全服花廊共建、公会花艺赛</td>
+                                    <td>让玩家感到自己是"大集体的一员"——全服人气 100 万时，即使贡献值低的玩家也能领奖，满足"被团队带着赢"的愉悦感</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>近端目标（Proximal Goal）</strong></td>
+                                    <td>花灵 60 抽保底、组团订单 50 单 2 倍收益</td>
+                                    <td>把大目标拆成小目标，让玩家持续有"快到了"的感觉——利用目标梯度效应持续驱动</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>稀缺性效应（Scarcity）</strong></td>
+                                    <td>限定活动仙品花卉（仅 14 种）、限时全服花廊边框</td>
+                                    <td>"这是限时/限量的，不拿就没了"——制造 FOMO（Fear of Missing Out），驱动玩家在活动期高频上线</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>氪金痛点的心理学根源</strong></td>
+                                    <td>抽卡保底 Bug + 重复奖励无保护</td>
+                                    <td>玩家投入真金白银却得不到预期回报时，触发的不是挫败而是<strong>愤怒</strong>——这是比"普通挫败"危险得多的情绪，直接威胁留存率</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>社交系统痛点的心理学根源</strong></td>
+                                    <td>好友上限低/无搜索/无备注</td>
+                                    <td>当玩家的社交网络超过系统的承载能力时，产生"工具限制了关系"的无力感——这与游戏的治愈定位矛盾，破坏沉浸感</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>自我效能感（Self-Efficacy）</strong></td>
+                                    <td>控级策略、资源规划、流派选择</td>
+                                    <td>高阶玩家最大的快乐来源不再是"收获一朵花"，而是"我的策略让收益翻倍了"——从操作快感转向策略快感</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 七、阶段六：深度沉浸期 -->
+            <section id="section7" class="section">
+                <h2 class="section-title">七、阶段六：深度沉浸期（Lv.33+，约 60 天+）</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">7.1 解锁内容</h3>
+                    <ul>
+                        <li>圣树守护者隐藏剧情</li>
+                        <li>全套共生体系 + 共生宝石系统</li>
+                        <li>仙品花卉培育（收益为凡品 5 倍）</li>
+                        <li>高阶花瓶（曼陀罗华 4880 花坊币）</li>
+                        <li>全服花廊高排名冲刺</li>
+                        <li>跨服评比参赛</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">7.2 玩家实际体验反馈</h3>
+
+                    <div class="feedback-card positive">
+                        <div class="feedback-card-title">✅ 正面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"零氪 30 天养成路线，花境共生收益翻倍"——知乎</blockquote>
+                            <blockquote>"全服花廊高排名作品可获得实体花束奖励"——知乎暖冬攻略</blockquote>
+                        </div>
+                    </div>
+
+                    <div class="feedback-card negative">
+                        <div class="feedback-card-title">⚠️ 负面体验</div>
+                        <div class="feedback-card-content">
+                            <blockquote>"30 级一升，资源不够就被动了，必须提前囤资源再升级"——知乎控级攻略</blockquote>
+                            <blockquote>"氪金的花可以去公会分享里领，或者好友摊位上买，还有就是偷别人的"——大海游戏（侧面说明氪金深度）</blockquote>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">8.3 心理学设计分析</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>心理机制</th>
+                                    <th>设计意图</th>
+                                    <th>心理体验</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>自觉情绪体验（Self-Conscious Emotions）</strong></td>
+                                    <td>全服花廊排名、跨服评比</td>
+                                    <td>让玩家体验到"骄傲"——自己的作品被全服/跨服玩家看到并认可，这是游戏提供的最高层级社交奖励</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>叙事沉浸（Narrative Immersion）</strong></td>
+                                    <td>隐藏剧情（圣树守护者）</td>
+                                    <td>为喜欢故事驱动型的玩家提供"探索彩蛋"的惊喜，打破日常种植的节奏单调</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>自我实现（Self-Actualization）</strong></td>
+                                    <td>从"学会种花"到"成为花园大师"</td>
+                                    <td>马斯洛最高层次——玩家在虚拟世界完成了"从零到大师"的完整成长路径</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>情感绑定（Emotional Attachment）</strong></td>
+                                    <td>宠物长期陪伴、花灵角色、花园一草一木都是亲手培育</td>
+                                    <td>对虚拟资产的情感依赖——"这个花园是我亲手打造的"这种"宜家效应"（IKEA Effect）让玩家很难离开</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 八、全阶段心理体验曲线图 -->
+            <section id="section8" class="section">
+                <h2 class="section-title">八、全阶段心理体验曲线图（设计意图 vs 实际偏差）</h2>
+
+                <div class="curve-diagram">
+心理体验强度
+    ▲
+    │                              ┌──── 全服花廊排名（骄傲）
+    │                         ┌───┘     ↓ 长期留存/情感绑定
+    │                    ┌───┘    ┌─ 抽卡挫败（愤怒⚠️）
+    │               ┌───┘    ┌──┘   ┌─ 社交系统瓶颈
+    │          ┌───┘    ┌──┘  ┌──┘
+    │     ┌───┘    ┌──┘ ┌──┘
+    │ ┌──┘  ┌───┐ ┌┘  ┌┘
+    │ │     │   │ │   │
+    └─┴─────┴───┴─┴───┴──────────────▶ 等级/时间
+      Lv.1  Lv.10 Lv.16 Lv.26  Lv.33+
+
+    新手    探索    转型    高阶    深度
+    好奇    掌控    成就    竞争    情感
+    ↑       ↑       ↑       ↑       ↑
+    设计意图 ─── 持续上升的成就感和自主感
+    实际偏差 ─── 30 级附近出现抽卡/社交系统的挫折感坑
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">8.1 设计意图：一条稳步上升的满足感曲线</h3>
+                    <ul>
+                        <li>Lv.1-10：<strong>好奇 + 即时满足</strong>——每一次操作都有即时回报</li>
+                        <li>Lv.10-16：<strong>掌控 + 社交绑定</strong>——从"被引导"到"我主导"</li>
+                        <li>Lv.16-26：<strong>成就 + 身份认同</strong>——形成自己的流派策略</li>
+                        <li>Lv.26-33：<strong>竞争 + 归属</strong>——在社群中找到位置</li>
+                        <li>Lv.33+：<strong>情感绑定 + 自我实现</strong>——从游戏到"我的花园"</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">8.2 实际偏差</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>偏差点位</th>
+                                    <th>设计预期心理</th>
+                                    <th>玩家实际心理</th>
+                                    <th>风险等级</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>等级升太快</td>
+                                    <td>成长加速快感</td>
+                                    <td>资源断层焦虑</td>
+                                    <td><span class="risk-tag mid">⚠️ 中</span></td>
+                                </tr>
+                                <tr>
+                                    <td>30 级前后氪金抽卡</td>
+                                    <td>抽到稀有花的惊喜</td>
+                                    <td>"300 抽没保底"的愤怒</td>
+                                    <td><span class="risk-tag high">🔴 高</span></td>
+                                </tr>
+                                <tr>
+                                    <td>社交系统瓶颈</td>
+                                    <td>好友互助温暖</td>
+                                    <td>好友上限低/无搜索的挫败</td>
+                                    <td><span class="risk-tag mid">⚠️ 中</span></td>
+                                </tr>
+                                <tr>
+                                    <td>邀请机制</td>
+                                    <td>社交裂变</td>
+                                    <td>单向绑定/被邀请人无收益——社交工具反噬</td>
+                                    <td><span class="risk-tag high">🔴 高</span></td>
+                                </tr>
+                                <tr>
+                                    <td>花园装饰支线</td>
+                                    <td>审美自嗨</td>
+                                    <td>耗金币无产能——浪费资源的无奈</td>
+                                    <td><span class="risk-tag low">⚪ 低</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 九、关键心理节点设计精析 -->
+            <section id="section9" class="section">
+                <h2 class="section-title">九、关键心理节点设计精析</h2>
+
+                <div class="node-card">
+                    <div class="node-card-title">9.1 "第 3 天"——首次流失高危点</div>
+                    <ul>
+                        <li><strong>现象</strong>：土地开多了顾不过来，花枯萎，产量下跌</li>
+                        <li><strong>心理机制</strong>：能力和需求不匹配——玩家的操作能力还没跟上扩张速度</li>
+                        <li><strong>设计应对</strong>：新手期最多保留 3-4 块地，第 7 天才解锁自动浇水。这个"先苦后甜"的节奏，让自动化装置解锁时产生强烈的解脱感和满足感</li>
+                        <li><strong>玩家建议</strong>：大海游戏攻略明确指出"先守着 3 块地，等开第 4 块时就停一停，优先升级工具和水壶"</li>
+                    </ul>
+                </div>
+
+                <div class="node-card">
+                    <div class="node-card-title">9.2 "第 15 关"——从执行者到策略者的转折</div>
+                    <ul>
+                        <li><strong>现象</strong>：花境共生系统解锁，零氪玩家突然发现"原来组合搭配能让效率翻倍"</li>
+                        <li><strong>心理机制</strong>：从"被告知种什么"到"自己决定怎么种"的决策权转移</li>
+                        <li><strong>设计精妙</strong>：三个共生组合刚好分别对应三种玩家画像——暖阳（零氪便捷）、月夜（创作玩家）、灵韵（参展高端玩家）</li>
+                    </ul>
+                </div>
+
+                <div class="node-card">
+                    <div class="node-card-title">9.3 "26 级组团订单"——社交绑定临界点</div>
+                    <ul>
+                        <li><strong>现象</strong>：单个玩家无法独立完成团单，必须找好友或公会成员组队</li>
+                        <li><strong>心理机制</strong>：利用"互惠承诺"——你帮我完成团单，我下次帮你。由此自然催生稳定的社交关系</li>
+                        <li><strong>设计精妙</strong>：在 25 级宠物系统后立刻开放团单——宠物满足情感陪伴需求，团单满足社交协作需求，两个系统互补</li>
+                    </ul>
+                </div>
+
+                <div class="node-card">
+                    <div class="node-card-title">9.4 "30 级控级节点"——最危险但也最高回报的设计</div>
+                    <ul>
+                        <li><strong>现象</strong>：攻略反复强调"30 级前谨慎升级""卡在 29 级囤资源"</li>
+                        <li><strong>心理机制</strong>：延迟满足的能力测试——能自律的就起飞，忍不住的就被资源断层卡住</li>
+                        <li><strong>风险</strong>：过于强烈的控级需求可能让"非攻略阅读者"玩家（占多数）因资源断层而退坑</li>
+                        <li><strong>设计应改进</strong>：可在 28-29 级加入明显的"请确认你已经准备好了"的提示或资源检查</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 十、总结 -->
+            <section id="section10" class="section">
+                <h2 class="section-title">十、总结：每级心理反馈设计清单</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>等级段</th>
+                                <th>功能解锁</th>
+                                <th>设计者预设心理体验</th>
+                                <th>玩家实际体验</th>
+                                <th>关键留存驱动</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Lv.1-3</td>
+                                <td>种花区+培育室</td>
+                                <td>好奇+即时满足</td>
+                                <td>正向。"7 分钟完成循环"，快速上手</td>
+                                <td>首次种植→收获的 多巴胺快感</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.3-7</td>
+                                <td>商店+花艺+自动浇水</td>
+                                <td>掌控感+自主性</td>
+                                <td>正向。"解放双手"的轻松感</td>
+                                <td>自动化带来的从"手操"到"指挥"的质变</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.7-10</td>
+                                <td>秘密花园</td>
+                                <td>探索欲+收藏驱动</td>
+                                <td>正向。限定花种驱动</td>
+                                <td>稀有资源获取的兴奋</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.10-16</td>
+                                <td>花境共生+宫廷特供</td>
+                                <td>策略深度+效率爆发</td>
+                                <td>正向。"收益翻倍"的成就感</td>
+                                <td>自主策略取得显著成效的自豪</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.16-21</td>
+                                <td>进阶花种+公会</td>
+                                <td>身份认同+社交归属</td>
+                                <td>两极化。部分因花坊兑换踩坑</td>
+                                <td>公会归属感驱动日活</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.21-26</td>
+                                <td>宠物+组团订单</td>
+                                <td>情感陪伴+社交协作</td>
+                                <td>正向。组合解锁新玩法</td>
+                                <td>宠物情感绑定+团单驱动社交粘性</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.26-31</td>
+                                <td>花灵+鲜花进阶</td>
+                                <td>竞争+收集驱动</td>
+                                <td><strong>偏差</strong>。抽卡体验差、社交瓶颈出现</td>
+                                <td>花灵保底机制驱动资源规划</td>
+                            </tr>
+                            <tr>
+                                <td>Lv.31+</td>
+                                <td>完整共生+跨服</td>
+                                <td>骄傲+自我实现</td>
+                                <td>两极。高端玩家沉浸，普通玩家可能因氪金门槛退坑</td>
+                                <td>全服活动与长期情感绑定</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 滚动动画
+        const sections = document.querySelectorAll('.section');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // 导航高亮
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

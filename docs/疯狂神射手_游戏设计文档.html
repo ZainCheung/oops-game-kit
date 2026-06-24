@@ -1,0 +1,2673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>疯狂神射手 游戏设计文档</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        /* 左侧导航栏 */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar h2 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            text-align: center;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 12px 15px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg, #3498db 0%, #2ecc71 100%);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* 右侧内容区域 */
+        .content {
+            flex: 1;
+            padding: 40px 50px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        /* 文档头部 - 竖向排列 */
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .header-info-item {
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .header-info-item strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* 章节样式 */
+        .section {
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #3498db;
+        }
+
+        .section-title {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 700;
+        }
+
+        .subsection {
+            margin-bottom: 30px;
+        }
+
+        .subsection-title {
+            font-size: 22px;
+            color: #34495e;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .subsection-subtitle {
+            font-size: 18px;
+            color: #34495e;
+            margin-bottom: 15px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: linear-gradient(90deg, #3498db 0%, #2ecc71 100%);
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        /* 图片样式 */
+        .image-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .image-container img:hover {
+            transform: scale(1.02);
+        }
+
+        .image-caption {
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        /* 强调文本 */
+        strong {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        /* 代码块 */
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        /* 引用块 */
+        blockquote {
+            border-left: 4px solid #3498db;
+            padding: 15px 20px;
+            margin: 20px 0;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        /* 段落样式 */
+        p {
+            margin-bottom: 15px;
+        }
+
+        /* 文档切换导航 */
+        .doc-switch {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .doc-switch-btn {
+            padding: 12px 25px;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .doc-switch-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .doc-switch-btn.active {
+            background: linear-gradient(90deg, #3498db 0%, #2ecc71 100%);
+            border-color: transparent;
+        }
+
+        /* 响应式设计 - 手机端优化 */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                overflow: visible;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 20px 15px;
+                overflow-y: visible;
+            }
+
+            .sidebar h2 {
+                font-size: 20px;
+                margin-bottom: 15px;
+                cursor: pointer;
+            }
+
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .nav-item {
+                margin-bottom: 0;
+            }
+
+            .nav-link {
+                padding: 8px 12px;
+                font-size: 12px;
+                border-radius: 6px;
+            }
+
+            .content {
+                max-height: none;
+                padding: 20px 15px;
+                overflow-y: visible;
+            }
+
+            .doc-switch {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .doc-switch-btn {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                background: #fff;
+            }
+
+            .container {
+                border-radius: 0;
+                box-shadow: none;
+                overflow: visible;
+            }
+
+            .sidebar {
+                background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+                overflow-y: visible;
+            }
+
+            .sidebar h2 {
+                font-size: 18px;
+            }
+
+            .nav-menu {
+                gap: 6px;
+            }
+
+            .nav-link {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            .content {
+                padding: 15px 10px;
+                overflow-y: visible;
+            }
+
+            .header {
+                padding: 20px 15px;
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+
+            .header-info {
+                gap: 6px;
+                font-size: 12px;
+            }
+
+            .header-info-item {
+                padding: 6px 10px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .doc-switch {
+                flex-direction: column;
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .doc-switch-btn {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+
+            .section {
+                margin-bottom: 30px;
+                padding: 15px 10px;
+                border-radius: 10px;
+            }
+
+            .section-title {
+                font-size: 18px;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+            }
+
+            .subsection-title {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+
+            .subsection-subtitle {
+                font-size: 14px;
+                margin-bottom: 10px;
+                margin-top: 15px;
+            }
+
+            /* 表格手机端优化 */
+            table {
+                margin: 15px 0;
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 5px;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            th {
+                font-size: 12px;
+                padding: 10px 5px;
+            }
+
+            /* 表格横向滚动 */
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* 图片手机端优化 */
+            .image-container {
+                margin: 20px 0;
+            }
+
+            .image-container img {
+                border-radius: 8px;
+            }
+
+            .image-caption {
+                font-size: 12px;
+                margin-top: 10px;
+            }
+
+            /* 列表手机端优化 */
+            ul, ol {
+                margin: 15px 0;
+                padding-left: 20px;
+            }
+
+            li {
+                margin-bottom: 8px;
+                padding-left: 5px;
+                font-size: 13px;
+            }
+
+            /* 代码块手机端优化 */
+            pre {
+                padding: 15px 10px;
+                font-size: 12px;
+                overflow-x: auto;
+            }
+
+            code {
+                font-size: 12px;
+            }
+
+            /* 段落手机端优化 */
+            p {
+                margin-bottom: 10px;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            /* 强调文本 */
+            strong {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar h2 {
+                font-size: 16px;
+            }
+
+            .nav-link {
+                padding: 5px 8px;
+                font-size: 10px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .header-info {
+                font-size: 11px;
+            }
+
+            .section-title {
+                font-size: 16px;
+            }
+
+            .subsection-title {
+                font-size: 14px;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 6px 4px;
+            }
+
+            li, p {
+                font-size: 12px;
+            }
+        }
+
+        /* 打印样式 */
+        @media print {
+            .sidebar {
+                display: none;
+            }
+
+            .content {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧导航栏 -->
+        <nav class="sidebar">
+            <h2>📋 目录导航</h2>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#section1" class="nav-link">一、游戏定位与核心体验</a></li>
+                <li class="nav-item"><a href="#section2" class="nav-link">二、核心玩法设计</a></li>
+                <li class="nav-item"><a href="#section3" class="nav-link">三、游戏模式设计</a></li>
+                <li class="nav-item"><a href="#section4" class="nav-link">四、养成系统设计</a></li>
+                <li class="nav-item"><a href="#section5" class="nav-link">五、社交与公会系统</a></li>
+                <li class="nav-item"><a href="#section6" class="nav-link">六、经济系统设计</a></li>
+                <li class="nav-item"><a href="#section7" class="nav-link">七、任务与活动系统</a></li>
+                <li class="nav-item"><a href="#section8" class="nav-link">八、场景与生态环境</a></li>
+                <li class="nav-item"><a href="#section9" class="nav-link">九、数值设计</a></li>
+                <li class="nav-item"><a href="#section10" class="nav-link">十、版本规划与更新记录</a></li>
+                <li class="nav-item"><a href="#section11" class="nav-link">十一、待确认事项</a></li>
+            </ul>
+        </nav>
+
+        <!-- 右侧内容区域 -->
+        <main class="content">
+            <!-- 文档头部 -->
+            <header class="header">
+                <h1>🎯 疯狂神射手 游戏设计文档</h1>
+                <div class="doc-switch">
+                    <a href="疯狂神射手_游戏设计文档.html" class="doc-switch-btn active">📖 游戏设计文档</a>
+                    <a href="疯狂神射手_分阶段开发计划.html" class="doc-switch-btn">🚀 分阶段开发计划</a>
+                </div>
+                <div class="header-info">
+                    <div class="header-info-item"><strong>文档版本：</strong>v1.0</div>
+                    <div class="header-info-item"><strong>整理日期：</strong>2026-06-22</div>
+                    <div class="header-info-item"><strong>适用版本：</strong>v1.0.1.7 及后续热更新</div>
+                    <div class="header-info-item"><strong>游戏类型：</strong>3D 第一人称模拟狩猎 / 狙击竞技 / 微信小游戏</div>
+                </div>
+            </header>
+
+            <!-- 第一章 -->
+            <section id="section1" class="section">
+                <h2 class="section-title">一、游戏定位与核心体验</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">1.1 游戏概述</h3>
+                    <p>《疯狂神射手》是一款以<strong>第一人称模拟狩猎</strong>为核心的 3D 射击类微信小游戏，兼具 PVE 狩猎闯关与 PVP 竞技对抗。玩家扮演荒野猎手，在灌木林、乔木林、雪原、非洲草原、侏罗纪等多样化场景中，追踪并狩猎各类野生动物，通过真实射击手感与拟真物理机制，体验"一击必杀"的狩猎快感。</p>
+                    <div class="image-container">
+                        <img src="images/game_cover.jpg" alt="游戏封面">
+                        <p class="image-caption">图：游戏主界面展示</p>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">1.2 核心体验目标</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>体验维度</th>
+                                <th>目标描述</th>
+                                <th>设计要点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>沉浸感</strong></td>
+                                <td>3D 真实生态场景、动态天气、动物真实习性，还原狩猎氛围</td>
+                                <td>场景美术、天气系统、动物AI</td>
+                            </tr>
+                            <tr>
+                                <td><strong>操作感</strong></td>
+                                <td>单指滑动瞄准 + 点击/松手射击，简洁但强调精准度</td>
+                                <td>操作简化、反馈强化</td>
+                            </tr>
+                            <tr>
+                                <td><strong>真实感</strong></td>
+                                <td>结合风速、弹道下坠等拟真物理机制</td>
+                                <td>物理引擎、弹道计算</td>
+                            </tr>
+                            <tr>
+                                <td><strong>成长感</strong></td>
+                                <td>枪械、配件、宝石、宠物、卡牌、养殖等多线养成</td>
+                                <td>数值成长、目标感</td>
+                            </tr>
+                            <tr>
+                                <td><strong>竞技感</strong></td>
+                                <td>1v1 真人匹配、排行榜、积分制比拼</td>
+                                <td>PVP匹配、排名系统</td>
+                            </tr>
+                            <tr>
+                                <td><strong>社交感</strong></td>
+                                <td>组队副本、好友互访、公会、排行榜</td>
+                                <td>社交互动、协作玩法</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">1.3 核心 Slogan</h3>
+                    <ul>
+                        <li>精英猎手集结，在荒野中挑战百兽之王。</li>
+                        <li>狩猎场任你探索，竞技场展现实力。</li>
+                        <li>扣动扳机，书写你的狩猎传奇。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 第二章 -->
+            <section id="section2" class="section">
+                <h2 class="section-title">二、核心玩法设计</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">2.1 基础操作</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>操作</th>
+                                <th>方式</th>
+                                <th>需求说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>开镜</strong></td>
+                                <td>点击屏幕</td>
+                                <td>打开倍镜进入瞄准状态</td>
+                            </tr>
+                            <tr>
+                                <td><strong>瞄准</strong></td>
+                                <td>单指滑动</td>
+                                <td>调整准星位置，支持风速/弹道预判</td>
+                            </tr>
+                            <tr>
+                                <td><strong>射击</strong></td>
+                                <td>松开手指</td>
+                                <td>完成射击动作</td>
+                            </tr>
+                            <tr>
+                                <td><strong>结算</strong></td>
+                                <td>自动</td>
+                                <td>命中后计算击杀分、精准分与加成</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p><strong>设计要点：</strong></p>
+                    <ul>
+                        <li>无复杂移动，角色固定位置，专注于瞄准与射击</li>
+                        <li>新手期显示动物弱点提示，后期依赖配件透视</li>
+                        <li>操作简洁但强调精准度与策略性</li>
+                    </ul>
+                    <div class="image-container">
+                        <img src="images/aiming_demo.jpg" alt="瞄准操作演示">
+                        <p class="image-caption">图：瞄准操作示意图</p>
+                    </div>
+                    <div class="image-container">
+                        <img src="images/shooting_demo.jpg" alt="射击演示">
+                        <p class="image-caption">图：射击命中效果</p>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">2.2 战斗流程</h3>
+                    <pre><code>进入狩猎场/竞技场 → 探索/匹配 → 发现猎物 → 开镜瞄准 → 
+观察要害（新手期显示/后期配件透视） → 考虑风速、弹道下坠 → 
+预判射击点 → 射击 → 命中判定 → 分数结算</code></pre>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">2.3 计分规则</h3>
+                    <h4 class="subsection-subtitle">2.3.1 计分公式</h4>
+                    <pre><code>总分 = (击杀分 + 精准分) × 加成</code></pre>
+                    <h4 class="subsection-subtitle">2.3.2 分数构成</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>分数类型</th>
+                                <th>说明</th>
+                                <th>影响因素</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>击杀分</strong></td>
+                                <td>击杀猎物获得的基础分数</td>
+                                <td>动物类型、动物体型、关卡难度</td>
+                            </tr>
+                            <tr>
+                                <td><strong>精准分</strong></td>
+                                <td>命中要害/弱点的额外奖励</td>
+                                <td>命中部位、射击距离、连击数</td>
+                            </tr>
+                            <tr>
+                                <td><strong>加成</strong></td>
+                                <td>各类加成系数</td>
+                                <td>枪械、子弹、配件、宝石、卡牌、动物体型/类型</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">2.4 动物类型设计</h3>
+                    <h4 class="subsection-subtitle">2.4.1 类型分类</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>属性特点</th>
+                                <th>出现场景</th>
+                                <th>设计目的</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>普通类</strong></td>
+                                <td>基础属性，标准分数</td>
+                                <td>主线狩猎场、普通卡包</td>
+                                <td>基础体验、新手友好</td>
+                            </tr>
+                            <tr>
+                                <td><strong>白化类</strong></td>
+                                <td>属性与击杀分高于普通类</td>
+                                <td>精英狩猎、高级卡包</td>
+                                <td>稀有度、收藏价值</td>
+                            </tr>
+                            <tr>
+                                <td><strong>感染类</strong></td>
+                                <td>属性大幅提升，难度显著增加</td>
+                                <td>狩猎场 46 关后、后期关卡</td>
+                                <td>难度递进、后期挑战</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">2.4.2 体型分类</h4>
+                    <ul>
+                        <li><strong>小型</strong>：速度快、血量低、分数基础</li>
+                        <li><strong>中型</strong>：平衡型、中等血量与分数</li>
+                        <li><strong>大型</strong>：速度慢、血量高、高分值</li>
+                    </ul>
+                    <p><strong>设计要点：</strong>不同体型对应不同的枪械、宝石、卡牌加成策略。</p>
+                </div>
+            </section>
+
+            <!-- 第三章 -->
+            <section id="section3" class="section">
+                <h2 class="section-title">三、游戏模式设计</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.1 主线狩猎场（PVE 闯关）</h3>
+                    <h4 class="subsection-subtitle">3.1.1 模式定位</h4>
+                    <p>主线狩猎场是游戏最核心的 PVE 玩法，玩家依次挑战各关卡，击败关卡内所有动物即可通关。</p>
+                    <div class="image-container">
+                        <img src="images/scene_forest.jpg" alt="狩猎场场景">
+                        <p class="image-caption">图：狩猎场场景展示</p>
+                    </div>
+                    <h4 class="subsection-subtitle">3.1.2 玩法规则</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规则项</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>关卡信息</strong></td>
+                                <td>点击关卡左上角"？"图标，可查看该关卡可能出现的动物及掉落奖励</td>
+                            </tr>
+                            <tr>
+                                <td><strong>探索机制</strong></td>
+                                <td>进入狩猎场探索会随机获得奖励，金币大奖随缘刷出</td>
+                            </tr>
+                            <tr>
+                                <td><strong>进入条件</strong></td>
+                                <td>当探索出现三个标靶时，即刻进入狩猎场开始狩猎</td>
+                            </tr>
+                            <tr>
+                                <td><strong>通关条件</strong></td>
+                                <td>击败关卡内所有动物即视为通关</td>
+                            </tr>
+                            <tr>
+                                <td><strong>奖励内容</strong></td>
+                                <td>金币、钻石、宝箱（概率开出金币、枪械等）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>关卡上限</strong></td>
+                                <td><strong>210 关</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>难度递进</strong></td>
+                                <td>通关 45 关后开始出现感染类动物</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">3.1.3 关卡扩展记录</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>版本日期</th>
+                                <th>新增关卡</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2026-06-16</td>
+                                <td>扩充至 210 关</td>
+                                <td>最新版本确认</td>
+                            </tr>
+                            <tr>
+                                <td>2026-04-03</td>
+                                <td>新增 161-180 关</td>
+                                <td>v1.0.1.7</td>
+                            </tr>
+                            <tr>
+                                <td>2026-03-05</td>
+                                <td>新增 121-160 关</td>
+                                <td>v1.0.1.6</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.2 竞技场（PVP 1v1）</h3>
+                    <h4 class="subsection-subtitle">3.2.1 模式定位</h4>
+                    <p>真人匹配，狩猎 PK，1v1 比拼狩猎积分，胜者赢得比赛奖金。</p>
+                    <h4 class="subsection-subtitle">3.2.2 玩法规则</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规则项</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>对战形式</strong></td>
+                                <td>真人匹配，三局对战，以总分论胜负</td>
+                            </tr>
+                            <tr>
+                                <td><strong>参赛费用</strong></td>
+                                <td>提交费用参赛，胜利获得比赛奖金</td>
+                            </tr>
+                            <tr>
+                                <td><strong>奖杯解锁</strong></td>
+                                <td>积累奖杯解锁后续竞技场关卡</td>
+                            </tr>
+                            <tr>
+                                <td><strong>关卡上限</strong></td>
+                                <td><strong>31 关</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>宝箱规则</strong></td>
+                                <td>前 8 次胜利必得箱子，之后概率获得</td>
+                            </tr>
+                            <tr>
+                                <td><strong>排行榜</strong></td>
+                                <td>实时积分排名</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">3.2.3 关联系统解锁</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>竞技场关卡</th>
+                                <th>解锁内容</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>4 关</td>
+                                <td>解锁组队挑战</td>
+                            </tr>
+                            <tr>
+                                <td>8 关</td>
+                                <td>开放巅峰竞技场入口</td>
+                            </tr>
+                            <tr>
+                                <td>10 关</td>
+                                <td>解锁徽章系统</td>
+                            </tr>
+                            <tr>
+                                <td>12 关</td>
+                                <td>解锁巅峰竞技场功能</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.3 巅峰竞技场</h3>
+                    <h4 class="subsection-subtitle">3.3.1 模式定位</h4>
+                    <p>高端竞技玩法，提供更高段位挑战与排名。</p>
+                    <h4 class="subsection-subtitle">3.3.2 玩法规则</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规则项</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>入口</strong></td>
+                                <td>竞技场 8 级开放入口</td>
+                            </tr>
+                            <tr>
+                                <td><strong>功能解锁</strong></td>
+                                <td>竞技场 12 级解锁功能</td>
+                            </tr>
+                            <tr>
+                                <td><strong>段位</strong></td>
+                                <td>2026-06-16 版本新增<strong>神话段位</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>定位</strong></td>
+                                <td>高端竞技玩法，提供更高段位挑战与排名</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.4 狩猎挑战（野外试炼）</h3>
+                    <h4 class="subsection-subtitle">3.4.1 模式定位</h4>
+                    <p>持久战/波次生存挑战，通关当前关卡后挑战更高层级。</p>
+                    <h4 class="subsection-subtitle">3.4.2 玩法规则</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规则项</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>玩法类型</strong></td>
+                                <td>持久战/生存波次挑战</td>
+                            </tr>
+                            <tr>
+                                <td><strong>规则</strong></td>
+                                <td>每通关当前关卡，挑战更高层级的狩猎；击败关卡内所有动物即通关</td>
+                            </tr>
+                            <tr>
+                                <td><strong>关卡上限</strong></td>
+                                <td><strong>280 关</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>次数</strong></td>
+                                <td>每天免费 3 次；可购买 3 次；可通过广告获得额外次数</td>
+                            </tr>
+                            <tr>
+                                <td><strong>次数保留</strong></td>
+                                <td>当日未参与可保留活动次数，最多保留 3 天</td>
+                            </tr>
+                            <tr>
+                                <td><strong>失败惩罚</strong></td>
+                                <td>挑战失败无奖励，消耗 1 次活动次数</td>
+                            </tr>
+                            <tr>
+                                <td><strong>奖励</strong></td>
+                                <td>金币、钻石、动物卡包（后续卡包有更高概率开出超稀有动物图鉴）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>排行榜</strong></td>
+                                <td>狩猎挑战排行榜，展示最高通关关卡记录</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.5 自由狩猎场</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规则项</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>定位</strong></td>
+                                <td>自由狩猎体验场景</td>
+                            </tr>
+                            <tr>
+                                <td><strong>当前上限</strong></td>
+                                <td><strong>6 阶</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>用途</strong></td>
+                                <td>获取特定资源、无拘束狩猎体验</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.6 高山狩猎场</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规则项</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>解锁条件</strong></td>
+                                <td>通关狩猎场第 7 关</td>
+                            </tr>
+                            <tr>
+                                <td><strong>产出</strong></td>
+                                <td>高山水晶</td>
+                            </tr>
+                            <tr>
+                                <td><strong>用途</strong></td>
+                                <td>高山水晶兑换黑曜石钥匙（开启配件宝箱）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>关卡上限</strong></td>
+                                <td><strong>22 关</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.7 组队副本（双人合作）</h3>
+                    <h4 class="subsection-subtitle">3.7.1 模式定位</h4>
+                    <p>双人组队狩猎玩法，玩家可邀请好友一同挑战更具难度的关卡。</p>
+                    <h4 class="subsection-subtitle">3.7.2 玩法规则</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规则项</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>解锁条件</strong></td>
+                                <td>达到竞技场关卡 4 解锁组队挑战</td>
+                            </tr>
+                            <tr>
+                                <td><strong>组队形式</strong></td>
+                                <td>邀请好友组成双人小队，共同进入副本狩猎</td>
+                            </tr>
+                            <tr>
+                                <td><strong>关卡上限</strong></td>
+                                <td><strong>30 关</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>关卡奖励</strong></td>
+                                <td>每成功通关一个关卡，队伍可领取得分礼包</td>
+                            </tr>
+                            <tr>
+                                <td><strong>资源产出</strong></td>
+                                <td>宝石、组队星币</td>
+                            </tr>
+                            <tr>
+                                <td><strong>兑换商店</strong></td>
+                                <td>组队星币可兑换宝石数据卡、洗涤药剂、枪械宝箱</td>
+                            </tr>
+                            <tr>
+                                <td><strong>成就系统</strong></td>
+                                <td>完成组队副本中的成就任务获得积分，提升成就等级，领取成就等级奖励</td>
+                            </tr>
+                            <tr>
+                                <td><strong>排行榜</strong></td>
+                                <td>成就积分排行榜每周结算，奖励通过邮件自动发放</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.8 靶场训练营</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规则项</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>开放时间</strong></td>
+                                <td>每周一至周四</td>
+                            </tr>
+                            <tr>
+                                <td><strong>定位</strong></td>
+                                <td>射击技巧训练与专项练习</td>
+                            </tr>
+                            <tr>
+                                <td><strong>奖励</strong></td>
+                                <td>参与活动可获取资源奖励</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">3.9 世界 BOSS / 公会 BOSS</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规则项</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>公会 BOSS 关卡上限</strong></td>
+                                <td><strong>18 关</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>世界 BOSS</strong></td>
+                                <td>2026-05-26 版本提升血量上限，增加挑战难度</td>
+                            </tr>
+                            <tr>
+                                <td><strong>公会远征</strong></td>
+                                <td>2026-05-26 版本调整为按实际伤害计算分数</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 第四章 -->
+            <section id="section4" class="section">
+                <h2 class="section-title">四、养成系统设计</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.1 枪械系统</h3>
+                    <h4 class="subsection-subtitle">4.1.1 枪械类型</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>特点</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>狙击步枪</strong></td>
+                                <td>高伤害、高精度，适合远距离要害射击</td>
+                                <td>核心狩猎武器</td>
+                            </tr>
+                            <tr>
+                                <td><strong>步枪/中程枪械</strong></td>
+                                <td>适用于中程输出</td>
+                                <td>中距离作战</td>
+                            </tr>
+                            <tr>
+                                <td><strong>弓箭</strong></td>
+                                <td>传统狩猎武器</td>
+                                <td>特定狩猎场景</td>
+                            </tr>
+                            <tr>
+                                <td><strong>手枪</strong></td>
+                                <td>无法触发双发效果</td>
+                                <td>辅助武器</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="image-container">
+                        <img src="images/gun_m24.jpg" alt="M24狙击步枪">
+                        <p class="image-caption">图：M24狙击步枪展示</p>
+                    </div>
+                    <div class="image-container">
+                        <img src="images/gun_awm.jpg" alt="AWM狙击步枪">
+                        <p class="image-caption">图：AWM狙击步枪展示</p>
+                    </div>
+                    <div class="image-container">
+                        <img src="images/gun_r93.jpg" alt="R93狙击步枪">
+                        <p class="image-caption">图：R93狙击步枪展示</p>
+                    </div>
+                    <h4 class="subsection-subtitle">4.1.2 枪械获取与培养</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>项目</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>获取方式</strong></td>
+                                <td>宝箱抽取、关卡掉落、活动奖励、首充礼包、商城购买</td>
+                            </tr>
+                            <tr>
+                                <td><strong>培养方式</strong></td>
+                                <td>升级、升阶、突破</td>
+                            </tr>
+                            <tr>
+                                <td><strong>枪械皮肤</strong></td>
+                                <td>SSG08-星霜白喙（2026-06-16）、AWM-轮回（v1.0.1.7）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>品质</strong></td>
+                                <td>按品质划分，越高阶枪械基础属性越高</td>
+                            </tr>
+                            <tr>
+                                <td><strong>最高阶</strong></td>
+                                <td>T6（AX50-极渊蝰影，2026-05-26 新增）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">4.1.3 枪械推荐策略</h4>
+                    <ul>
+                        <li><strong>新手期</strong>：优先解锁和升级基础狙击步枪，操作相对简单</li>
+                        <li><strong>后期</strong>：追求高阶枪械（如 5 阶 SSG08-焱翎）</li>
+                        <li><strong>场景选择</strong>：狩猎场堆伤害，竞技场冲积分</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.2 子弹系统</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>项目</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>分类</strong></td>
+                                <td>按颜色/品质区分（红、橙、蓝等）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>作用</strong></td>
+                                <td>不同子弹对应不同积分加成与伤害效果</td>
+                            </tr>
+                            <tr>
+                                <td><strong>获取</strong></td>
+                                <td>卡包、关卡、活动、商店</td>
+                            </tr>
+                            <tr>
+                                <td><strong>典型搭配</strong></td>
+                                <td>橙色子弹【原子】搭配稀有枪械【Barrett-胜利者】</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.3 配件系统</h3>
+                    <h4 class="subsection-subtitle">4.3.1 解锁条件</h4>
+                    <p>通关狩猎场第 7 关后解锁枪械配件、配件宝箱、高山猎场。解锁同时开放配件冲刺活动，助力快速获取配件。</p>
+                    <h4 class="subsection-subtitle">4.3.2 配件部位</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>部位</th>
+                                <th>功能定位</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>弹夹</strong></td>
+                                <td>影响射速、装弹、特殊射击效果</td>
+                            </tr>
+                            <tr>
+                                <td><strong>握把</strong></td>
+                                <td>影响基础伤害、暴击/暴伤、分数奖励</td>
+                            </tr>
+                            <tr>
+                                <td><strong>枪口</strong></td>
+                                <td>影响伤害、弹道稳定性</td>
+                            </tr>
+                            <tr>
+                                <td><strong>枪托</strong></td>
+                                <td>影响伤害、体型加成</td>
+                            </tr>
+                            <tr>
+                                <td><strong>倍镜</strong></td>
+                                <td>影响瞄准精度、透视效果、特定枪械加成</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">4.3.3 配件品质与养成</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>项目</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>品质</strong></td>
+                                <td>普通 → 稀有 → 史诗 → 传说 → 橙色 → 彩色（v1.0.1.6 新增）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>等级上限</strong></td>
+                                <td><strong>40 级</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>升级</strong></td>
+                                <td>消耗资源提升配件等级，解锁更多增益效果</td>
+                            </tr>
+                            <tr>
+                                <td><strong>合成</strong></td>
+                                <td>低品质配件可合成为高品质配件；S 级配件合成时进行二次提醒</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">4.3.4 配件获取途径</h4>
+                    <ul>
+                        <li>商城配件宝箱（消耗黑曜石钥匙）</li>
+                        <li>高山猎场产出高山水晶，兑换黑曜石钥匙</li>
+                        <li>公会商店概率刷新黑曜石钥匙</li>
+                        <li>开启 8 级以上宝箱有概率掉落配件</li>
+                    </ul>
+                    <h4 class="subsection-subtitle">4.3.5 特殊配件效果</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>配件名称</th>
+                                <th>品质/部位</th>
+                                <th>特殊效果</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>S・幽灵静音弹夹</td>
+                                <td>紫色/弹夹</td>
+                                <td>连续射出 2 发子弹，间隔 0.4 秒，最终伤害降低 38%</td>
+                                <td>伤害不足但需提升击杀效率</td>
+                            </tr>
+                            <tr>
+                                <td>S・抗震狙击镜</td>
+                                <td>蓝色/倍镜</td>
+                                <td>开镜透视 +0.6 秒</td>
+                                <td>显示猎物弱点，助力精准命中</td>
+                            </tr>
+                            <tr>
+                                <td>S・秃鹰狙击镜</td>
+                                <td>蓝色/倍镜</td>
+                                <td>开镜透视 +0.6 秒</td>
+                                <td>同上</td>
+                            </tr>
+                            <tr>
+                                <td>鱼骨狙击镜</td>
+                                <td>橙色/倍镜</td>
+                                <td>开镜透视 +0.6 秒</td>
+                                <td>同上</td>
+                            </tr>
+                            <tr>
+                                <td>ST 狙击弹夹</td>
+                                <td>紫色/弹夹</td>
+                                <td>第一次射击增加 20% 暴击率</td>
+                                <td>第一枪打高血量猎物</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.4 宝石系统</h3>
+                    <h4 class="subsection-subtitle">4.4.1 解锁条件</h4>
+                    <p>通关狩猎场第 7 关后解锁宝石系统。</p>
+                    <h4 class="subsection-subtitle">4.4.2 宝石基础规则</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>项目</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>部位</strong></td>
+                                <td>宝石分为 5 个部位，对应枪械配件的 5 个部位</td>
+                            </tr>
+                            <tr>
+                                <td><strong>品级</strong></td>
+                                <td>共分 7 个品级，品质越高属性越强</td>
+                            </tr>
+                            <tr>
+                                <td><strong>镶嵌规则</strong></td>
+                                <td>每个枪械配件部位最多镶嵌 5 颗宝石；同部位无法镶嵌两条相同属性词条</td>
+                            </tr>
+                            <tr>
+                                <td><strong>洗炼</strong></td>
+                                <td>橙色及以上品级的宝石支持洗炼，重新生成宝石属性</td>
+                            </tr>
+                            <tr>
+                                <td><strong>合成</strong></td>
+                                <td>同部位低品质宝石可合成为高品级宝石</td>
+                            </tr>
+                            <tr>
+                                <td><strong>锁定</strong></td>
+                                <td>稀有宝石可提前锁定，锁定后无法参与合成与洗炼；同词条、部位、品质的宝石会一起锁定</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">4.4.3 宝石属性分类</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类别</th>
+                                <th>属性示例</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>伤害类</strong></td>
+                                <td>百分比伤害、额外伤害、固定伤害、暴击率、暴击伤害、种族增伤（恐龙/巨型等）</td>
+                                <td>狩猎场核心</td>
+                            </tr>
+                            <tr>
+                                <td><strong>积分类</strong></td>
+                                <td>红/橙/蓝子弹积分、各类目标积分加成</td>
+                                <td>竞技场冲分</td>
+                            </tr>
+                            <tr>
+                                <td><strong>特殊功能类</strong></td>
+                                <td>不消耗子弹、射速提升</td>
+                                <td>按需搭配</td>
+                            </tr>
+                            <tr>
+                                <td><strong>体型加成</strong></td>
+                                <td>对小型/中型/大型动物加成</td>
+                                <td>针对性狩猎</td>
+                            </tr>
+                            <tr>
+                                <td><strong>类型加成</strong></td>
+                                <td>对感染类动物加成</td>
+                                <td>后期感染关卡</td>
+                            </tr>
+                            <tr>
+                                <td><strong>枪械加成</strong></td>
+                                <td>对特定枪械类型伤害加成（如 M200 类型枪械伤害 +6%）</td>
+                                <td>枪械专用</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">4.4.4 宝石搭配策略</h4>
+                    <p><strong>狩猎场（PVE）：</strong></p>
+                    <ul>
+                        <li>核心：百分比伤害、暴击率、暴击伤害</li>
+                        <li>补充：对应种族/体型增伤（恐龙/巨型优先）</li>
+                        <li>禁忌：不佩戴任何积分宝石，纯输出拉满</li>
+                    </ul>
+                    <p><strong>竞技场（PVP）：</strong></p>
+                    <ul>
+                        <li>能一枪秒杀：多带积分宝石，快速刷分登顶</li>
+                        <li>无法秒杀：保留部分伤害宝石，保证击杀效率</li>
+                    </ul>
+                    <p><strong>宝石合成优先级：</strong></p>
+                    <ol>
+                        <li>先填满所有宝石槽</li>
+                        <li>优先升级核心属性：百分比伤害 > 暴击率 > 暴击伤害 > 固定/额外伤害</li>
+                        <li>固定/额外伤害宝石后期不建议升级，留作合成材料</li>
+                    </ol>
+                    <h4 class="subsection-subtitle">4.4.5 资源获取</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>资源</th>
+                                <th>获取方式</th>
+                                <th>用途</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>宝石</strong></td>
+                                <td>组队挑战玩法</td>
+                                <td>镶嵌提升属性</td>
+                            </tr>
+                            <tr>
+                                <td><strong>组队星币</strong></td>
+                                <td>组队挑战产出</td>
+                                <td>兑换宝石数据卡、洗涤药剂</td>
+                            </tr>
+                            <tr>
+                                <td><strong>宝石数据卡</strong></td>
+                                <td>组队星币兑换</td>
+                                <td>开启宝石箱，最高可获得橙色品质宝石</td>
+                            </tr>
+                            <tr>
+                                <td><strong>洗涤药剂</strong></td>
+                                <td>组队星币兑换、积分商店</td>
+                                <td>宝石洗炼</td>
+                            </tr>
+                            <tr>
+                                <td><strong>积分商店</strong></td>
+                                <td>60 积分可兑换 5 个洗炼药剂，每周刷新</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.5 卡牌/图鉴系统</h3>
+                    <h4 class="subsection-subtitle">4.5.1 系统概述</h4>
+                    <p>集卡系统为玩家收藏动物卡牌，每张卡牌提供不同的加成能力，升级卡牌可提升卡牌技能，在狩猎结束时提供更多分数。</p>
+                    <h4 class="subsection-subtitle">4.5.2 卡牌获取</h4>
+                    <ul>
+                        <li>每次狩猎可获取卡牌碎片</li>
+                        <li>狩猎场关卡奖励、动物卡包</li>
+                        <li>不同栖息地对应不同卡包</li>
+                    </ul>
+                    <h4 class="subsection-subtitle">4.5.3 卡牌属性</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>属性</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>基础属性</strong></td>
+                                <td>重量、血量、防御、击杀分、精准分、体型、栖息地、动物类型</td>
+                            </tr>
+                            <tr>
+                                <td><strong>升级效果</strong></td>
+                                <td>提升卡牌技能与狩猎结束分数加成</td>
+                            </tr>
+                            <tr>
+                                <td><strong>栖息地分类</strong></td>
+                                <td>灌木林、乔木林、雪原、非洲草原、侏罗纪等</td>
+                            </tr>
+                            <tr>
+                                <td><strong>集卡类别</strong></td>
+                                <td>v1.0.1.6 新增侏罗纪恐龙集卡类别</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">4.5.4 典型卡牌示例（灌木林）</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>动物</th>
+                                <th>体型</th>
+                                <th>血量</th>
+                                <th>防御</th>
+                                <th>击杀分</th>
+                                <th>精准分</th>
+                                <th>栖息地</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>美洲鳄</td>
+                                <td>大型</td>
+                                <td>1350-2700</td>
+                                <td>100-200</td>
+                                <td>2700-5400</td>
+                                <td>900-1800</td>
+                                <td>灌木林</td>
+                            </tr>
+                            <tr>
+                                <td>美洲野牛</td>
+                                <td>大型</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>灌木林</td>
+                            </tr>
+                            <tr>
+                                <td>红鹿</td>
+                                <td>大型</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>灌木林</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.6 宠物系统</h3>
+                    <h4 class="subsection-subtitle">4.6.1 系统概述</h4>
+                    <p>宠物系统为玩家提供战斗伙伴或养成对象，宠物可升阶提升属性。</p>
+                    <h4 class="subsection-subtitle">4.6.2 养成规则</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>项目</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>获取方式</strong></td>
+                                <td>通过养殖场动物成年后兑换宠物币，或在特殊商人处兑换</td>
+                            </tr>
+                            <tr>
+                                <td><strong>升阶</strong></td>
+                                <td>宠物最高可升至 <strong>15 阶</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>作用</strong></td>
+                                <td>提供属性加成或战斗辅助</td>
+                            </tr>
+                            <tr>
+                                <td><strong>商店</strong></td>
+                                <td>宠物商店 UI 在 2026-06-16 版本优化</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.7 配饰系统</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>项目</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>定位</strong></td>
+                                <td>角色外观或属性加成系统</td>
+                            </tr>
+                            <tr>
+                                <td><strong>最高等阶</strong></td>
+                                <td><strong>14 阶</strong>（2026-06-16 官方公告确认）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>商店</strong></td>
+                                <td>配饰商店 UI 在 2026-06-16 版本优化</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.8 养殖场系统</h3>
+                    <h4 class="subsection-subtitle">4.8.1 系统概述</h4>
+                    <p>养殖系统是休闲养成与经济产出系统，玩家可以养殖动物幼崽，成年后出售换取资源。</p>
+                    <h4 class="subsection-subtitle">4.8.2 养殖场类型</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>普通养殖场</strong></td>
+                                <td>养殖普通动物幼崽</td>
+                            </tr>
+                            <tr>
+                                <td><strong>猛兽养殖场</strong></td>
+                                <td>养殖猛兽类幼崽</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4 class="subsection-subtitle">4.8.3 养殖流程</h4>
+                    <pre><code>选择动物幼崽放入养殖场 → 使用加速药剂让幼崽快速成长 → 
+等待动物成长至成年 → 成年后出售，换取金币/钻石/宠物币</code></pre>
+                    <h4 class="subsection-subtitle">4.8.4 养殖场升级</h4>
+                    <ul>
+                        <li>花费金币升级养殖场</li>
+                        <li>升级后提高动物养殖上限，提升后续收益</li>
+                    </ul>
+                    <h4 class="subsection-subtitle">4.8.5 社交与彩蛋</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>功能</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>好友拜访</strong></td>
+                                <td>每天有 5 次拜访次数，可探访其他玩家养殖场</td>
+                            </tr>
+                            <tr>
+                                <td><strong>偷取动物</strong></td>
+                                <td>拜访时有一定概率偷取其他玩家的养殖动物，存在获取上限</td>
+                            </tr>
+                            <tr>
+                                <td><strong>互赠体力</strong></td>
+                                <td>互相加好友后，每天可互相赠送体力</td>
+                            </tr>
+                            <tr>
+                                <td><strong>神秘彩蛋</strong></td>
+                                <td>点击养殖场内的石头或动物便便进行清理，可能获得惊喜奖励</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.9 女神养成系统</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>项目</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>新增时间</strong></td>
+                                <td>2025-10-13 版本</td>
+                            </tr>
+                            <tr>
+                                <td><strong>系统概述</strong></td>
+                                <td>玩家可邂逅多位女神角色，通过养成丰富狩猎旅途</td>
+                            </tr>
+                            <tr>
+                                <td><strong>具体规则</strong></td>
+                                <td>需以游戏内实际实现为准，可能包含好感度、属性加成等机制</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">4.10 徽章系统</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>项目</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>解锁条件</strong></td>
+                                <td>竞技场达到 10 级后解锁</td>
+                            </tr>
+                            <tr>
+                                <td><strong>系统概述</strong></td>
+                                <td>收集徽章，可能提供属性加成或展示效果</td>
+                            </tr>
+                            <tr>
+                                <td><strong>获取方式</strong></td>
+                                <td>通过竞技场、活动等途径获得</td>
+                            </tr>
+                            <tr>
+                                <td><strong>新增时间</strong></td>
+                                <td>v1.0.1.6</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 第五章 -->
+            <section id="section5" class="section">
+                <h2 class="section-title">五、社交与公会系统</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">5.1 好友系统</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>功能</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>添加好友</strong></td>
+                                <td>添加好友，互赠体力</td>
+                            </tr>
+                            <tr>
+                                <td><strong>拜访养殖场</strong></td>
+                                <td>拜访好友养殖场，可偷取动物或获得金币</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">5.2 公会系统</h3>
+                    <h4 class="subsection-subtitle">5.2.1 公会功能</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>功能</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>公会商店</strong></td>
+                                <td>概率刷新黑曜石钥匙等稀有道具</td>
+                            </tr>
+                            <tr>
+                                <td><strong>公会 BOSS</strong></td>
+                                <td>多人协作挑战 BOSS，最高 18 关（2026-06-16）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>公会远征</strong></td>
+                                <td>按实际伤害计算分数（2026-05-26 调整）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>公会联赛</strong></td>
+                                <td>公会间联赛对抗，报名参赛，挑战其他公会</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">5.3 排行榜</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>排行榜类型</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>狩猎挑战排行榜</strong></td>
+                                <td>展示最高挑战关卡记录</td>
+                            </tr>
+                            <tr>
+                                <td><strong>组队成就排行榜</strong></td>
+                                <td>每周结算成就积分排名</td>
+                            </tr>
+                            <tr>
+                                <td><strong>竞技场排行榜</strong></td>
+                                <td>展示 PVP 积分排名</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 第六章 -->
+            <section id="section6" class="section">
+                <h2 class="section-title">六、经济系统设计</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">6.1 主要货币</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>货币</th>
+                                <th>用途</th>
+                                <th>获取方式</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>金币</strong></td>
+                                <td>升级配件、升级养殖场、购买基础资源</td>
+                                <td>狩猎场奖励、关卡宝箱、养殖出售、每日市场、观看广告</td>
+                            </tr>
+                            <tr>
+                                <td><strong>钻石</strong></td>
+                                <td>高级抽卡、购买道具、复活</td>
+                                <td>任务奖励、充值、活动、成就、关卡奖励</td>
+                            </tr>
+                            <tr>
+                                <td><strong>组队星币</strong></td>
+                                <td>兑换宝石数据卡、洗涤药剂、枪械宝箱</td>
+                                <td>组队副本产出</td>
+                            </tr>
+                            <tr>
+                                <td><strong>高山水晶</strong></td>
+                                <td>兑换黑曜石钥匙</td>
+                                <td>高山猎场产出</td>
+                            </tr>
+                            <tr>
+                                <td><strong>宠物币</strong></td>
+                                <td>兑换宠物相关资源</td>
+                                <td>养殖动物出售给特殊商人</td>
+                            </tr>
+                            <tr>
+                                <td><strong>黑曜石钥匙</strong></td>
+                                <td>开启配件宝箱</td>
+                                <td>高山猎场兑换、公会商店、活动</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">6.2 资源获取途径</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>途径</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>免费奖励</strong></td>
+                                <td>日常任务、周常任务、通行证日常任务、三个免费广告档位</td>
+                            </tr>
+                            <tr>
+                                <td><strong>活动列表</strong></td>
+                                <td>首充、七日签到、通行证、嘉年华等活动</td>
+                            </tr>
+                            <tr>
+                                <td><strong>邀请有礼</strong></td>
+                                <td>邀请好友加入游戏，最多可邀请 5 人，获得钻石、体力、宝箱钥匙等</td>
+                            </tr>
+                            <tr>
+                                <td><strong>关卡奖励</strong></td>
+                                <td>通关狩猎场、竞技场、试炼玩法获得</td>
+                            </tr>
+                            <tr>
+                                <td><strong>养殖产出</strong></td>
+                                <td>出售成年动物</td>
+                            </tr>
+                            <tr>
+                                <td><strong>广告奖励</strong></td>
+                                <td>观看广告补充体力、获取额外挑战次数、领取免费资源</td>
+                            </tr>
+                            <tr>
+                                <td><strong>礼包码</strong></td>
+                                <td>每周官方发放礼包码，通过设置-礼包码兑换</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">6.3 付费点设计</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>付费项</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>首充礼包</strong></td>
+                                <td>6 元、30 元、68 元三档，签到三天领取奖励；6 元档包含 M24-嘣 枪械、老虎幼崽、动物卡包、钻石、饮料、子弹等</td>
+                            </tr>
+                            <tr>
+                                <td><strong>通行证</strong></td>
+                                <td>周期性付费通行证，完成任务解锁奖励</td>
+                            </tr>
+                            <tr>
+                                <td><strong>嘉年华</strong></td>
+                                <td>限时活动，付费获取资源</td>
+                            </tr>
+                            <tr>
+                                <td><strong>钻石充值</strong></td>
+                                <td>用于抽卡、购买道具、刷新商店</td>
+                            </tr>
+                            <tr>
+                                <td><strong>广告变现</strong></td>
+                                <td>观看广告获取体力、挑战次数、免费资源</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 第七章 -->
+            <section id="section7" class="section">
+                <h2 class="section-title">七、任务与活动系统</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">7.1 日常/周常任务</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>任务类型</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>日常任务</strong></td>
+                                <td>每日刷新，奖励钻石、金币</td>
+                            </tr>
+                            <tr>
+                                <td><strong>周常任务</strong></td>
+                                <td>每周刷新，奖励更高</td>
+                            </tr>
+                            <tr>
+                                <td><strong>通行证任务</strong></td>
+                                <td>解锁通行证等级奖励</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">7.2 七日签到</h3>
+                    <ul>
+                        <li>新手七日签到送枪械碎片、动物幼崽等</li>
+                        <li>持续登录领取累计奖励</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">7.3 通行证系统</h3>
+                    <ul>
+                        <li>周期性成长通行证</li>
+                        <li>完成任务提升通行证等级</li>
+                        <li>免费档与付费档奖励并存</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">7.4 首充礼包</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>档位</th>
+                                <th>内容</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>6 元档</strong></td>
+                                <td>M24-嘣 枪械、老虎幼崽、动物卡包、钻石、饮料、子弹等（性价比最高）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>30 元档</strong></td>
+                                <td>签到三天领取奖励</td>
+                            </tr>
+                            <tr>
+                                <td><strong>68 元档</strong></td>
+                                <td>签到三天领取奖励</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">7.5 邀请有礼</h3>
+                    <ul>
+                        <li>复制链接邀请好友</li>
+                        <li>最多邀请 5 人</li>
+                        <li>奖励：钻石、体力、宝箱钥匙等</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">7.6 每周福利</h3>
+                    <ul>
+                        <li>官方每周一发布礼包码</li>
+                        <li>兑换方式：设置 → 礼包码 → 输入兑换</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">7.7 版本活动</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>活动名称</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>巅峰竞技场</strong></td>
+                                <td>竞技场 8 级开放入口，12 级解锁功能</td>
+                            </tr>
+                            <tr>
+                                <td><strong>靶场训练营</strong></td>
+                                <td>每周一至周四开放</td>
+                            </tr>
+                            <tr>
+                                <td><strong>恐龙限定狩猎</strong></td>
+                                <td>节日/版本活动期间开放</td>
+                            </tr>
+                            <tr>
+                                <td><strong>配件冲刺活动</strong></td>
+                                <td>解锁配件系统时同步开放</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 第八章 -->
+            <section id="section8" class="section">
+                <h2 class="section-title">八、场景与生态环境</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">8.1 场景类型</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>场景</th>
+                                <th>特点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>灌木林</strong></td>
+                                <td>基础场景，新手友好</td>
+                            </tr>
+                            <tr>
+                                <td><strong>乔木林</strong></td>
+                                <td>中等难度场景</td>
+                            </tr>
+                            <tr>
+                                <td><strong>雪原</strong></td>
+                                <td>寒冷环境，特殊动物</td>
+                            </tr>
+                            <tr>
+                                <td><strong>非洲草原</strong></td>
+                                <td>开阔场景，大型动物</td>
+                            </tr>
+                            <tr>
+                                <td><strong>雨林</strong></td>
+                                <td>茂密植被，隐蔽猎物</td>
+                            </tr>
+                            <tr>
+                                <td><strong>高山猎场</strong></td>
+                                <td>高山环境，产出高山水晶</td>
+                            </tr>
+                            <tr>
+                                <td><strong>侏罗纪</strong></td>
+                                <td>恐龙场景，v1.0.1.6 新增</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="image-container">
+                        <img src="images/scene_forest.jpg" alt="灌木林场景">
+                        <p class="image-caption">图：灌木林狩猎场景</p>
+                    </div>
+                    <div class="image-container">
+                        <img src="images/scene_snow.jpg" alt="雪原场景">
+                        <p class="image-caption">图：雪原狩猎场景展示</p>
+                    </div>
+                    <div class="image-container">
+                        <img src="images/game_screenshot1.jpg" alt="游戏截图1">
+                        <p class="image-caption">图：游戏实际画面展示</p>
+                    </div>
+                    <div class="image-container">
+                        <img src="images/game_screenshot2.jpg" alt="游戏截图2">
+                        <p class="image-caption">图：游戏实际画面展示</p>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">8.2 环境动态</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>环境要素</th>
+                                <th>设计说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>动态天气系统</strong></td>
+                                <td>影响狩猎难度，增加游戏变化性</td>
+                            </tr>
+                            <tr>
+                                <td><strong>动物真实习性</strong></td>
+                                <td>动物行为符合真实生态，需针对性瞄准</td>
+                            </tr>
+                            <tr>
+                                <td><strong>风速、弹道下坠</strong></td>
+                                <td>拟真物理机制，增加射击策略性</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">8.3 动物生态</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>真实野生动物</strong></td>
+                                <td>鹿、熊、狼、棕熊、野猪、猎狗、鸵鸟、鳄鱼、野牛、豹子、白熊等数十种</td>
+                            </tr>
+                            <tr>
+                                <td><strong>侏罗纪恐龙</strong></td>
+                                <td>恐龙类猎物，v1.0.1.6 新增</td>
+                            </tr>
+                            <tr>
+                                <td><strong>要害/弱点</strong></td>
+                                <td>动物存在要害/弱点，新手期显示，后期依赖配件透视</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 第九章 -->
+            <section id="section9" class="section">
+                <h2 class="section-title">九、数值设计</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">9.1 当前版本关键数值上限汇总</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>系统</th>
+                                <th>当前上限</th>
+                                <th>确认时间</th>
+                                <th>备注</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>狩猎场关卡</strong></td>
+                                <td>210 关</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>竞技场关卡</strong></td>
+                                <td>31 关</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>狩猎挑战关卡</strong></td>
+                                <td>280 关</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>高山狩猎场关卡</strong></td>
+                                <td>22 关</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>自由狩猎场</strong></td>
+                                <td>6 阶</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>公会 BOSS</strong></td>
+                                <td>18 关</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>组队活动</strong></td>
+                                <td>30 关</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>宠物等阶</strong></td>
+                                <td>15 阶</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>配饰等阶</strong></td>
+                                <td>14 阶</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>配件等级</strong></td>
+                                <td>40 级</td>
+                                <td>2026-06-16</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>巅峰竞技场</strong></td>
+                                <td>神话段位</td>
+                                <td>2026-06-16</td>
+                                <td>新增段位</td>
+                            </tr>
+                            <tr>
+                                <td><strong>枪械最高阶</strong></td>
+                                <td>T6（AX50-极渊蝰影）</td>
+                                <td>2026-05-26</td>
+                                <td>可开启守护槽位</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">9.2 动物数值示例</h3>
+                    <h4 class="subsection-subtitle">9.2.1 灌木林动物</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>动物</th>
+                                <th>体型</th>
+                                <th>血量</th>
+                                <th>防御</th>
+                                <th>击杀分</th>
+                                <th>精准分</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>美洲鳄</td>
+                                <td>大型</td>
+                                <td>1350-2700</td>
+                                <td>100-200</td>
+                                <td>2700-5400</td>
+                                <td>900-1800</td>
+                            </tr>
+                            <tr>
+                                <td>美洲野牛</td>
+                                <td>大型</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                            </tr>
+                            <tr>
+                                <td>红鹿</td>
+                                <td>大型</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                                <td>待补充</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p><strong>注</strong>：具体数值表（动物血量、防御、击杀分、精准分；枪械、配件、宝石各等级数值）待进一步确认。</p>
+                </div>
+            </section>
+
+            <!-- 第十章 -->
+            <section id="section10" class="section">
+                <h2 class="section-title">十、版本规划与更新记录</h2>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">10.1 最新版本确认信息</h3>
+                    <ul>
+                        <li><strong>最新客户端版本号</strong>：v1.0.1.7（2026-04-03 更新，应用宝/各大安卓渠道）</li>
+                        <li><strong>最新官方公告日期</strong>：2026-06-16（维护公告，2026-06-17 执行）</li>
+                        <li><strong>最新版本新增重点</strong>：
+                            <ul>
+                                <li>关卡全面扩容：狩猎场 210 关、竞技场 31 关、狩猎挑战 280 关、高山狩猎场 22 关、公会 BOSS 18 关、组队活动 30 关、自由狩猎场 6 阶</li>
+                                <li>成长线扩容：宠物最高 15 阶、配饰最高 14 阶、配件最高 40 级</li>
+                                <li>新增枪械皮肤：SSG08-星霜白喙</li>
+                                <li>巅峰竞技场新增"神话段位"</li>
+                                <li>商城、宠物商店、配饰商店 UI 优化</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">10.2 版本更新记录</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>版本/公告</th>
+                                <th>核心内容</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>2026-06-16</strong></td>
+                                <td>6 月更新维护公告</td>
+                                <td>自由狩猎场 6 阶、竞技场 31 关、狩猎场 210 关、狩猎挑战 280 关、高山狩猎场 22 关、公会 BOSS 18 关、组队 30 关；宠物 15 阶、配饰 14 阶、配件 40 级；新增 SSG08-星霜白喙皮肤；巅峰竞技场新增神话段位；商店 UI 优化</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2026-06-09</strong></td>
+                                <td>合服公告</td>
+                                <td>枫林鹿场-01 至枫林鹿场-05 合服，数据保留，排行榜重新排序</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2026-05-26</strong></td>
+                                <td>5 月更新公告</td>
+                                <td>新增 T6 枪械 AX50-极渊蝰影（可开启守护槽位）；提升世界 BOSS 血量上限；优化段位、成就名称；公会远征按实际伤害计分</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2026-04-03</strong></td>
+                                <td>v1.0.1.7</td>
+                                <td>新增宠物系统、新增枪械皮肤 AWM-轮回；关卡扩充：狩猎场 161-180、竞技场 25-28、狩猎挑战 221-240、高山猎场 17-19、公会 BOSS 13-16、组队 23-26</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2026-03-05</strong></td>
+                                <td>v1.0.1.6</td>
+                                <td>新增彩色品质配件、徽章系统、靶场训练营、侏罗纪恐龙、集卡类别；扩充关卡：竞技场 21-24、狩猎场 121-160、5 阶自由狩猎场、狩猎挑战 181-220、高山猎场 13-16、组队 19-22</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2025-10-13</strong></td>
+                                <td>10 月更新</td>
+                                <td>新增女神养成系统；优化通行证、修复组队/竞技场问题</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2025-08-01</strong></td>
+                                <td>首发</td>
+                                <td>核心玩法上线</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 第十一章 -->
+            <section id="section11" class="section">
+                <h2 class="section-title">十一、待确认事项</h2>
+
+                <p>以下内容为官方公告提及但具体机制尚未明确公开，需求阶段需进一步确认：</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>待确认事项</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>守护槽位机制</strong></td>
+                            <td>AX50-极渊蝰影 可开启守护槽位，具体守护效果、解锁条件、养成方式待确认</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>神话段位规则</strong></td>
+                            <td>巅峰竞技场神话段位的积分要求、奖励、赛季机制待确认</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>宠物战斗机制</strong></td>
+                            <td>宠物在战斗中的具体表现、技能释放、属性加成方式待确认</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>女神养成系统</strong></td>
+                            <td>具体养成规则、属性加成、交互方式待确认</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><strong>公会联赛完整规则</strong></td>
+                            <td>报名、匹配、积分、奖励待确认</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><strong>徽章系统具体效果</strong></td>
+                            <td>徽章属性加成、获取途径、展示方式待确认</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td><strong>具体数值表</strong></td>
+                            <td>动物血量、防御、击杀分、精准分；枪械、配件、宝石各等级数值待确认</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 导航链接点击事件
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // 移除所有active类
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+                // 添加active类到当前链接
+                this.classList.add('active');
+
+                // 获取目标section
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+
+                // 滚动到目标section
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 滚动监听，自动更新导航active状态
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+
+                if (window.scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // 添加滚动动画
+        const contentArea = document.querySelector('.content');
+        const observerOptions = {
+            root: contentArea,
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // 页面加载时显示第一个section
+        setTimeout(() => {
+            document.querySelector('#section1').classList.add('visible');
+        }, 100);
+
+        // 手机端表格横向滚动处理
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('table').forEach(table => {
+                // 创建包裹层
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                wrapper.style.cssText = 'overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 15px 0;';
+                
+                // 将表格包裹起来
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            });
+        }
+
+        // 监听窗口大小变化，动态调整表格包裹
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('table').forEach(table => {
+                    if (!table.parentNode.classList.contains('table-wrapper')) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'table-wrapper';
+                        wrapper.style.cssText = 'overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 15px 0;';
+                        table.parentNode.insertBefore(wrapper, table);
+                        wrapper.appendChild(table);
+                    }
+                });
+            } else {
+                document.querySelectorAll('.table-wrapper').forEach(wrapper => {
+                    const table = wrapper.querySelector('table');
+                    if (table) {
+                        wrapper.parentNode.insertBefore(table, wrapper);
+                        wrapper.remove();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
