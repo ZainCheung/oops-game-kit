@@ -697,7 +697,17 @@
                 <h2 class="section-title">二、程序建议</h2>
 
                 <ul>
-                    <li><strong>动画延迟</strong>：Booming Town 较《我的花园世界》存在约 200ms 的交互延迟，拖拽操作时鼠标划过地块缺乏即时反馈（体感参考微信发送视频），对核心循环的流畅度造成显著影响。</li>
+                    <li><strong>动画延迟</strong>：Booming Town 较《我的花园世界》存在约 200ms 的交互延迟，拖拽操作时鼠标划过地块缺乏即时反馈（体感参考下方视频），对核心循环的流畅度造成显著影响。</li>
+                </ul>
+
+                <div class="video-wrapper">
+                    <video src="images/v.mp4" controls loop style="max-width:100%;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+                        您的浏览器不支持视频播放。
+                    </video>
+                    <div class="image-caption">动画延迟对比演示</div>
+                </div>
+
+                <ul style="margin-top:20px;">
                     <li>目前激励广告存在异常问题：无论是微信分发的 APK 安装包，还是 Google Play 已上线的正式版本，点击激励广告按钮后均无任何弹窗、提示反馈，广告完全无法正常拉起。麻烦技术侧排查定位故障根源。<br>若问题是新游戏上线初期平台广告限流导致，建议补充对应的正向交互反馈逻辑；也可做兜底方案，广告加载失败时直接发放对应奖励，避免玩家因广告异常无法领取资源，损害游玩体验。</li>
                     <li><strong>渲染层级 Bug</strong>：人物动画与建筑动画层级错误，房子会盖住人物脑袋。复现方式：让人物从该建筑走出，即可观察到头部被遮挡的异常穿模。</li>
                 </ul>
