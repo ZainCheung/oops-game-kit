@@ -63,6 +63,10 @@ import { DefaultSdk } from './DefaultSdk';
 export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     constructor() {
         super(SdkPlatform.WeChatMiniGame);
+        // 延迟注册隐私监听器，确保在游戏层之后执行
+        setTimeout(() => {
+            this._initPrivacyListener();
+        }, 0);
     }
 
     /** 是否在微信小游戏环境 */
@@ -935,6 +939,10 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     }): Promise<void> {
         const fn = (wx as any).requirePrivacyAuthorize;
         if (typeof fn !== 'function') return Promise.resolve();
+
+        // 先注册正确签名的监听器（覆盖游戏层）
+        this._registerCorrectPrivacyListener();
+
         return this.promisify<void>(fn.bind(wx), option ?? {}).then(() => undefined);
     }
 
@@ -943,6 +951,31 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     ): void {
         const fn = (wx as any).onNeedPrivacyAuthorization;
         if (typeof fn === 'function') fn(callback);
+    }
+
+    /**
+     * 注册正确签名的隐私授权监听器（覆盖游戏层的错误监听器）
+     */
+    private _registerCorrectPrivacyListener(): void {
+        const fn = (wx as any).onNeedPrivacyAuthorization;
+        if (typeof fn !== 'function') return;
+
+        // 注册正确签名的监听器 (resolve, eventInfo)
+        fn((resolveFn: (res: { event: string }) => void, eventInfo: any) => {
+            console.log('[WeChatSdk] 隐私授权回调触发:', eventInfo);
+            // 调用 resolve 通知微信用户已同意
+            resolveFn({ event: 'agree' });
+        });
+
+        console.log('[WeChatSdk] 隐私授权监听器已注册（覆盖式）');
+    }
+
+    /**
+     * 初始化隐私授权监听器（在 SDK 创建时调用）
+     */
+    private _initPrivacyListener(): void {
+        this._registerCorrectPrivacyListener();
+        console.log('[WeChatSdk] 隐私授权监听器初始化完成');
     }
 
     //#endregion
