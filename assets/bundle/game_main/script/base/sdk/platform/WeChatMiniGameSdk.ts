@@ -415,14 +415,23 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     /**
      * 主动拉起转发（分享给好友）
      *
-     * 设计：使用业务层指定的**预制图片**（option.presetImageUrl）作为转发卡片封面，
-     * **不**调用 `wx.canvasToTempFilePath` 把当前 Cocos 画面截图分享出去。
+     * 设计：
+     * - 如果传入了 screenshotData（截图数据），会自动保存为临时文件并分享
+     * - 如果传入了 presetImageUrl（预制图片 URL），直接使用
+     * - 否则使用默认分享
      *
      * 调用示例：
      * ```ts
+     * // 使用预制图片分享
      * sdk.shareAppMessage({
      *     title: '一起来玩',
-     *     presetImageUrl: 'https://example.com/share.png', // 或 'images/share.png'（小游戏本地资源）
+     *     presetImageUrl: 'https://example.com/share.png',
+     * });
+     *
+     * // 使用截图分享（Cocos 层截取画面后传入 base64 数据）
+     * sdk.shareWithScreenshot({
+     *     title: '一起来玩',
+     *     screenshotData: base64String, // Cocos 截图的 base64 数据
      * });
      * ```
      */
@@ -433,6 +442,65 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
             imageUrl,
             query: option?.path,
             ...(option?.withShareTicket ? { withShareTicket: true } : {}),
+        });
+    }
+
+    /**
+     * 使用截图分享（自动处理截图保存和分享）
+     *
+     * @param option 分享选项，包含 title、screenshotData 等
+     * @returns Promise，resolve 表示分享成功，reject 表示失败
+     */
+    async shareWithScreenshot(option: {
+        title?: string;
+        query?: string;
+        withShareTicket?: boolean;
+        screenshotData: string; // base64 截图数据
+    }): Promise<void> {
+        return new Promise((resolve, reject) => {
+            // 获取临时文件保存路径
+            const fs = wx.getFileSystemManager?.();
+            if (!fs) {
+                console.warn('[WeChatSdk] shareWithScreenshot: getFileSystemManager 不可用');
+                // 降级：直接分享无图
+                this.shareAppMessage({ title: option.title, query: option.query });
+                resolve();
+                return;
+            }
+
+            const envPath = wx.env?.USER_DATA_PATH;
+            if (!envPath) {
+                console.warn('[WeChatSdk] shareWithScreenshot: USER_DATA_PATH 不可用');
+                this.shareAppMessage({ title: option.title, query: option.query });
+                resolve();
+                return;
+            }
+
+            const filePath = `${envPath}/share_${Date.now()}.png`;
+
+            // 保存 base64 数据为临时文件
+            fs.writeFile({
+                filePath,
+                data: option.screenshotData,
+                encoding: 'base64',
+                success: () => {
+                    console.log('[WeChatSdk] shareWithScreenshot: 截图保存成功', filePath);
+                    // 分享
+                    wx.shareAppMessage({
+                        title: option.title,
+                        imageUrl: filePath,
+                        query: option.query,
+                        ...(option.withShareTicket ? { withShareTicket: true } : {}),
+                    });
+                    resolve();
+                },
+                fail: (err: any) => {
+                    console.warn('[WeChatSdk] shareWithScreenshot: 截图保存失败', err);
+                    // 降级：直接分享无图
+                    this.shareAppMessage({ title: option.title, query: option.query });
+                    resolve();
+                },
+            });
         });
     }
 
