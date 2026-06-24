@@ -110,6 +110,17 @@ export interface ISdk {
     /** 主动拉起转发（分享给好友） */
     shareAppMessage(option?: IShareOption): void;
 
+    /**
+     * 使用截图分享（自动处理截图保存和分享）
+     * @param option 包含 title、query、screenshotData（base64）
+     */
+    shareWithScreenshot(option: {
+        title?: string;
+        query?: string;
+        withShareTicket?: boolean;
+        screenshotData: string;
+    }): Promise<void>;
+
     /** 被动监听用户点击右上角转发 */
     onShareAppMessage(callback: (option?: IShareOption) => IShareOption | void): void;
 

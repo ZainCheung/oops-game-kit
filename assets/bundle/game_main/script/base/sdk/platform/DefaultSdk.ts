@@ -131,6 +131,17 @@ export class DefaultSdk implements ISdk {
     shareAppMessage(_option?: IShareOption): void {
         console.warn(`[SDK] 当前平台(${this._platform})不支持 shareAppMessage，仅在微信/抖音小游戏有效`);
     }
+
+    shareWithScreenshot(_option: {
+        title?: string;
+        query?: string;
+        withShareTicket?: boolean;
+        screenshotData: string;
+    }): Promise<void> {
+        console.warn(`[SDK] 当前平台(${this._platform})不支持 shareWithScreenshot`);
+        return Promise.resolve();
+    }
+
     onShareAppMessage(_callback: (option?: IShareOption) => IShareOption | void): void {
         console.warn(`[SDK] 当前平台(${this._platform})不支持 onShareAppMessage`);
     }
