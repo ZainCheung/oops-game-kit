@@ -6,7 +6,6 @@ import {
     SdkShowCallback,
     INetworkStatusChangeEvent,
 } from './SdkTypes';
-import { SdkAdsManager } from './SdkAdsManager';
 import { SdkManager } from './SdkManager';
 import { ISdk } from './ISdk';
 import type { IUserInfo } from './SdkTypes';
@@ -18,7 +17,6 @@ import type { IUserInfo } from './SdkTypes';
  *
  * 外部访问方式：
  * - `gsm.base.sdk.platformSdk`    当前平台 SDK 实现接口
- * - `gsm.base.sdk.adsManager`     高级广告管理器
  * - `gsm.base.sdk.token`          SDK 登录凭证
  * - `gsm.base.sdk.userInfo`       用户信息
  *
@@ -35,8 +33,6 @@ export class Sdk {
     private readonly manager: SdkManager = new SdkManager();
     /** 当前平台的 SDK 实现接口 */
     readonly platform: ISdk = this.manager.init();
-    /** 高级广告管理器（封装各广告的创建、显示/隐藏、回调） */
-    readonly ads: SdkAdsManager = new SdkAdsManager(this.platform, this.manager.platform);
 
     // ==================== 数据模型（扁平） ====================
 
@@ -202,7 +198,6 @@ export class Sdk {
         this.hideCallbacks.length = 0;
         this.errorCallbacks.length = 0;
         this.networkChangeCallbacks.length = 0;
-        this.ads.destroyAll();
         this.manager.destroy();
     }
 }
