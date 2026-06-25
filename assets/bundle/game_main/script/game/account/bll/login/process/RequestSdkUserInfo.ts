@@ -158,7 +158,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      */
     private handleUserInfoResult(userInfo: any): void {
         if (userInfo && userInfo.nickName) {
-            gsm.base.sdk.model.userInfo = {
+            gsm.base.sdk.userInfo = {
                 nickName: userInfo.nickName,
                 avatarUrl: userInfo.avatarUrl,
                 gender: userInfo.gender ?? 0,
@@ -166,7 +166,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             console.log(`【登录流程】v3 获取用户信息成功, 昵称: ${userInfo.nickName}`);
         } else {
             console.log('【登录流程】v3 userInfo 为空, 使用默认数据');
-            gsm.base.sdk.model.userInfo = { nickName: 'Player', avatarUrl: '', gender: 0 };
+            gsm.base.sdk.userInfo = { nickName: 'Player', avatarUrl: '', gender: 0 };
         }
         gsm.account.B_Account_ViewUI.removeLogin();
         this.success();
@@ -182,7 +182,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         }
         btnNode.on(NodeEventType.TOUCH_END, () => {
             console.log('【登录流程】v3 非微信平台, 使用默认用户信息');
-            gsm.base.sdk.model.userInfo = { nickName: 'Player', avatarUrl: '', gender: 0 };
+            gsm.base.sdk.userInfo = { nickName: 'Player', avatarUrl: '', gender: 0 };
             gsm.account.B_Account_ViewUI.removeLogin();
             this.success();
         });
@@ -192,7 +192,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      * 用默认 Player 兜底并 success
      */
     private useDefaultAndSuccess(): void {
-        gsm.base.sdk.model.userInfo = { nickName: 'Player', avatarUrl: '', gender: 0 };
+        gsm.base.sdk.userInfo = { nickName: 'Player', avatarUrl: '', gender: 0 };
         gsm.account.B_Account_ViewUI.removeLogin();
         this.success();
     }
