@@ -82,7 +82,7 @@ module.exports = [
       }],
       'semi': ['error', 'always'],
       'quotes': ['error', 'single'],
-      'brace-style': 'off',
+      'brace-style': ['error', 'stroustrup'],
       'comma-spacing': ['error', { 'before': false, 'after': true }],
       'space-before-blocks': ['error', 'always'],
       'space-before-function-paren': ['error', {

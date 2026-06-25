@@ -17,14 +17,15 @@ const Style = Enum(EM_RedDotType);
 @ccclass('V_RedDot_View')
 export class V_RedDot_View extends GameComponent {
     @property(Label)
-        count: Label = null!;
+    count: Label = null!;
 
     @property(CCString)
     /** 红点唯一关键字 */
-        key = '';
+    key = '';
+
     /** 红点样式 */
     @property({ type: Style })
-        style = Style.Default;
+    style = Style.Default;
 
     onLoad() {
         // 静态红点数据通过组件检查器设置
@@ -35,8 +36,8 @@ export class V_RedDot_View extends GameComponent {
         this.key = key;
         const addData: IRedDotAddData = { key, path };
         const updateData: IRedDotUpdateData = { key, count: 1 };
-        this.emit(RedDotEventName.Add, addData);
-        this.emit(RedDotEventName.Update, updateData);
+        this.event.emit(RedDotEventName.Add, addData);
+        this.event.emit(RedDotEventName.Update, updateData);
     }
 
     /**
@@ -46,7 +47,7 @@ export class V_RedDot_View extends GameComponent {
     bind() {
         if (this.key != '') {
             const bindData: IRedDotBindData = { key: this.key, node: this.node, type: this.style };
-            this.emit(RedDotEventName.Bind, bindData);
+            this.event.emit(RedDotEventName.Bind, bindData);
         }
     }
 
@@ -76,6 +77,6 @@ export class V_RedDot_View extends GameComponent {
     /** 红点确认 */
     confirm(save: boolean) {
         const confirmData: IRedDotConfirmData = { key: this.key, save };
-        this.emit(RedDotEventName.Confirm, confirmData);
+        this.event.emit(RedDotEventName.Confirm, confirmData);
     }
 }
