@@ -10,7 +10,7 @@ import { Advertising } from './advertising/Advertising';
 export class Base {
     /** 网络模块 */
     readonly network: Network;
-    /** 平台 SDK 模块（单例，不再使用 ECS） */
+    /** 平台 SDK 模块 */
     readonly sdk: Sdk;
 
     constructor() {
