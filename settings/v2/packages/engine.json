@@ -45,7 +45,7 @@
             "_value": true
           },
           "ui-skew": {
-            "_value": true
+            "_value": false
           },
           "affine-transform": {
             "_value": true
@@ -149,7 +149,7 @@
             "_value": false
           },
           "spine": {
-            "_value": true,
+            "_value": false,
             "_option": "spine-3.8"
           },
           "spine-3.8": {
@@ -165,7 +165,7 @@
             }
           },
           "dragon-bones": {
-            "_value": true
+            "_value": false
           },
           "marionette": {
             "_value": false
@@ -190,9 +190,7 @@
             "_value": false
           }
         },
-        "flags": {
-          "LOAD_SPINE_MANUALLY": false
-        },
+        "flags": {},
         "includeModules": [
           "2d",
           "affine-transform",
@@ -200,7 +198,6 @@
           "audio",
           "base",
           "custom-pipeline",
-          "dragon-bones",
           "gfx-webgl",
           "gfx-webgl2",
           "graphics",
@@ -210,10 +207,8 @@
           "procedural-animation",
           "profiler",
           "sorting-2d",
-          "spine-3.8",
           "tween",
-          "ui",
-          "ui-skew"
+          "ui"
         ],
         "noDeprecatedFeatures": {
           "value": true,
