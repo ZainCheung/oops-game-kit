@@ -144,7 +144,7 @@ export class DemoMain extends GameComponent {
 
     //#region ========== 分享功能 ==========
 
-    /** 分享按钮 */
+    /** 分享按钮 - 默认分享（无图片） */
     @debounce.click()
     ShareButton() {
         const sdk = gsm.base.sdk.main.sdk;
@@ -152,6 +152,36 @@ export class DemoMain extends GameComponent {
 
         sdk.shareAppMessage({
             title: '一起来玩！',
+        });
+    }
+
+    /** 分享按钮2 - 自定义图片分享 */
+    @debounce.click()
+    ShareButton2() {
+        const sdk = gsm.base.sdk.main.sdk;
+        console.log('[Demo] ShareButton2: 触发自定义图片分享');
+
+        // 使用预设图片分享（替换为你的实际图片URL）
+        sdk.shareAppMessage({
+            title: '一起来玩！',
+            presetImageUrl: 'https://example.com/share.png',
+        });
+    }
+
+    /** 分享按钮3 - 分享到朋友圈（仅微信支持） */
+    @debounce.click()
+    ShareButton3() {
+        const sdk = gsm.base.sdk.main.sdk;
+        console.log('[Demo] ShareButton3: 触发朋友圈分享');
+
+        if (!sdk.canShareToTimeline()) {
+            oops.gui.toast('当前平台不支持分享到朋友圈');
+            return;
+        }
+
+        sdk.shareToTimeline({
+            title: '来看看我的战绩！',
+            imageUrl: 'https://example.com/share.png',
         });
     }
 
