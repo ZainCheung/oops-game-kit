@@ -141,4 +141,19 @@ export class DemoMain extends GameComponent {
             this.bannerAd = null;
         }
     }
+
+    //#region ========== 分享功能 ==========
+
+    /** 分享按钮 */
+    @debounce.click()
+    ShareButton() {
+        const sdk = gsm.base.sdk.main.sdk;
+        console.log('[Demo] ShareButton: 触发分享');
+
+        sdk.shareAppMessage({
+            title: '一起来玩！',
+        });
+    }
+
+    //#endregion
 }

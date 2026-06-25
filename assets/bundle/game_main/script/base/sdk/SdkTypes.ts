@@ -111,8 +111,23 @@ export interface IShareOption {
     title?: string;
     /** 转发路径（小游戏通常为查询字符串） */
     path?: string;
-    /** 封面图 URL */
+    /**
+     * 分享封面图（运行期生成的临时文件 URL，例如 `canvas.toTempFilePath` 的结果）。
+     *
+     * 注意：本字段保留给"截图分享"使用场景，但当前 SDK 默认行为**不**使用此字段。
+     * 默认分享流程见 {@link presetImageUrl}。
+     */
     imageUrl?: string;
+    /**
+     * 预设分享封面图 URL（远端 CDN 图片或小游戏本地资源）。
+     *
+     * 业务调用 `sdk.shareAppMessage({ presetImageUrl })` 时，微信/抖音会用这张图作为
+     * 转发卡片的封面，**不会**触发 `canvas.toTempFilePath`，因此不会把 Cocos 当前画面
+     * 截成游戏截图分享出去。
+     *
+     * 如果同时传了 `imageUrl`，以 `presetImageUrl` 为准（更明确的语义）。
+     */
+    presetImageUrl?: string;
     /** 是否带 shareTicket */
     withShareTicket?: boolean;
     /** 额外参数 */

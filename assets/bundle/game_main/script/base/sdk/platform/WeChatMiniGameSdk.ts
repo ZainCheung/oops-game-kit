@@ -63,6 +63,10 @@ import { DefaultSdk } from './DefaultSdk';
 export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     constructor() {
         super(SdkPlatform.WeChatMiniGame);
+        // 延迟注册隐私监听器，确保在游戏层之后执行
+        setTimeout(() => {
+            this._initPrivacyListener();
+        }, 0);
     }
 
     /** 是否在微信小游戏环境 */
@@ -96,19 +100,21 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     getSystemInfo(): Promise<ISystemInfo> {
         try {
-            const info = wx.getSystemInfoSync();
+            const deviceInfo = wx.getDeviceInfo();
+            const windowInfo = wx.getWindowInfo();
+            const appBaseInfo = wx.getAppBaseInfo();
             return Promise.resolve({
-                brand: info.brand,
-                model: info.model,
+                brand: deviceInfo.brand,
+                model: deviceInfo.model,
                 platform: SdkPlatform.WeChatMiniGame,
-                system: info.system,
-                version: info.version,
-                screenWidth: info.screenWidth,
-                screenHeight: info.screenHeight,
-                pixelRatio: info.pixelRatio,
-                language: info.language,
-                SDKVersion: info.SDKVersion,
-                raw: info,
+                system: deviceInfo.system,
+                version: appBaseInfo.version,
+                screenWidth: windowInfo.screenWidth,
+                screenHeight: windowInfo.screenHeight,
+                pixelRatio: windowInfo.pixelRatio,
+                language: 'zh', // 新 API 不包含 language 字段，使用默认值
+                SDKVersion: appBaseInfo.SDKVersion,
+                raw: { deviceInfo, windowInfo, appBaseInfo },
             });
         }
         catch (e) {
@@ -171,29 +177,179 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         lang?: 'en' | 'zh_CN' | 'zh_TW';
         withCredentials?: boolean;
     }): Promise<IUserInfoResult> {
+        // zw3: 先尝试 wx.getUserInfo（如果用户已在 mp 后台授权过隐私协议，这里能直接拿到）；
+        //      拿不到则创建全屏透明原生按钮，等用户点击触发 onTap 拿到真实 userInfo。
+        const lang = option?.lang ?? 'zh_CN';
+        console.log('[WeChatSdk-zw3] getUserInfo: 开始获取用户信息, lang=' + lang);
+
+        return this.tryWxGetUserInfo(lang).then((r) => {
+            if (r.userInfo) {
+                console.log('[WeChatSdk-zw3] getUserInfo: wx.getUserInfo 拿到数据, nickName=' + r.userInfo.nickName);
+                return r;
+            }
+            console.warn('[WeChatSdk-zw3] getUserInfo: wx.getUserInfo 拿不到数据，降级到 createUserInfoButton 全屏兜底');
+            return this.getUserInfoViaButton(lang, 60000);
+        });
+    }
+
+    /**
+     * 调用 wx.getUserInfo，加空保护（未授权时 res.userInfo 可能为空）
+     */
+    private tryWxGetUserInfo(lang: 'en' | 'zh_CN' | 'zh_TW'): Promise<IUserInfoResult> {
         return this.promisify<WechatMinigame.GetUserInfoSuccessCallbackResult>(
             wx.getUserInfo.bind(wx),
-            {
-                lang: option?.lang ?? 'zh_CN',
-                withCredentials: option?.withCredentials ?? false,
+            { lang, withCredentials: false }
+        ).then((res) => {
+            if (!res || !res.userInfo || !res.userInfo.nickName) {
+                console.warn('[WeChatSdk-zw3] wx.getUserInfo 返回但 userInfo 为空');
+                return { userInfo: undefined };
             }
-        ).then((res) => ({
-            userInfo: {
-                nickName: res.userInfo.nickName,
-                avatarUrl: res.userInfo.avatarUrl,
-                gender: res.userInfo.gender,
-                language: res.userInfo.language,
-                country: res.userInfo.country,
-                province: res.userInfo.province,
-                city: res.userInfo.city,
-                raw: res.userInfo,
-            },
-            rawData: res.rawData,
-            signature: res.signature,
-            encryptedData: res.encryptedData,
-            iv: res.iv,
-            cloudID: res.cloudID,
-        }));
+            return {
+                userInfo: {
+                    nickName: res.userInfo.nickName,
+                    avatarUrl: res.userInfo.avatarUrl,
+                    gender: res.userInfo.gender,
+                    language: res.userInfo.language,
+                    country: res.userInfo.country,
+                    province: res.userInfo.province,
+                    city: res.userInfo.city,
+                    raw: res.userInfo,
+                },
+                rawData: res.rawData,
+                signature: res.signature,
+                encryptedData: res.encryptedData,
+                iv: res.iv,
+                cloudID: res.cloudID,
+            };
+        }).catch((e) => {
+            console.warn('[WeChatSdk-zw3] wx.getUserInfo 调用失败:', e);
+            return { userInfo: undefined };
+        });
+    }
+
+    /**
+     * 通过创建全屏透明原生按钮 + onTap 获取真实用户信息
+     *
+     * 背景：微信新基础库下，wx.getUserInfo / wx.getUserProfile 在用户未授权时
+     * resolve 但 userInfo 为空。唯一能拿到真实数据的方式是 createUserInfoButton
+     * + 用户点击触发 onTap（用户点击原生按钮自带"用户行为上下文"，不会被基础库拒绝）。
+     *
+     * 此方法会创建一个全屏透明原生按钮，等用户点击后销毁并返回用户信息。
+     * 业务层只需调用 sdk.getUserInfo() 即可，无需自己管理原生按钮生命周期。
+     */
+    private getUserInfoViaButton(
+        lang: 'en' | 'zh_CN' | 'zh_TW',
+        timeoutMs: number = 60000
+    ): Promise<IUserInfoResult> {
+        return new Promise((resolve) => {
+            console.log('[WeChatSdk-zw3] getUserInfoViaButton: 开始创建全屏透明原生按钮');
+            if (typeof wx === 'undefined' || typeof wx.createUserInfoButton !== 'function') {
+                console.warn('[WeChatSdk-zw3] createUserInfoButton 不可用');
+                resolve({ userInfo: undefined });
+                return;
+            }
+
+            let resolved = false;
+            let btn: any = null;
+            const safeResolve = (result: IUserInfoResult) => {
+                if (resolved) return;
+                resolved = true;
+                try {
+                    if (btn) btn.destroy();
+                }
+                catch { /* ignore */ }
+                resolve(result);
+            };
+
+            // 全屏透明按钮，覆盖整个屏幕
+            let screenW = 0, screenH = 0;
+            try {
+                const windowInfo = wx.getWindowInfo();
+                screenW = windowInfo.screenWidth;
+                screenH = windowInfo.screenHeight;
+            }
+            catch {
+                screenW = 375;
+                screenH = 667;
+            }
+
+            try {
+                btn = wx.createUserInfoButton({
+                    type: 'text',
+                    text: '',
+                    style: {
+                        left: 0,
+                        top: 0,
+                        width: screenW,
+                        height: screenH,
+                        backgroundColor: 'rgba(0,0,0,0)',
+                        borderColor: 'rgba(0,0,0,0)',
+                        color: 'rgba(0,0,0,0)',
+                        textAlign: 'center',
+                        fontSize: 1,
+                        borderRadius: 0,
+                        lineHeight: 1,
+                    },
+                    lang: lang ?? 'zh_CN',
+                    withCredentials: false,
+                });
+            }
+            catch (e) {
+                console.warn('[WeChatSdk-zw3] createUserInfoButton 创建失败:', e);
+                resolve({ userInfo: undefined });
+                return;
+            }
+
+            if (!btn) {
+                console.warn('[WeChatSdk-zw3] createUserInfoButton 返回 null');
+                resolve({ userInfo: undefined });
+                return;
+            }
+
+            try {
+                btn.show();
+            }
+            catch (e) {
+                console.warn('[WeChatSdk-zw3] btn.show 失败:', e);
+            }
+            console.log('[WeChatSdk-zw3] getUserInfoViaButton: 全屏透明按钮已 show，等待用户点击');
+
+            btn.onTap((res: any) => {
+                console.log('[WeChatSdk-zw3] createUserInfoButton onTap 触发, res=' + JSON.stringify(res));
+                if (res && res.userInfo && res.userInfo.nickName) {
+                    const info = res.userInfo;
+                    safeResolve({
+                        userInfo: {
+                            nickName: info.nickName,
+                            avatarUrl: info.avatarUrl,
+                            gender: info.gender,
+                            language: info.language,
+                            country: info.country,
+                            province: info.province,
+                            city: info.city,
+                            raw: info,
+                        },
+                        rawData: res.rawData,
+                        signature: res.signature,
+                        encryptedData: res.encryptedData,
+                        iv: res.iv,
+                        cloudID: res.cloudID,
+                    });
+                }
+                else {
+                    console.warn('[WeChatSdk-zw3] onTap 但 userInfo 为空（用户拒绝）');
+                    safeResolve({ userInfo: undefined });
+                }
+            });
+
+            // 超时兜底
+            setTimeout(() => {
+                if (!resolved) {
+                    console.warn(`[WeChatSdk-zw3] getUserInfoViaButton 超时 (${timeoutMs}ms)`);
+                    safeResolve({ userInfo: undefined });
+                }
+            }, timeoutMs);
+        });
     }
 
     createUserInfoButton(option: {
@@ -271,23 +427,113 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#region ========== 分享 ==========
 
+    /**
+     * 主动拉起转发（分享给好友）
+     *
+     * 设计：
+     * - 如果传入了 screenshotData（截图数据），会自动保存为临时文件并分享
+     * - 如果传入了 presetImageUrl（预制图片 URL），直接使用
+     * - 否则使用默认分享
+     *
+     * 调用示例：
+     * ```ts
+     * // 使用预制图片分享
+     * sdk.shareAppMessage({
+     *     title: '一起来玩',
+     *     presetImageUrl: 'https://example.com/share.png',
+     * });
+     *
+     * // 使用截图分享（Cocos 层截取画面后传入 base64 数据）
+     * sdk.shareWithScreenshot({
+     *     title: '一起来玩',
+     *     screenshotData: base64String, // Cocos 截图的 base64 数据
+     * });
+     * ```
+     */
     shareAppMessage(option?: IShareOption): void {
+        const imageUrl = option?.presetImageUrl ?? option?.imageUrl;
         wx.shareAppMessage({
             title: option?.title,
-            imageUrl: option?.imageUrl,
+            imageUrl,
             query: option?.path,
             ...(option?.withShareTicket ? { withShareTicket: true } : {}),
         });
     }
 
+    /**
+     * 使用截图分享（自动处理截图保存和分享）
+     *
+     * @param option 分享选项，包含 title、screenshotData 等
+     * @returns Promise，resolve 表示分享成功，reject 表示失败
+     */
+    async shareWithScreenshot(option: {
+        title?: string;
+        query?: string;
+        withShareTicket?: boolean;
+        screenshotData: string; // base64 截图数据
+    }): Promise<void> {
+        return new Promise((resolve, reject) => {
+            // 获取临时文件保存路径
+            const fs = wx.getFileSystemManager?.();
+            if (!fs) {
+                console.warn('[WeChatSdk] shareWithScreenshot: getFileSystemManager 不可用');
+                // 降级：直接分享无图
+                this.shareAppMessage({ title: option.title, query: option.query });
+                resolve();
+                return;
+            }
+
+            const envPath = wx.env?.USER_DATA_PATH;
+            if (!envPath) {
+                console.warn('[WeChatSdk] shareWithScreenshot: USER_DATA_PATH 不可用');
+                this.shareAppMessage({ title: option.title, query: option.query });
+                resolve();
+                return;
+            }
+
+            const filePath = `${envPath}/share_${Date.now()}.png`;
+
+            // 保存 base64 数据为临时文件
+            fs.writeFile({
+                filePath,
+                data: option.screenshotData,
+                encoding: 'base64',
+                success: () => {
+                    console.log('[WeChatSdk] shareWithScreenshot: 截图保存成功', filePath);
+                    // 分享
+                    wx.shareAppMessage({
+                        title: option.title,
+                        imageUrl: filePath,
+                        query: option.query,
+                        ...(option.withShareTicket ? { withShareTicket: true } : {}),
+                    });
+                    resolve();
+                },
+                fail: (err: any) => {
+                    console.warn('[WeChatSdk] shareWithScreenshot: 截图保存失败', err);
+                    // 降级：直接分享无图
+                    this.shareAppMessage({ title: option.title, query: option.query });
+                    resolve();
+                },
+            });
+        });
+    }
+
+    /**
+     * 监听用户点击右上角转发
+     *
+     * 回调返回 {@link IShareOption} 时，使用 `presetImageUrl` 作为转发卡片封面。
+     * 不返回 / 返回空对象时，微信会展示通用转发卡片（不含自定义封面）。
+     */
     onShareAppMessage(
         callback: (option?: IShareOption) => IShareOption | void
     ): void {
         wx.onShareAppMessage(() => {
             const result = callback() || {};
+            const imageUrl = result.presetImageUrl ?? result.imageUrl;
             return {
                 title: result.title,
-                imageUrl: result.imageUrl,
+                imageUrl,
                 query: result.path,
                 ...(result.withShareTicket ? { withShareTicket: true } : {}),
             } as any;
@@ -704,6 +950,10 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     }): Promise<void> {
         const fn = (wx as any).requirePrivacyAuthorize;
         if (typeof fn !== 'function') return Promise.resolve();
+
+        // 先注册正确签名的监听器（覆盖游戏层）
+        this._registerCorrectPrivacyListener();
+
         return this.promisify<void>(fn.bind(wx), option ?? {}).then(() => undefined);
     }
 
@@ -712,6 +962,31 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     ): void {
         const fn = (wx as any).onNeedPrivacyAuthorization;
         if (typeof fn === 'function') fn(callback);
+    }
+
+    /**
+     * 注册正确签名的隐私授权监听器（覆盖游戏层的错误监听器）
+     */
+    private _registerCorrectPrivacyListener(): void {
+        const fn = (wx as any).onNeedPrivacyAuthorization;
+        if (typeof fn !== 'function') return;
+
+        // 注册正确签名的监听器 (resolve, eventInfo)
+        fn((resolveFn: (res: { event: string }) => void, eventInfo: any) => {
+            console.log('[WeChatSdk] 隐私授权回调触发:', eventInfo);
+            // 调用 resolve 通知微信用户已同意
+            resolveFn({ event: 'agree' });
+        });
+
+        console.log('[WeChatSdk] 隐私授权监听器已注册（覆盖式）');
+    }
+
+    /**
+     * 初始化隐私授权监听器（在 SDK 创建时调用）
+     */
+    private _initPrivacyListener(): void {
+        this._registerCorrectPrivacyListener();
+        console.log('[WeChatSdk] 隐私授权监听器初始化完成');
     }
 
     //#endregion

@@ -11,8 +11,12 @@ export function runDemoIntervalSystem(): void {
     let runCount = 0;
     let lastDt = 0;
     class TickSystem extends ecs.ComblockSystem implements ecs.ISystemUpdate {
-        constructor() { super(); this.interval = 0.5; }
-        filter() { return ecs.allOf(DemoPosComp); }
+        constructor() {
+            super(); this.interval = 0.5;
+        }
+        filter() {
+            return ecs.allOf(DemoPosComp);
+        }
         update(): void {
             runCount++;
             lastDt = (this as { dt: number }).dt;
