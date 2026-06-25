@@ -65,20 +65,21 @@ export class DefaultSdk implements ISdk {
 
     getSystemInfo(): Promise<ISystemInfo> {
         return Promise.resolve({
-            brand: 'unknown',
-            model: 'unknown',
+            brand: 'devtools',
+            model: 'Simulator',
             platform: this._platform,
-            system: 'unknown',
-            version: 'unknown',
-            screenWidth: 0,
-            screenHeight: 0,
-            pixelRatio: 1,
+            system: 'iOS 16.0',
+            version: '8.0.0',
+            screenWidth: 750,
+            screenHeight: 1334,
+            pixelRatio: 2,
             language: 'zh_CN',
+            SDKVersion: '2.30.0',
         });
     }
 
     getLaunchOptions(): ILaunchOptions {
-        return { scene: 0, query: {} };
+        return { scene: 1001, query: { debug: '1' } };
     }
 
     onShow(_callback: (res: any) => void): void {}
@@ -89,7 +90,8 @@ export class DefaultSdk implements ISdk {
     offError(_callback?: (err: string) => void): void {}
 
     exitMiniProgram(): Promise<void> {
-        return this.reject('exitMiniProgram');
+        console.log('[SDK] 开发模式: exitMiniProgram');
+        return Promise.resolve();
     }
 
     //#endregion
@@ -154,13 +156,13 @@ export class DefaultSdk implements ISdk {
         console.warn(`[SDK] 当前平台(${this._platform})不支持 onShareAppMessage`);
     }
     shareToTimeline(_option?: IShareToTimelineOption): void {
-        this.notSupported('shareToTimeline');
+        console.warn('[SDK] 开发模式: shareToTimeline 模拟成功');
     }
     showShareMenu(_option?: { withShareTicket?: boolean; menus?: string[] }): void {
-        this.notSupported('showShareMenu');
+        console.log('[SDK] 开发模式: showShareMenu');
     }
     hideShareMenu(_option?: { menus?: string[] }): void {
-        this.notSupported('hideShareMenu');
+        console.log('[SDK] 开发模式: hideShareMenu');
     }
     canShareToTimeline(): boolean {
         return false;
@@ -195,8 +197,9 @@ export class DefaultSdk implements ISdk {
 
     //#region ========== 虚拟支付 ==========
 
-    pay(_option: IPayOption): Promise<IPayResult> {
-        return this.reject<IPayResult>('pay');
+    pay(option: IPayOption): Promise<IPayResult> {
+        console.log('[SDK] 开发模式: pay', option);
+        return Promise.resolve({ errMsg: 'ok', raw: { transactionId: 'test_tx_' + Date.now() } });
     }
 
     //#endregion
@@ -210,14 +213,15 @@ export class DefaultSdk implements ISdk {
     vibrateLong(): Promise<void> {
         return Promise.resolve();
     }
-    setClipboardData(_data: string): Promise<void> {
-        return this.reject('setClipboardData');
+    setClipboardData(data: string): Promise<void> {
+        console.log(`[SDK] 开发模式: setClipboardData(${data})`);
+        return Promise.resolve();
     }
     getClipboardData(): Promise<string> {
-        return this.reject<string>('getClipboardData');
+        return Promise.resolve('test_clipboard_data');
     }
     getNetworkType(): Promise<INetworkTypeResult> {
-        return Promise.resolve({ networkType: 'unknown' as any, isConnected: true });
+        return Promise.resolve({ networkType: 'wifi' as any, isConnected: true });
     }
     onNetworkStatusChange(_callback: (res: INetworkStatusChangeEvent) => void): void {}
     offNetworkStatusChange(_callback?: (res: INetworkStatusChangeEvent) => void): void {}
@@ -229,14 +233,19 @@ export class DefaultSdk implements ISdk {
 
     //#region ========== 开放数据域托管数据 ==========
 
-    setUserCloudStorage(_kvDataList: IKVData[]): Promise<void> {
-        return this.reject('setUserCloudStorage');
+    setUserCloudStorage(kvDataList: IKVData[]): Promise<void> {
+        console.log('[SDK] 开发模式: setUserCloudStorage', kvDataList);
+        return Promise.resolve();
     }
-    removeUserCloudStorage(_keys: string[]): Promise<void> {
-        return this.reject('removeUserCloudStorage');
+    removeUserCloudStorage(keys: string[]): Promise<void> {
+        console.log('[SDK] 开发模式: removeUserCloudStorage', keys);
+        return Promise.resolve();
     }
-    getUserCloudStorage(_keys: string[]): Promise<IUserCloudStorageResult> {
-        return this.reject<IUserCloudStorageResult>('getUserCloudStorage');
+    getUserCloudStorage(keys: string[]): Promise<IUserCloudStorageResult> {
+        return Promise.resolve({
+            kvDataList: keys.map((k) => ({ key: k, value: JSON.stringify({ score: 100, level: 1 }) })),
+            raw: {},
+        });
     }
 
     //#endregion
@@ -244,10 +253,12 @@ export class DefaultSdk implements ISdk {
     //#region ========== 客服与反馈 ==========
 
     openCustomerServiceConversation(_option: ICustomerServiceConversationOption): Promise<void> {
-        return this.reject('openCustomerServiceConversation');
+        console.log('[SDK] 开发模式: openCustomerServiceConversation');
+        return Promise.resolve();
     }
     openCustomerServiceChat(_option: ICustomerServiceOption): Promise<void> {
-        return this.reject('openCustomerServiceChat');
+        console.log('[SDK] 开发模式: openCustomerServiceChat');
+        return Promise.resolve();
     }
 
     //#endregion
@@ -288,12 +299,14 @@ export class DefaultSdk implements ISdk {
 
     //#region ========== 抖音侧边栏场景 ==========
 
-    checkScene(_option: ISceneOption): Promise<ISceneResult> {
-        return this.reject<ISceneResult>('checkScene');
+    checkScene(option: ISceneOption): Promise<ISceneResult> {
+        console.log('[SDK] 开发模式: checkScene', option);
+        return Promise.resolve({ success: true, raw: {} });
     }
 
-    navigateToScene(_option: ISceneOption): Promise<ISceneResult> {
-        return this.reject<ISceneResult>('navigateToScene');
+    navigateToScene(option: ISceneOption): Promise<ISceneResult> {
+        console.log('[SDK] 开发模式: navigateToScene', option);
+        return Promise.resolve({ success: true, raw: {} });
     }
 
     //#endregion
