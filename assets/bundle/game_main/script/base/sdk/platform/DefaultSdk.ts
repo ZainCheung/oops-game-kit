@@ -109,7 +109,18 @@ export class DefaultSdk implements ISdk {
     }
 
     getUserInfo(): Promise<IUserInfoResult> {
-        return this.reject<IUserInfoResult>('getUserInfo');
+        // 默认平台（H5/编辑器/PC 预览）返回模拟用户信息，避免调用方报错
+        return Promise.resolve({
+            userInfo: {
+                nickName: '测试用户',
+                avatarUrl: '',
+                gender: 0,
+                language: 'zh_CN',
+                country: '中国',
+            },
+            rawData: '',
+            signature: '',
+        });
     }
 
     createUserInfoButton(_option: any): IUserInfoButton | null {
