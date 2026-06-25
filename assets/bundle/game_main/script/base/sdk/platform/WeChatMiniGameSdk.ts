@@ -211,7 +211,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         try {
             const appBase = wx.getAppBaseInfo();
             return appBase?.SDKVersion || '0.0.0';
-        } catch {
+        }
+        catch {
             return '0.0.0';
         }
     }
@@ -269,7 +270,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                             iv: res.iv,
                             cloudID: res.cloudID,
                         });
-                    } else {
+                    }
+                    else {
                         console.warn('[WeChatSdk-zw3] getUserProfile 返回但 userInfo 为空');
                         resolve({ userInfo: undefined });
                     }
@@ -446,7 +448,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         type?: 'text' | 'image';
         text?: string;
         image?: string;
-        style?: { left: number; top: number; width: number; height: number; [k: string]: any };
+        style?: { left: number; top: number; width: number; height: number;[k: string]: any };
         lang?: 'en' | 'zh_CN' | 'zh_TW';
         withCredentials?: boolean;
     }): IUserInfoButton | null {
@@ -1048,7 +1050,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     }
 
     onNeedPrivacyAuthorization(
-        callback: (res: { contractName: string; [k: string]: any }) => void
+        callback: (res: { contractName: string;[k: string]: any }) => void
     ): void {
         const fn = (wx as any).onNeedPrivacyAuthorization;
         if (typeof fn === 'function') fn(callback);
@@ -1127,7 +1129,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 name,
                 success: () => resolve(),
                 fail: (err: any) => reject(err),
-                complete: () => {},
+                complete: () => { },
             } as WechatMinigame.LoadSubpackageOption);
         });
     }

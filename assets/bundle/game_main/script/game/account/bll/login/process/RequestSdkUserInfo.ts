@@ -34,7 +34,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             // 2. 创建全屏原生按钮并等用户点击（内部会调 this.success() / this.fail()）
             const sdk = gsm.base.sdk.main.sdk;
             this.requestUserInfo(sdk, uiNode);
-        } catch (err) {
+        }
+        catch (err) {
             console.timeEnd(label);
             console.error('【登录流程】获取用户头像失败', err);
             this.fail();
@@ -117,7 +118,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 console.log(
                     `【登录流程】获取用户信息成功（原生按钮），昵称: ${res.userInfo.nickName}`
                 );
-            } else {
+            }
+            else {
                 // 用户点了「拒绝」
                 console.log('【登录流程】用户拒绝授权，使用默认用户信息');
                 gsm.base.sdk.model.userInfo = {
@@ -126,7 +128,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     gender: 0,
                 };
             }
-            try { nativeBtn.destroy(); } catch {}
+            nativeBtn.destroy();
             gsm.account.B_Account_ViewUI.removeLogin();
             this.success();
         });
@@ -142,12 +144,10 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      * 使用 screen.windowSize 获取 Cocos 画布的逻辑尺寸，跨平台行为一致。
      */
     private getScreenLogicalSize(): { width: number; height: number } {
-        try {
-            const size = screen.windowSize;
-            if (size && size.width > 0 && size.height > 0) {
-                return { width: size.width, height: size.height };
-            }
-        } catch {}
+        const size = screen.windowSize;
+        if (size && size.width > 0 && size.height > 0) {
+            return { width: size.width, height: size.height };
+        }
         // 兜底：使用 visibleSize（设计分辨率），至少不会越界
         const v = view.getVisibleSize();
         return { width: v.width, height: v.height };
@@ -278,7 +278,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             });
 
             return debugNode;
-        } catch (e) {
+        }
+        catch (e) {
             console.error('【登录流程】绘制调试矩形失败', e);
             return null;
         }

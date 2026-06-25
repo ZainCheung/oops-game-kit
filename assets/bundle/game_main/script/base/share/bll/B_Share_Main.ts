@@ -5,12 +5,11 @@ import { Sdk } from '../../sdk/Sdk';
 import { Share } from '../Share';
 import {
     ShareEventName,
-    type IShareEventDataMap,
     type IShareData,
-    type IShareWithImageData,
+    type IShareEventDataMap,
     type IShareScreenshotData,
     type IShareTimelineData,
-    type IRegisterShareMenuData,
+    type IShareWithImageData,
 } from '../ShareEvent';
 
 /** Share模块主业务逻辑 */
@@ -53,7 +52,8 @@ export class B_Share_Main extends CCBusiness<Share> {
                     };
                 });
                 console.log('[Share] 右上角分享菜单已开启');
-            } catch (e) {
+            }
+            catch (e) {
                 console.warn('[Share] 注册分享菜单失败', e);
             }
         }, 0);
