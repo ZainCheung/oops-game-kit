@@ -159,89 +159,42 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         withCredentials?: boolean;
     }): Promise<IUserInfoResult> {
         const lang = option?.lang ?? 'zh_CN';
-        const sdkVersion = this.getSDKVersion();
-        console.log(`[WeChatSdk-zw3] getUserInfo: 基础库版本=${sdkVersion}, lang=${lang}`);
+        const wxAny = wx as any;
 
-        // ========== 2026-06-25 最终方案:双弹窗连续模式 ==========
-        // 思路：在 onNeedPrivacyAuthorization 的 showModal "同意" 按钮回调里
-        //      同步创建并 tap createUserInfoButton，让两个弹窗接连出现
-        // 流程：
-        //   1. requirePrivacyAuthorize → onNeedPrivacyAuthorization
-        //   2. 弹 showModal（隐私协议）
-        //   3. 用户点"同意" → resolve({event:'agree'})
-        //   4. 同步创建 createUserInfoButton 并立即 tap()
-        //   5. 微信连续弹出 scope.userInfo 授权弹窗
-        //   6. 用户点"允许" → onTap 返回 userInfo
-        // 老库走 getUserProfile 兜底
-        const isOldSDK = this.compareSDKVersion(sdkVersion, '2.27.1') < 0;
+        // 依次尝试 wx.getUserProfile → wx.getUserInfo → 兜底
+        const apis: Array<{ name: string; fn: any; option: any }> = [
+            {
+                name: 'getUserProfile',
+                fn: wxAny.getUserProfile,
+                option: { lang, desc: '用于在游戏中展示你的身份信息' },
+            },
+            {
+                name: 'getUserInfo',
+                fn: wxAny.getUserInfo,
+                option: { lang, withCredentials: option?.withCredentials ?? false },
+            },
+        ];
 
-        if (isOldSDK) {
-            console.warn(`[WeChatSdk-zw3] 基础库 ${sdkVersion} < 2.27.1,直接走 getUserProfile 兜底`);
-            return this.tryWxGetUserProfile(lang);
-        }
+        return new Promise<IUserInfoResult>((resolve) => {
+            const tryCall = (index: number): void => {
+                if (index >= apis.length) {
+                    console.warn('[WeChatSdk] getUserProfile 和 getUserInfo 都不可用');
+                    resolve({ userInfo: undefined });
+                    return;
+                }
 
-        console.log('[WeChatSdk-zw3] getUserInfo: 走双弹窗连续模式');
-        return this.getUserInfoWithContinuousDialogs(lang, 60000);
-    }
+                const api = apis[index];
+                if (typeof api.fn !== 'function') {
+                    tryCall(index + 1);
+                    return;
+                }
 
-    /**
-     * 双弹窗连续模式获取用户信息
-     *
-     * 在 showModal 的"同意"按钮回调里，同步创建并 tap createUserInfoButton，
-     * 让微信连续弹出隐私协议 + scope.userInfo 授权弹窗。
-     */
-    private getUserInfoWithContinuousDialogs(
-        lang: 'en' | 'zh_CN' | 'zh_TW',
-        timeoutMs: number = 60000
-    ): Promise<IUserInfoResult> {
-        return new Promise((resolve) => {
-            const wxAny = wx as any;
-            let resolved = false;
-            let userInfoBtn: any = null;
-
-            const safeResolve = (result: IUserInfoResult) => {
-                if (resolved) return;
-                resolved = true;
-                if (userInfoBtn) userInfoBtn.destroy();
-                resolve(result);
-            };
-
-            // 创建 createUserInfoButton 的函数（会在 showModal 同意回调里调用）
-            const createAndTapUserInfoButton = () => {
-                try {
-                    let screenW = 0, screenH = 0;
-                    try {
-                        const windowInfo = wx.getWindowInfo();
-                        screenW = windowInfo.screenWidth;
-                        screenH = windowInfo.screenHeight;
-                    }
-                    catch {
-                        screenW = 375; screenH = 667;
-                    }
-
-                    userInfoBtn = wx.createUserInfoButton({
-                        type: 'text',
-                        text: '',
-                        style: {
-                            left: 0, top: 0,
-                            width: screenW, height: screenH,
-                            backgroundColor: 'rgba(0,0,0,0)',
-                            borderColor: 'rgba(0,0,0,0)',
-                            color: 'rgba(0,0,0,0)',
-                            textAlign: 'center',
-                            fontSize: 1,
-                            borderRadius: 0,
-                            lineHeight: 1,
-                        },
-                        lang: lang ?? 'zh_CN',
-                        withCredentials: false,
-                    });
-
-                    userInfoBtn.onTap((res: any) => {
-                        console.log('[WeChatSdk-zw3] createUserInfoButton onTap 触发, res=' + JSON.stringify(res));
-                        if (res && res.userInfo && res.userInfo.nickName) {
-                            const info = res.userInfo;
-                            safeResolve({
+                api.fn({
+                    ...api.option,
+                    success: (res: any) => {
+                        const info = res?.userInfo;
+                        if (info?.nickName) {
+                            resolve({
                                 userInfo: {
                                     nickName: info.nickName,
                                     avatarUrl: info.avatarUrl,
@@ -260,399 +213,18 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                             });
                         }
                         else {
-                            console.warn('[WeChatSdk-zw3] onTap 但 userInfo 为空（用户拒绝）');
-                            safeResolve({ userInfo: undefined });
-                        }
-                    });
-
-                    userInfoBtn.show();
-
-                    // 关键：立即调用 tap()，触发 scope.userInfo 授权弹窗
-                    // 此时还在 showModal 的 success 回调（用户交互事件）中，满足微信要求
-                    if (typeof userInfoBtn.tap === 'function') {
-                        console.log('[WeChatSdk-zw3] 同步调用 createUserInfoButton.tap()');
-                        userInfoBtn.tap();
-                    }
-                    else {
-                        console.warn('[WeChatSdk-zw3] createUserInfoButton 不支持 tap()，等待用户点击');
-                    }
-                }
-                catch (e) {
-                    console.warn('[WeChatSdk-zw3] createAndTapUserInfoButton 失败:', e);
-                    safeResolve({ userInfo: undefined });
-                }
-            };
-
-            // 注册 onNeedPrivacyAuthorization：弹 showModal，同意后同步 tap createUserInfoButton
-            if (typeof wxAny.onNeedPrivacyAuthorization === 'function') {
-                wxAny.onNeedPrivacyAuthorization((resolveFn: (res: { event: string }) => void, eventInfo: any) => {
-                    console.log('[WeChatSdk] 隐私授权回调触发:', eventInfo);
-
-                    if (typeof wxAny.showModal === 'function') {
-                        wxAny.showModal({
-                            title: '隐私保护提示',
-                            content: '为了向您提供游戏服务，我们需要获取您的昵称和头像信息。是否同意？',
-                            confirmText: '同意',
-                            cancelText: '拒绝',
-                            success: (modalRes: any) => {
-                                if (modalRes.confirm) {
-                                    console.log('[WeChatSdk] 用户同意隐私协议');
-                                    resolveFn({ event: 'agree' });
-                                    // 关键：同步创建并 tap createUserInfoButton
-                                    // showModal 的 success 回调算用户交互事件，满足微信要求
-                                    createAndTapUserInfoButton();
-                                }
-                                else {
-                                    console.log('[WeChatSdk] 用户拒绝隐私协议');
-                                    resolveFn({ event: 'disagree' });
-                                    safeResolve({ userInfo: undefined });
-                                }
-                            },
-                        });
-                    }
-                    else {
-                        resolveFn({ event: 'agree' });
-                        createAndTapUserInfoButton();
-                    }
-                });
-                console.log('[WeChatSdk] 隐私授权监听器已注册（双弹窗连续模式）');
-            }
-            else {
-                // 不支持隐私授权，直接走 createUserInfoButton
-                createAndTapUserInfoButton();
-            }
-
-            // 触发 requirePrivacyAuthorize
-            if (typeof wxAny.requirePrivacyAuthorize === 'function') {
-                wxAny.requirePrivacyAuthorize({
-                    success: () => {
-                        console.log('[WeChatSdk-zw3] requirePrivacyAuthorize 成功');
-                        // 如果 onNeedPrivacyAuthorization 没触发（已授权），直接创建按钮
-                        if (!resolved && !userInfoBtn) {
-                            console.log('[WeChatSdk-zw3] 隐私已授权，直接创建按钮');
-                            createAndTapUserInfoButton();
+                            console.warn(`[WeChatSdk] ${api.name} 返回但 userInfo 为空`);
+                            tryCall(index + 1);
                         }
                     },
                     fail: (err: any) => {
-                        console.warn('[WeChatSdk-zw3] requirePrivacyAuthorize 失败', err);
-                        if (!resolved && !userInfoBtn) {
-                            createAndTapUserInfoButton();
-                        }
+                        console.warn(`[WeChatSdk] ${api.name} 失败:`, err);
+                        tryCall(index + 1);
                     },
                 });
-            }
-            else {
-                // 不支持 requirePrivacyAuthorize，直接创建按钮
-                createAndTapUserInfoButton();
-            }
-
-            // 超时兜底
-            setTimeout(() => {
-                if (!resolved) {
-                    console.warn(`[WeChatSdk-zw3] 双弹窗连续模式超时 (${timeoutMs}ms)`);
-                    safeResolve({ userInfo: undefined });
-                }
-            }, timeoutMs);
-        });
-    }
-
-    /**
-     * 获取微信基础库版本号(形如 "2.30.4")
-     */
-    private getSDKVersion(): string {
-        try {
-            const appBase = wx.getAppBaseInfo();
-            return appBase?.SDKVersion || '0.0.0';
-        }
-        catch {
-            return '0.0.0';
-        }
-    }
-
-    /**
-     * 确保隐私授权已通过
-     *
-     * 微信新版基础库（2.32.3+）要求：createUserInfoButton 必须在用户同意隐私协议后才能拿到 userInfo。
-     * 如果用户尚未同意隐私协议，onTap 会返回空 userInfo。
-     *
-     * 此方法会：
-     * 1. 检查是否需要隐私授权（wx.getPrivacySetting）
-     * 2. 如果需要，调用 wx.requirePrivacyAuthorize 触发隐私授权弹窗
-     * 3. 用户同意后继续后续流程
-     *
-     * 如果平台不支持隐私授权 API 或用户已授权，直接 resolve。
-     */
-    private ensurePrivacyAuthorized(): Promise<void> {
-        return new Promise((resolve) => {
-            const wxAny = wx as any;
-
-            // 不支持隐私授权 API，直接跳过
-            if (typeof wxAny.getPrivacySetting !== 'function') {
-                console.log('[WeChatSdk-zw3] 隐私授权: 不支持 getPrivacySetting，跳过');
-                resolve();
-                return;
-            }
-
-            wxAny.getPrivacySetting({
-                success: (res: any) => {
-                    if (!res.needAuthorization) {
-                        console.log('[WeChatSdk-zw3] 隐私授权: 已授权，无需弹窗');
-                        resolve();
-                        return;
-                    }
-
-                    console.log('[WeChatSdk-zw3] 隐私授权: 需要用户同意隐私协议');
-                    this._registerCorrectPrivacyListener();
-
-                    if (typeof wxAny.requirePrivacyAuthorize !== 'function') {
-                        console.warn('[WeChatSdk-zw3] 隐私授权: 不支持 requirePrivacyAuthorize');
-                        resolve();
-                        return;
-                    }
-
-                    wxAny.requirePrivacyAuthorize({
-                        success: () => {
-                            console.log('[WeChatSdk-zw3] 隐私授权: 用户已同意');
-                            resolve();
-                        },
-                        fail: (err: any) => {
-                            console.warn('[WeChatSdk-zw3] 隐私授权: 用户拒绝或失败', err);
-                            resolve(); // 即使拒绝也继续，让 createUserInfoButton 自己处理
-                        },
-                    });
-                },
-                fail: () => {
-                    console.warn('[WeChatSdk-zw3] 隐私授权: getPrivacySetting 失败');
-                    resolve();
-                },
-            });
-        });
-    }
-
-    /**
-     * 比较两个版本号(v1 < v2 返回 -1,v1 === v2 返回 0,v1 > v2 返回 1)
-     */
-    private compareSDKVersion(v1: string, v2: string): number {
-        const p1 = v1.split('.').map((n) => parseInt(n, 10) || 0);
-        const p2 = v2.split('.').map((n) => parseInt(n, 10) || 0);
-        const len = Math.max(p1.length, p2.length);
-        for (let i = 0; i < len; i++) {
-            const a = p1[i] ?? 0;
-            const b = p2[i] ?? 0;
-            if (a < b) return -1;
-            if (a > b) return 1;
-        }
-        return 0;
-    }
-
-    /**
-     * 老基础库兜底:用 wx.getUserProfile(已废弃但 2.13.2 ~ 2.32.3 都能 work)
-     * 2026-06-25 新增:给老基础库用
-     */
-    private tryWxGetUserProfile(lang: 'en' | 'zh_CN' | 'zh_TW'): Promise<IUserInfoResult> {
-        return new Promise((resolve) => {
-            const fn = (wx as any).getUserProfile;
-            if (typeof fn !== 'function') {
-                console.warn('[WeChatSdk-zw3] wx.getUserProfile 也不可用,放弃');
-                resolve({ userInfo: undefined });
-                return;
-            }
-            console.log('[WeChatSdk-zw3] 调用 wx.getUserProfile');
-            fn({
-                lang,
-                desc: '用于完善用户资料',
-                success: (res: any) => {
-                    console.log('[WeChatSdk-zw3] getUserProfile 成功:', JSON.stringify(res));
-                    const info = res?.userInfo;
-                    if (info && info.nickName) {
-                        resolve({
-                            userInfo: {
-                                nickName: info.nickName,
-                                avatarUrl: info.avatarUrl,
-                                gender: info.gender,
-                                language: info.language,
-                                country: info.country,
-                                province: info.province,
-                                city: info.city,
-                                raw: info,
-                            },
-                            rawData: res.rawData,
-                            signature: res.signature,
-                            encryptedData: res.encryptedData,
-                            iv: res.iv,
-                            cloudID: res.cloudID,
-                        });
-                    }
-                    else {
-                        console.warn('[WeChatSdk-zw3] getUserProfile 返回但 userInfo 为空');
-                        resolve({ userInfo: undefined });
-                    }
-                },
-                fail: (e: any) => {
-                    console.warn('[WeChatSdk-zw3] getUserProfile 失败:', e);
-                    resolve({ userInfo: undefined });
-                },
-            });
-        });
-    }
-
-    /**
-     * 调用 wx.getUserInfo，加空保护（未授权时 res.userInfo 可能为空）
-     */
-    private tryWxGetUserInfo(lang: 'en' | 'zh_CN' | 'zh_TW'): Promise<IUserInfoResult> {
-        return this.promisify<WechatMinigame.GetUserInfoSuccessCallbackResult>(
-            wx.getUserInfo.bind(wx),
-            { lang, withCredentials: false }
-        ).then((res) => {
-            if (!res || !res.userInfo || !res.userInfo.nickName) {
-                console.warn('[WeChatSdk-zw3] wx.getUserInfo 返回但 userInfo 为空');
-                return { userInfo: undefined };
-            }
-            return {
-                userInfo: {
-                    nickName: res.userInfo.nickName,
-                    avatarUrl: res.userInfo.avatarUrl,
-                    gender: res.userInfo.gender,
-                    language: res.userInfo.language,
-                    country: res.userInfo.country,
-                    province: res.userInfo.province,
-                    city: res.userInfo.city,
-                    raw: res.userInfo,
-                },
-                rawData: res.rawData,
-                signature: res.signature,
-                encryptedData: res.encryptedData,
-                iv: res.iv,
-                cloudID: res.cloudID,
-            };
-        }).catch((e) => {
-            console.warn('[WeChatSdk-zw3] wx.getUserInfo 调用失败:', e);
-            return { userInfo: undefined };
-        });
-    }
-
-    /**
-     * 通过创建全屏透明原生按钮 + onTap 获取真实用户信息
-     *
-     * 背景：微信新基础库下，wx.getUserInfo / wx.getUserProfile 在用户未授权时
-     * resolve 但 userInfo 为空。唯一能拿到真实数据的方式是 createUserInfoButton
-     * + 用户点击触发 onTap（用户点击原生按钮自带"用户行为上下文"，不会被基础库拒绝）。
-     *
-     * 此方法会创建一个全屏透明原生按钮，等用户点击后销毁并返回用户信息。
-     * 业务层只需调用 sdk.getUserInfo() 即可，无需自己管理原生按钮生命周期。
-     */
-    private getUserInfoViaButton(
-        lang: 'en' | 'zh_CN' | 'zh_TW',
-        timeoutMs: number = 60000
-    ): Promise<IUserInfoResult> {
-        return new Promise((resolve) => {
-            console.log('[WeChatSdk-zw3] getUserInfoViaButton: 开始创建全屏透明原生按钮');
-            if (typeof wx === 'undefined' || typeof wx.createUserInfoButton !== 'function') {
-                console.warn('[WeChatSdk-zw3] createUserInfoButton 不可用');
-                resolve({ userInfo: undefined });
-                return;
-            }
-
-            let resolved = false;
-            let btn: any = null;
-            const safeResolve = (result: IUserInfoResult) => {
-                if (resolved) return;
-                resolved = true;
-                try {
-                    if (btn) btn.destroy();
-                }
-                catch { /* ignore */ }
-                resolve(result);
             };
 
-            // 全屏透明按钮，覆盖整个屏幕
-            let screenW = 0, screenH = 0;
-            try {
-                const windowInfo = wx.getWindowInfo();
-                screenW = windowInfo.screenWidth;
-                screenH = windowInfo.screenHeight;
-            }
-            catch {
-                screenW = 375;
-                screenH = 667;
-            }
-
-            try {
-                btn = wx.createUserInfoButton({
-                    type: 'text',
-                    text: '',
-                    style: {
-                        left: 0,
-                        top: 0,
-                        width: screenW,
-                        height: screenH,
-                        backgroundColor: 'rgba(0,0,0,0)',
-                        borderColor: 'rgba(0,0,0,0)',
-                        color: 'rgba(0,0,0,0)',
-                        textAlign: 'center',
-                        fontSize: 1,
-                        borderRadius: 0,
-                        lineHeight: 1,
-                    },
-                    lang: lang ?? 'zh_CN',
-                    withCredentials: false,
-                });
-            }
-            catch (e) {
-                console.warn('[WeChatSdk-zw3] createUserInfoButton 创建失败:', e);
-                resolve({ userInfo: undefined });
-                return;
-            }
-
-            if (!btn) {
-                console.warn('[WeChatSdk-zw3] createUserInfoButton 返回 null');
-                resolve({ userInfo: undefined });
-                return;
-            }
-
-            try {
-                btn.show();
-            }
-            catch (e) {
-                console.warn('[WeChatSdk-zw3] btn.show 失败:', e);
-            }
-            console.log('[WeChatSdk-zw3] getUserInfoViaButton: 全屏透明按钮已 show，等待用户点击');
-
-            btn.onTap((res: any) => {
-                console.log('[WeChatSdk-zw3] createUserInfoButton onTap 触发, res=' + JSON.stringify(res));
-                if (res && res.userInfo && res.userInfo.nickName) {
-                    const info = res.userInfo;
-                    safeResolve({
-                        userInfo: {
-                            nickName: info.nickName,
-                            avatarUrl: info.avatarUrl,
-                            gender: info.gender,
-                            language: info.language,
-                            country: info.country,
-                            province: info.province,
-                            city: info.city,
-                            raw: info,
-                        },
-                        rawData: res.rawData,
-                        signature: res.signature,
-                        encryptedData: res.encryptedData,
-                        iv: res.iv,
-                        cloudID: res.cloudID,
-                    });
-                }
-                else {
-                    console.warn('[WeChatSdk-zw3] onTap 但 userInfo 为空（用户拒绝）');
-                    safeResolve({ userInfo: undefined });
-                }
-            });
-
-            // 超时兜底
-            setTimeout(() => {
-                if (!resolved) {
-                    console.warn(`[WeChatSdk-zw3] getUserInfoViaButton 超时 (${timeoutMs}ms)`);
-                    safeResolve({ userInfo: undefined });
-                }
-            }, timeoutMs);
+            tryCall(0);
         });
     }
 
