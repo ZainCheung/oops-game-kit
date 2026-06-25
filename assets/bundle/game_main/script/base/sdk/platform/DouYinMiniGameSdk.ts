@@ -269,6 +269,18 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
         });
     }
 
+    async shareWithScreenshot(option: {
+        title?: string;
+        query?: string;
+        withShareTicket?: boolean;
+        screenshotData: string;
+    }): Promise<void> {
+        // 抖音暂不支持截图分享，降级到普通分享
+        console.warn('[DouYinSdk] shareWithScreenshot: 抖音暂不支持，降级到普通分享');
+        this.shareAppMessage({ title: option.title, query: option.query });
+        return Promise.resolve();
+    }
+
     onShareAppMessage(callback: (option?: IShareOption) => IShareOption | void): void {
         this.tt.onShareAppMessage(() => {
             const result = callback() || {};
