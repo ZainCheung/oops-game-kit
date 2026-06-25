@@ -1,5 +1,4 @@
-import { Color, Graphics, Node, UITransform, Vec3, find, screen, view } from 'cc';
-import { oops } from 'db://oops-framework/core/Oops';
+import { Button, Color, Graphics, Node, UITransform, Vec3, find, screen, view } from 'cc';
 import type { ISdk } from '../../../../../base/sdk/ISdk';
 import type { IUserInfoResult } from '../../../../../base/sdk/SdkTypes';
 import { gsm } from '../../../../common/GameSingletonModule';
@@ -31,12 +30,9 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 return;
             }
 
-            // 2. 等待用户点击按钮获取用户信息（阻塞直到点击完成）
+            // 2. 创建全屏原生按钮并等用户点击（内部会调 this.success() / this.fail()）
             const sdk = gsm.base.sdk.main.sdk;
-            await this.requestUserInfo(sdk, uiNode);
-
-            console.timeEnd(label);
-            this.success();
+            this.requestUserInfo(sdk, uiNode);
         } catch (err) {
             console.timeEnd(label);
             console.error('【登录流程】获取用户头像失败', err);
@@ -47,137 +43,91 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     /**
      * 获取用户头像/昵称
      *
-     * 微信平台：创建全屏透明原生按钮，用户点击触发授权回调
-     * 非微信平台：监听 Cocos 节点触摸事件，点击后填充测试数据
+     * 微信平台：禁用 Cocos 按钮的 Button 组件（让它不消费触摸事件），
+     * 然后在屏幕中央创建一个**全屏透明**微信原生按钮接管整个屏幕的触摸。
+     * 用户首次点击（点按钮或屏幕任意位置）→ 命中已 show 的原生按钮 →
+     * 微信弹授权弹窗 → 点「允许」→ onTap 拿到 userInfo。
+     *
+     * 为什么用全屏按钮：之前试过精确换算 Cocos 按钮位置算到原生按钮，
+     * 但 `wx.createUserInfoButton` 的坐标和 Cocos 设计分辨率在 FitWidth/FitHeight
+     * 适配模式下经常算偏（top 出现负数、按钮被推出屏幕外），用户根本点不到。
+     * 全屏按钮在微信里是稳定 work 的（用户之前测试时再点一次屏幕也能弹，就是这个原因）。
+     *
+     * （前提：已在 mp.weixin.qq.com 后台《用户隐私保护指引》声明「昵称、头像」信息类型）
+     * 非微信平台：直接用默认数据
      */
-    private async requestUserInfo(sdk: ISdk, uiNode: Node): Promise<void> {
-        // 微信平台：先完成用户隐私授权，否则 createUserInfoButton 会返回 errno 1026
-        // （前提：已在 mp.weixin.qq.com 后台《用户隐私保护指引》声明「昵称、头像」信息类型）
-        try {
-            sdk.onNeedPrivacyAuthorization(res => {
-                // 用户需要同意隐私协议：这里直接同意（基础库要求用户有点击行为，
-                // 实际项目建议弹出自定义隐私弹窗，用户点击同意后再 resolve 'agree'）
-                oops.log.trace(`【登录流程】需要隐私授权: ${res.contractName}`);
-                (sdk as any).requirePrivacyAuthorize?.({}).catch(() => {});
-            });
-            await sdk.requirePrivacyAuthorize({ demandList: ['userInfo'] });
-            oops.log.trace('【登录流程】用户隐私授权已通过');
-        } catch {
-            // 拒绝或后台未配置：不阻断流程，后续 createUserInfoButton 会回退默认数据
-            oops.log.trace('【登录流程】隐私授权未通过，使用默认用户信息');
+    private requestUserInfo(sdk: ISdk, uiNode: Node): void {
+        const btnNode = find('btnRequestSdkUserInfo', uiNode);
+
+        // 1. 禁用 Cocos 按钮的 Button 组件（必须）—— 不禁用的话，
+        //    Button 组件会在 TOUCH_END 消费触摸事件，事件传不到原生按钮层。
+        if (btnNode) {
+            const ccBtn = btnNode.getComponent(Button);
+            if (ccBtn) {
+                ccBtn.enabled = false;
+                console.log('【登录流程】已禁用 Cocos 按钮的 Button 组件');
+            }
         }
 
-        return new Promise<void>(resolve => {
-            // 微信平台：根据界面上 btnRequestSdkUserInfo 按钮的矩形，创建同位置的透明原生按钮
-            const btnNode = find('btnRequestSdkUserInfo', uiNode);
-            if (!btnNode) {
-                oops.log.trace('【登录流程】未找到 btnRequestSdkUserInfo 节点，使用默认测试用户信息');
+        // 2. 获取屏幕逻辑像素尺寸（H5/微信/原生行为统一）
+        const { width: screenW, height: screenH } = this.getScreenLogicalSize();
+
+        // 3. 创建全屏透明原生按钮
+        const nativeBtn = sdk.createUserInfoButton({
+            type: 'text',
+            text: '',
+            style: {
+                left: 0,
+                top: 0,
+                width: screenW,
+                height: screenH,
+                backgroundColor: 'rgba(255, 255, 255, 0)',
+                borderColor: 'rgba(255, 255, 255, 0)',
+                color: 'rgba(255, 255, 255, 0)',
+                textAlign: 'center',
+                fontSize: 16,
+                borderRadius: 0,
+            },
+        });
+
+        console.log('【登录流程】原生按钮（全屏）创建结果:', nativeBtn ? '成功' : '失败(null)');
+        console.log('【登录流程】原生按钮 style:', JSON.stringify({ left: 0, top: 0, width: screenW, height: screenH }));
+
+        if (!nativeBtn) {
+            // 原生按钮创建失败（基础库太老）→ 兜底用默认数据
+            console.log('【登录流程】原生按钮创建失败，使用默认用户信息');
+            gsm.base.sdk.model.userInfo = {
+                nickName: 'Player',
+                avatarUrl: '',
+                gender: 0,
+            };
+            gsm.account.B_Account_ViewUI.removeLogin();
+            this.success();
+            return;
+        }
+
+        nativeBtn.show();
+
+        // 4. 等用户点击 → 弹授权弹窗 → 回调拿数据
+        nativeBtn.onTap((res: IUserInfoResult) => {
+            console.log('【登录流程】原生按钮 onTap 回调:', JSON.stringify(res));
+            if (res?.userInfo) {
+                gsm.base.sdk.model.userInfo = res.userInfo;
+                console.log(
+                    `【登录流程】获取用户信息成功（原生按钮），昵称: ${res.userInfo.nickName}`
+                );
+            } else {
+                // 用户点了「拒绝」
+                console.log('【登录流程】用户拒绝授权，使用默认用户信息');
                 gsm.base.sdk.model.userInfo = {
                     nickName: 'Player',
                     avatarUrl: '',
                     gender: 0,
                 };
-                gsm.account.B_Account_ViewUI.removeLogin();
-                resolve();
-                return;
             }
-
-            const uit = btnNode.getComponent(UITransform)!;
-            const worldPos = btnNode.worldPosition;
-            const style = this.wxPositionConversion(
-                uit.contentSize.width,
-                uit.contentSize.height,
-                worldPos.x,
-                worldPos.y
-            );
-
-            // 调试：在 uiNode 上绘制矩形对比 Cocos 按钮位置 vs 原生按钮位置
-            // 红色 = Cocos 按钮实际位置；绿色 = 原生按钮反推位置；两者重合说明坐标转换正确
-            const debugNode = this.drawDebugRects(btnNode, style);
-
-            // 创建微信原生透明按钮（作为可选尝试，真机上可能拦截触摸触发 onTap）
-            const nativeBtn = sdk.createUserInfoButton({
-                type: 'text',
-                text: '',
-                style: {
-                    left: style.left,
-                    top: style.top,
-                    width: style.width,
-                    height: style.height,
-                    backgroundColor: 'rgba(255, 255, 255, 0)',
-                    borderColor: 'rgba(255, 255, 255, 0)',
-                    color: 'rgba(255, 255, 255, 0)',
-                    textAlign: 'center',
-                    fontSize: 16,
-                    borderRadius: 0,
-                },
-            });
-
-            console.log('【登录流程】原生按钮创建结果:', nativeBtn ? '成功' : '失败(null)');
-            console.log('【登录流程】原生按钮 style:', JSON.stringify(style));
-
-            if (nativeBtn) {
-                nativeBtn.show();
-            }
-
-            let resolved = false;
-
-            const doCleanup = () => {
-                if (resolved) return;
-                resolved = true;
-                if (nativeBtn) nativeBtn.destroy();
-                btnNode.off(Node.EventType.TOUCH_END, onCocosBtnTap, this);
-                if (debugNode) debugNode.destroy();
-                gsm.account.B_Account_ViewUI.removeLogin();
-                resolve();
-            };
-
-            // 路径 A：原生按钮拦截了触摸（真机正常时走这里）
-            if (nativeBtn) {
-                nativeBtn.onTap((res: IUserInfoResult) => {
-                    console.log('【登录流程】原生按钮 onTap 回调:', JSON.stringify(res));
-                    if (res?.userInfo) {
-                        gsm.base.sdk.model.userInfo = res.userInfo;
-                        oops.log.trace(
-                            `【登录流程】获取用户信息成功（原生按钮），昵称: ${res.userInfo.nickName}`
-                        );
-                    } else {
-                        gsm.base.sdk.model.userInfo = {
-                            nickName: 'Player',
-                            avatarUrl: '',
-                            gender: 0,
-                        };
-                    }
-                    doCleanup();
-                });
-            }
-
-            // 路径 B：Cocos 按钮点击（模拟器或原生按钮未拦截时走这里）模拟器和真机都走这。。。。。。
-            // 主动调用 sdk.getUserInfo() 获取用户信息，不依赖原生按钮
-            const onCocosBtnTap = async () => {
-                console.log('【登录流程】Cocos 按钮被点击，主动调用 getUserInfo');
-                try {
-                    const res = await sdk.getUserInfo();
-                    console.log('【登录流程】getUserInfo 返回:', JSON.stringify(res));
-                    if (res?.userInfo) {
-                        gsm.base.sdk.model.userInfo = res.userInfo;
-                        oops.log.trace(
-                            `【登录流程】获取用户信息成功（getUserInfo），昵称: ${res.userInfo.nickName}`
-                        );
-                    } else {
-                        throw new Error('userInfo 为空');
-                    }
-                } catch (e) {
-                    console.warn('【登录流程】getUserInfo 失败，使用默认数据', e);
-                    gsm.base.sdk.model.userInfo = {
-                        nickName: 'Player',
-                        avatarUrl: '',
-                        gender: 0,
-                    };
-                }
-                doCleanup();
-            };
-            btnNode.on(Node.EventType.TOUCH_END, onCocosBtnTap, this);
+            try { nativeBtn.destroy(); } catch {}
+            gsm.account.B_Account_ViewUI.removeLogin();
+            this.success();
         });
     }
 

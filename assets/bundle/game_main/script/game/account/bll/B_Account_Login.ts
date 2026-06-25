@@ -16,7 +16,7 @@ const LoginProcessConfig: BTNodeJson = {
     type: 'Sequence',
     children: [
         { type: 'RequestSdkLogin' },
-        // { type: 'RequestSdkUserInfo' },
+        { type: 'RequestSdkUserInfo' },
         { type: 'RequestGameTable' },
         // { type: 'RequestConnectNet' },
         { type: 'RequestGameData' },
