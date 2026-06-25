@@ -82,10 +82,15 @@ export interface IUserInfoResult {
  * 用户信息按钮（创建后由平台返回，统一接口）
  */
 export interface IUserInfoButton {
+    /** 显示按钮 */
     show(): void;
+    /** 隐藏按钮 */
     hide(): void;
+    /** 销毁按钮 */
     destroy(): void;
+    /** 监听用户点击事件 */
     onTap(callback: (res: IUserInfoResult) => void): void;
+    /** 取消监听用户点击事件 */
     offTap(callback?: (res: IUserInfoResult) => void): void;
 }
 
@@ -228,15 +233,25 @@ export interface IAdError {
  * Banner 广告实例接口（平台无关）
  */
 export interface IBannerAd {
+    /** 显示广告 */
     show(): Promise<void>;
+    /** 隐藏广告 */
     hide(): void;
+    /** 销毁广告实例 */
     destroy(): void;
+    /** 监听广告错误事件 */
     onError(callback: (err: IAdError) => void): void;
+    /** 取消监听广告错误事件 */
     offError(callback?: (err: IAdError) => void): void;
+    /** 监听广告加载成功事件 */
     onLoad?(callback: () => void): void;
+    /** 取消监听广告加载成功事件 */
     offLoad?(callback?: () => void): void;
+    /** 监听广告尺寸变化事件 */
     onResize?(callback: (res: { width: number; height: number }) => void): void;
+    /** 取消监听广告尺寸变化事件 */
     offResize?(callback?: (res: { width: number; height: number }) => void): void;
+    /** 广告样式（位置与尺寸） */
     style: { top: number; left: number; width?: number; height?: number };
 }
 
@@ -244,13 +259,21 @@ export interface IBannerAd {
  * 激励视频广告实例接口
  */
 export interface IRewardedVideoAd {
+    /** 加载广告 */
     load(): Promise<void>;
+    /** 播放广告 */
     show(): Promise<void>;
+    /** 监听广告关闭事件（可获取是否完整观看） */
     onClose(callback: (res: { isEnded: boolean }) => void): void;
+    /** 取消监听广告关闭事件 */
     offClose(callback?: (res: { isEnded: boolean }) => void): void;
+    /** 监听广告错误事件 */
     onError(callback: (err: IAdError) => void): void;
+    /** 取消监听广告错误事件 */
     offError(callback?: (err: IAdError) => void): void;
+    /** 监听广告加载成功事件 */
     onLoad?(callback: () => void): void;
+    /** 取消监听广告加载成功事件 */
     offLoad?(callback?: () => void): void;
 }
 
@@ -258,14 +281,23 @@ export interface IRewardedVideoAd {
  * 插屏广告实例接口
  */
 export interface IInterstitialAd {
+    /** 加载广告 */
     load(): Promise<void>;
+    /** 播放广告 */
     show(): Promise<void>;
+    /** 销毁广告实例 */
     destroy(): void;
+    /** 监听广告错误事件 */
     onError(callback: (err: IAdError) => void): void;
+    /** 取消监听广告错误事件 */
     offError(callback?: (err: IAdError) => void): void;
+    /** 监听广告加载成功事件 */
     onLoad?(callback: () => void): void;
+    /** 取消监听广告加载成功事件 */
     offLoad?(callback?: () => void): void;
+    /** 监听广告关闭事件 */
     onClose?(callback: () => void): void;
+    /** 取消监听广告关闭事件 */
     offClose?(callback?: () => void): void;
 }
 
@@ -273,14 +305,23 @@ export interface IInterstitialAd {
  * 格子广告实例接口
  */
 export interface IGridAd {
+    /** 显示广告 */
     show(): Promise<void>;
+    /** 隐藏广告 */
     hide(): void;
+    /** 销毁广告实例 */
     destroy(): void;
+    /** 监听广告错误事件 */
     onError(callback: (err: IAdError) => void): void;
+    /** 取消监听广告错误事件 */
     offError(callback?: (err: IAdError) => void): void;
+    /** 监听广告加载成功事件 */
     onLoad?(callback: () => void): void;
+    /** 取消监听广告加载成功事件 */
     offLoad?(callback?: () => void): void;
+    /** 监听广告尺寸变化事件 */
     onResize?(callback: (res: { width: number; height: number }) => void): void;
+    /** 取消监听广告尺寸变化事件 */
     offResize?(callback?: (res: { width: number; height: number }) => void): void;
 }
 
@@ -288,12 +329,19 @@ export interface IGridAd {
  * 原生/自定义广告实例接口
  */
 export interface ICustomAd {
+    /** 显示广告 */
     show(): Promise<void>;
+    /** 隐藏广告 */
     hide(): void;
+    /** 销毁广告实例 */
     destroy(): void;
+    /** 监听广告错误事件 */
     onError(callback: (err: IAdError) => void): void;
+    /** 取消监听广告错误事件 */
     offError(callback?: (err: IAdError) => void): void;
+    /** 监听广告加载成功事件 */
     onLoad?(callback: () => void): void;
+    /** 取消监听广告加载成功事件 */
     offLoad?(callback?: () => void): void;
 }
 
@@ -393,12 +441,19 @@ export interface IPrivacySetting {
  * 录屏管理接口
  */
 export interface IGameRecorderManager {
+    /** 开始录屏 */
     start(option?: { duration?: number; fps?: number; bitRate?: number }): void;
+    /** 停止录屏 */
     stop(): void;
+    /** 暂停录屏 */
     pause(): void;
+    /** 恢复录屏 */
     resume(): void;
+    /** 监听录屏开始事件 */
     onStart?(callback: () => void): void;
+    /** 监听录屏结束事件（返回视频路径、时长、大小） */
     onStop?(callback: (res: { duration: number; videoPath: string; videoSize: number }) => void): void;
+    /** 监听录屏错误事件 */
     onError?(callback: (err: IAdError) => void): void;
 }
 
@@ -406,9 +461,13 @@ export interface IGameRecorderManager {
  * 更新管理接口
  */
 export interface IUpdateManager {
+    /** 监听检查更新结果事件 */
     onCheckForUpdate(callback: (res: { hasUpdate: boolean }) => void): void;
+    /** 监听更新准备就绪事件 */
     onUpdateReady(callback: () => void): void;
+    /** 监听更新失败事件 */
     onUpdateFailed(callback: () => void): void;
+    /** 应用更新并重启小游戏 */
     applyUpdate(): void;
 }
 

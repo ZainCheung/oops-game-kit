@@ -62,11 +62,13 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             //    不走 SDK.getUserInfo, 避免 SDK 内部监听器问题
             if (this.isWeChatPlatform()) {
                 this.bindWxGetUserProfile(btnNode);
-            } else {
+            }
+            else {
                 // 非微信平台：用 Cocos Button.onClick + 默认数据
                 this.bindDefaultClick(btnNode);
             }
-        } catch (err) {
+        }
+        catch (err) {
             console.timeEnd(label);
             console.error('【登录流程】获取用户头像失败', err);
             gsm.account.B_Account_ViewUI?.removeLogin?.();
@@ -80,7 +82,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     private isWeChatPlatform(): boolean {
         try {
             return typeof (globalThis as any).wx !== 'undefined';
-        } catch {
+        }
+        catch {
             return false;
         }
     }
@@ -123,7 +126,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     },
                 });
                 return;
-            } catch (e) {
+            }
+            catch (e) {
                 console.error('【登录流程】v3 wx.getUserProfile 抛异常', e);
             }
         }
@@ -143,7 +147,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     },
                 });
                 return;
-            } catch (e) {
+            }
+            catch (e) {
                 console.error('【登录流程】v3 wx.getUserInfo 抛异常', e);
             }
         }
@@ -164,7 +169,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 gender: userInfo.gender ?? 0,
             };
             console.log(`【登录流程】v3 获取用户信息成功, 昵称: ${userInfo.nickName}`);
-        } else {
+        }
+        else {
             console.log('【登录流程】v3 userInfo 为空, 使用默认数据');
             gsm.base.sdk.userInfo = { nickName: 'Player', avatarUrl: '', gender: 0 };
         }
