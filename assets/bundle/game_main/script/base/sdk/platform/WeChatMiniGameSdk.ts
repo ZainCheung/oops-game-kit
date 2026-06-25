@@ -177,11 +177,23 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         lang?: 'en' | 'zh_CN' | 'zh_TW';
         withCredentials?: boolean;
     }): Promise<IUserInfoResult> {
-        // zw3: 先尝试 wx.getUserInfo（如果用户已在 mp 后台授权过隐私协议，这里能直接拿到）；
-        //      拿不到则创建全屏透明原生按钮，等用户点击触发 onTap 拿到真实 userInfo。
         const lang = option?.lang ?? 'zh_CN';
-        console.log('[WeChatSdk-zw3] getUserInfo: 开始获取用户信息, lang=' + lang);
+        const sdkVersion = this.getSDKVersion();
+        console.log(`[WeChatSdk-zw3] getUserInfo: 基础库版本=${sdkVersion}, lang=${lang}`);
 
+        // ========== 2026-06-25 新增:按基础库版本走不同分支 ==========
+        // 背景:基础库 < 2.27.1 时,createUserInfoButton.onTap 永远拿不到 userInfo(微信已知行为)
+        //      基础库 >= 2.27.1 但 < 2.32.3 时,要用 getUserProfile(已废弃但老库上还能用)
+        //      基础库 >= 2.32.3 时,新隐私合规要求 createUserInfoButton 走用户行为上下文
+        const isOldSDK = this.compareSDKVersion(sdkVersion, '2.27.1') < 0;
+        const isMidSDK = this.compareSDKVersion(sdkVersion, '2.32.3') < 0;
+
+        if (isOldSDK) {
+            console.warn(`[WeChatSdk-zw3] 基础库 ${sdkVersion} < 2.27.1,直接走 getUserProfile 兜底(老库不支持 createUserInfoButton 拿 userInfo)`);
+            return this.tryWxGetUserProfile(lang);
+        }
+
+        // 新库:先试 getUserInfo,失败再走 createUserInfoButton 全屏兜底
         return this.tryWxGetUserInfo(lang).then((r) => {
             if (r.userInfo) {
                 console.log('[WeChatSdk-zw3] getUserInfo: wx.getUserInfo 拿到数据, nickName=' + r.userInfo.nickName);
@@ -189,6 +201,84 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
             }
             console.warn('[WeChatSdk-zw3] getUserInfo: wx.getUserInfo 拿不到数据，降级到 createUserInfoButton 全屏兜底');
             return this.getUserInfoViaButton(lang, 60000);
+        });
+    }
+
+    /**
+     * 获取微信基础库版本号(形如 "2.30.4")
+     */
+    private getSDKVersion(): string {
+        try {
+            const appBase = wx.getAppBaseInfo();
+            return appBase?.SDKVersion || '0.0.0';
+        } catch {
+            return '0.0.0';
+        }
+    }
+
+    /**
+     * 比较两个版本号(v1 < v2 返回 -1,v1 === v2 返回 0,v1 > v2 返回 1)
+     */
+    private compareSDKVersion(v1: string, v2: string): number {
+        const p1 = v1.split('.').map((n) => parseInt(n, 10) || 0);
+        const p2 = v2.split('.').map((n) => parseInt(n, 10) || 0);
+        const len = Math.max(p1.length, p2.length);
+        for (let i = 0; i < len; i++) {
+            const a = p1[i] ?? 0;
+            const b = p2[i] ?? 0;
+            if (a < b) return -1;
+            if (a > b) return 1;
+        }
+        return 0;
+    }
+
+    /**
+     * 老基础库兜底:用 wx.getUserProfile(已废弃但 2.13.2 ~ 2.32.3 都能 work)
+     * 2026-06-25 新增:给老基础库用
+     */
+    private tryWxGetUserProfile(lang: 'en' | 'zh_CN' | 'zh_TW'): Promise<IUserInfoResult> {
+        return new Promise((resolve) => {
+            const fn = (wx as any).getUserProfile;
+            if (typeof fn !== 'function') {
+                console.warn('[WeChatSdk-zw3] wx.getUserProfile 也不可用,放弃');
+                resolve({ userInfo: undefined });
+                return;
+            }
+            console.log('[WeChatSdk-zw3] 调用 wx.getUserProfile');
+            fn({
+                lang,
+                desc: '用于完善用户资料',
+                success: (res: any) => {
+                    console.log('[WeChatSdk-zw3] getUserProfile 成功:', JSON.stringify(res));
+                    const info = res?.userInfo;
+                    if (info && info.nickName) {
+                        resolve({
+                            userInfo: {
+                                nickName: info.nickName,
+                                avatarUrl: info.avatarUrl,
+                                gender: info.gender,
+                                language: info.language,
+                                country: info.country,
+                                province: info.province,
+                                city: info.city,
+                                raw: info,
+                            },
+                            rawData: res.rawData,
+                            signature: res.signature,
+                            encryptedData: res.encryptedData,
+                            iv: res.iv,
+                            cloudID: res.cloudID,
+                        });
+                    } else {
+                        console.warn('[WeChatSdk-zw3] getUserProfile 返回但 userInfo 为空');
+                        resolve({ userInfo: undefined });
+                    }
+                },
+                fail: (e: any) => {
+                    console.warn('[WeChatSdk-zw3] getUserProfile 失败:', e);
+                    resolve({ userInfo: undefined });
+                },
+            });
         });
     }
 
