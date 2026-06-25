@@ -1,12 +1,15 @@
-import { SdkMain } from './SdkMain';
-import { SdkModel } from './SdkModel';
-import type {
+import {
     ISdkEventCallbacks,
     SdkErrorCallback,
     SdkHideCallback,
     SdkNetworkChangeCallback,
     SdkShowCallback,
+    INetworkStatusChangeEvent,
 } from './SdkTypes';
+import { SdkAdsManager } from './SdkAdsManager';
+import { SdkManager } from './SdkManager';
+import { ISdk } from './ISdk';
+import type { IUserInfo } from './SdkTypes';
 
 /**
  * 平台 SDK 单例模块
@@ -14,36 +17,101 @@ import type {
  * 不再依赖 ECS，改为普通单例类。通过 {@link Sdk.instance} 获取全局唯一实例。
  *
  * 外部访问方式：
- * - `Sdk.instance.main.sdk`        当前平台 SDK 实现接口
- * - `Sdk.instance.main.adsManager` 高级广告管理器
- * - `Sdk.instance.model.token`     SDK 登录凭证
- * - `Sdk.instance.model.userInfo`  用户信息
+ * - `gsm.base.sdk.platformSdk`    当前平台 SDK 实现接口
+ * - `gsm.base.sdk.adsManager`     高级广告管理器
+ * - `gsm.base.sdk.token`          SDK 登录凭证
+ * - `gsm.base.sdk.userInfo`       用户信息
  *
  * 事件回调注册：
- * - `Sdk.instance.onShow(cb)`      注册切到前台回调
- * - `Sdk.instance.onHide(cb)`     注册切到后台回调
- * - `Sdk.instance.onError(cb)`     注册全局错误回调
- * - `Sdk.instance.onNetworkChange(cb)` 注册网络状态变化回调
+ * - `gsm.base.sdk.onShow(cb)`      注册切到前台回调
+ * - `gsm.base.sdk.onHide(cb)`     注册切到后台回调
+ * - `gsm.base.sdk.onError(cb)`     注册全局错误回调
+ * - `gsm.base.sdk.onNetworkChange(cb)` 注册网络状态变化回调
  */
 export class Sdk {
-    /** 数据模型 */
-    readonly model: SdkModel;
-    /** 主业务逻辑 */
-    readonly main: SdkMain;
+    // ==================== 平台 SDK 实现 ====================
+
+    /** SDK 管理器 */
+    private readonly manager: SdkManager = new SdkManager();
+    /** 当前平台的 SDK 实现接口 */
+    readonly sdk: ISdk = this.manager.init();
+    /** 高级广告管理器（封装各广告的创建、显示/隐藏、回调） */
+    readonly ads: SdkAdsManager = new SdkAdsManager(this.sdk, this.manager.platform);
+
+    // ==================== 数据模型（扁平） ====================
+
+    /** SDK 登录凭证 */
+    token: string = null!;
+    /** 用户信息（昵称、头像等，登录授权后填充） */
+    userInfo: IUserInfo | null = null;
+    /** 是否从抖音侧边栏进入游戏 */
+    isFromBytedanceSideBar: boolean = false;
+    /** 是否已领取过抖音侧边栏进入奖励 */
+    isByteDanceGetSideReward: boolean = false;
+
+    // ==================== 事件回调 ====================
+
+    /** 缓存的原生事件回调，便于 destroy 时解绑 */
+    private onShowCb?: (res: any) => void;
+    private onHideCb?: () => void;
+    private onErrorCb?: (err: string) => void;
+    private onNetworkChangeCb?: (res: INetworkStatusChangeEvent) => void;
+
+    /** 注册的切到前台回调列表 */
+    private showCallbacks: SdkShowCallback[] = [];
+    /** 注册的切到后台回调列表 */
+    private hideCallbacks: SdkHideCallback[] = [];
+    /** 注册的全局错误回调列表 */
+    private errorCallbacks: SdkErrorCallback[] = [];
+    /** 注册的网络状态变化回调列表 */
+    private networkChangeCallbacks: SdkNetworkChangeCallback[] = [];
 
     constructor() {
-        this.model = new SdkModel();
-        this.main = new SdkMain(this);
+        this.initEvents();
     }
 
-    //#region ========== 事件回调代理 ==========
+    private initEvents() {
+        console.log(`[SDK] 平台 = ${this.manager.platform}, 准备就绪 = ${this.sdk.isReady()}`);
+
+        // 转发原生事件到注册的回调
+        this.onShowCb = (res: any) => {
+            // 抖音侧边栏进入检测：launch_from == 'homepage' && location == 'sidebar_card'
+            if (res && res.launch_from === 'homepage' && res.location === 'sidebar_card') {
+                this.isFromBytedanceSideBar = true;
+            }
+            this.showCallbacks.forEach(cb => cb(res));
+        };
+        this.sdk.onShow(this.onShowCb);
+
+        this.onHideCb = () => this.hideCallbacks.forEach(cb => cb());
+        this.sdk.onHide(this.onHideCb);
+
+        this.onErrorCb = (err: string) => this.errorCallbacks.forEach(cb => cb(err));
+        this.sdk.onError(this.onErrorCb);
+
+        this.onNetworkChangeCb = (res: INetworkStatusChangeEvent) => this.networkChangeCallbacks.forEach(cb => cb(res));
+        this.sdk.onNetworkStatusChange(this.onNetworkChangeCb);
+    }
+
+    /** 重置模型数据 */
+    reset() {
+        this.token = null!;
+        this.userInfo = null;
+        this.isFromBytedanceSideBar = false;
+        this.isByteDanceGetSideReward = false;
+    }
+
+    //#region ========== 事件回调注册/注销 ==========
 
     /**
      * 批量注册事件回调
      * @param callbacks 回调集合
      */
     on(callbacks: ISdkEventCallbacks): void {
-        this.main.on(callbacks);
+        if (callbacks.onShow) this.showCallbacks.push(callbacks.onShow);
+        if (callbacks.onHide) this.hideCallbacks.push(callbacks.onHide);
+        if (callbacks.onError) this.errorCallbacks.push(callbacks.onError);
+        if (callbacks.onNetworkChange) this.networkChangeCallbacks.push(callbacks.onNetworkChange);
     }
 
     /**
@@ -51,48 +119,90 @@ export class Sdk {
      * @param callbacks 回调集合
      */
     off(callbacks: ISdkEventCallbacks): void {
-        this.main.off(callbacks);
+        if (callbacks.onShow) this.offShow(callbacks.onShow);
+        if (callbacks.onHide) this.offHide(callbacks.onHide);
+        if (callbacks.onError) this.offError(callbacks.onError);
+        if (callbacks.onNetworkChange) this.offNetworkChange(callbacks.onNetworkChange);
     }
 
     /** 注册切到前台回调 */
     onShow(callback: SdkShowCallback): void {
-        this.main.onShow(callback);
+        this.showCallbacks.push(callback);
     }
 
     /** 注销切到前台回调 */
     offShow(callback?: SdkShowCallback): void {
-        this.main.offShow(callback);
+        if (callback) {
+            const idx = this.showCallbacks.indexOf(callback);
+            if (idx !== -1) this.showCallbacks.splice(idx, 1);
+        }
+        else {
+            this.showCallbacks.length = 0;
+        }
     }
 
     /** 注册切到后台回调 */
     onHide(callback: SdkHideCallback): void {
-        this.main.onHide(callback);
+        this.hideCallbacks.push(callback);
     }
 
     /** 注销切到后台回调 */
     offHide(callback?: SdkHideCallback): void {
-        this.main.offHide(callback);
+        if (callback) {
+            const idx = this.hideCallbacks.indexOf(callback);
+            if (idx !== -1) this.hideCallbacks.splice(idx, 1);
+        }
+        else {
+            this.hideCallbacks.length = 0;
+        }
     }
 
     /** 注册全局错误回调 */
     onError(callback: SdkErrorCallback): void {
-        this.main.onError(callback);
+        this.errorCallbacks.push(callback);
     }
 
     /** 注销全局错误回调 */
     offError(callback?: SdkErrorCallback): void {
-        this.main.offError(callback);
+        if (callback) {
+            const idx = this.errorCallbacks.indexOf(callback);
+            if (idx !== -1) this.errorCallbacks.splice(idx, 1);
+        }
+        else {
+            this.errorCallbacks.length = 0;
+        }
     }
 
     /** 注册网络状态变化回调 */
     onNetworkChange(callback: SdkNetworkChangeCallback): void {
-        this.main.onNetworkChange(callback);
+        this.networkChangeCallbacks.push(callback);
     }
 
     /** 注销网络状态变化回调 */
     offNetworkChange(callback?: SdkNetworkChangeCallback): void {
-        this.main.offNetworkChange(callback);
+        if (callback) {
+            const idx = this.networkChangeCallbacks.indexOf(callback);
+            if (idx !== -1) this.networkChangeCallbacks.splice(idx, 1);
+        }
+        else {
+            this.networkChangeCallbacks.length = 0;
+        }
     }
 
     //#endregion
+
+    /** 销毁，解绑原生事件并释放广告资源 */
+    destroy() {
+        if (this.onShowCb) this.sdk.offShow(this.onShowCb);
+        if (this.onHideCb) this.sdk.offHide(this.onHideCb);
+        if (this.onErrorCb) this.sdk.offError(this.onErrorCb);
+        if (this.onNetworkChangeCb) this.sdk.offNetworkStatusChange(this.onNetworkChangeCb);
+        this.onShowCb = this.onHideCb = this.onErrorCb = this.onNetworkChangeCb = undefined;
+        this.showCallbacks.length = 0;
+        this.hideCallbacks.length = 0;
+        this.errorCallbacks.length = 0;
+        this.networkChangeCallbacks.length = 0;
+        this.ads.destroyAll();
+        this.manager.destroy();
+    }
 }

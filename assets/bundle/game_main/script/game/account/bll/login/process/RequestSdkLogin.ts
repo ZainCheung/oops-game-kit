@@ -17,7 +17,7 @@ export class RequestSdkLogin extends LoginProcessBase {
         const label = '【登录流程】平台 SDK 登录';
         console.time(label);
         try {
-            const sdk = gsm.base.sdk.main.sdk;
+            const sdk = gsm.base.sdk.sdk;
 
             // SDK 未就绪，提示并中止登录流程
             if (!sdk.isReady()) {
@@ -30,7 +30,7 @@ export class RequestSdkLogin extends LoginProcessBase {
             const result = await sdk.login();
 
             // 保存 SDK 登录凭证到 SDK 模块
-            gsm.base.sdk.model.token = result.code;
+            gsm.base.sdk.token = result.code;
 
             oops.log.trace(`【登录流程】平台 SDK 登录成功，code: ${result.code}`);
 

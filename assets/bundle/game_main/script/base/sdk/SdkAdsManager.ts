@@ -76,7 +76,7 @@ const DEFAULT_ADS_UNIT_ID_CONFIG: ISdkAdsUnitIdConfig = {
  *
  * 使用方式：
  * ```ts
- * const ads = gsm.base.sdk.main.adsManager;
+ * const ads = gsm.base.sdk.adsManager;
  * ads.setUnitIdConfig(myConfig);
  * ads.preInitAllAds();
  * ads.showRewardedVideoAds((isRewarded) => { ... });

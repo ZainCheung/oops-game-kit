@@ -49,7 +49,7 @@ import { DefaultSdk } from './DefaultSdk';
  * 调用方式：
  * ```ts
  * // 通过 SDK 单例模块获取（推荐）
- * const sdk = gsm.base.sdk.main.sdk;
+ * const sdk = gsm.base.sdk.platformSdk;
  * const result = await sdk.login();
  * ```
  *

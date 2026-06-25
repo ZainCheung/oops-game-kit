@@ -32,7 +32,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             }
 
             // 2. 创建全屏原生按钮并等用户点击（内部会调 this.success() / this.fail()）
-            const sdk = gsm.base.sdk.main.sdk;
+            const sdk = gsm.base.sdk.sdk;
             this.requestUserInfo(sdk, uiNode);
         }
         catch (err) {
@@ -98,7 +98,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         if (!nativeBtn) {
             // 原生按钮创建失败（基础库太老）→ 兜底用默认数据
             console.log('【登录流程】原生按钮创建失败，使用默认用户信息');
-            gsm.base.sdk.model.userInfo = {
+            gsm.base.sdk.userInfo = {
                 nickName: 'Player',
                 avatarUrl: '',
                 gender: 0,
@@ -114,7 +114,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         nativeBtn.onTap((res: IUserInfoResult) => {
             console.log('【登录流程】原生按钮 onTap 回调:', JSON.stringify(res));
             if (res?.userInfo) {
-                gsm.base.sdk.model.userInfo = res.userInfo;
+                gsm.base.sdk.userInfo = res.userInfo;
                 console.log(
                     `【登录流程】获取用户信息成功（原生按钮），昵称: ${res.userInfo.nickName}`
                 );
@@ -122,7 +122,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             else {
                 // 用户点了「拒绝」
                 console.log('【登录流程】用户拒绝授权，使用默认用户信息');
-                gsm.base.sdk.model.userInfo = {
+                gsm.base.sdk.userInfo = {
                     nickName: 'Player',
                     avatarUrl: '',
                     gender: 0,
