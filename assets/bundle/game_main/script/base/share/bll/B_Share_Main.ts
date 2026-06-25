@@ -1,15 +1,10 @@
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { gsm } from '../../../game/common/GameSingletonModule';
-import { Sdk } from '../../sdk/Sdk';
 import { Share } from '../Share';
 import {
     ShareEventName,
-    type IShareData,
-    type IShareEventDataMap,
-    type IShareScreenshotData,
-    type IShareTimelineData,
-    type IShareWithImageData,
+    type IShareEventDataMap
 } from '../ShareEvent';
 
 /** Share模块主业务逻辑 */
@@ -33,17 +28,16 @@ export class B_Share_Main extends CCBusiness<Share> {
         // 这样业务层后续用 sdk.shareAppMessage / sdk.shareToTimeline 也能正常跑。
         setTimeout(() => {
             try {
-                const sdk = Sdk.instance.main.sdk;
-                if (!sdk) {
+                if (!this.sdk) {
                     console.warn('[Share] sdk 不可用,跳过菜单注册');
                     return;
                 }
                 console.log('[Share] 注册 showShareMenu + onShareAppMessage ====== 2026-06-25 版本 ======');
-                sdk.showShareMenu({
+                this.sdk.showShareMenu({
                     withShareTicket: false,
                     menus: ['shareAppMessage', 'shareTimeline'],
                 });
-                sdk.onShareAppMessage(() => {
+                this.sdk.onShareAppMessage(() => {
                     return {
                         title: '一起来玩!',
                         // 自定义分享卡封面图(必须是公网可访问的 PNG/JPG,微信会下载后当卡片图)
@@ -63,8 +57,6 @@ export class B_Share_Main extends CCBusiness<Share> {
     private get sdk() {
         return gsm.base.sdk.main.sdk;
     }
-
-    //#region 全局事件处理
 
     /** 主动分享给好友 */
     private onShareShare<K extends ShareEventName.Share>(
@@ -162,88 +154,9 @@ export class B_Share_Main extends CCBusiness<Share> {
     }
 
     /** 查询是否支持朋友圈转发 */
-    private onCanShareTimeline<K extends ShareEventName.CanShareTimeline>(
+    private onShareCanShareTimeline<K extends ShareEventName.CanShareTimeline>(
         event: K
     ): boolean {
         return this.sdk.canShareToTimeline();
-    }
-
-    //#endregion
-
-    //#region 便捷方法（供业务层直接调用）
-
-    /**
-     * 快捷分享方法（无需通过事件）
-     * @param option 分享参数
-     */
-    share(option: IShareData): void {
-        this.onShareShare(ShareEventName.Share, option);
-    }
-
-    /**
-     * 快捷自定义图片分享方法
-     * @param option 自定义图片分享参数（必须提供 presetImageUrl）
-     */
-    shareWithImage(option: IShareWithImageData): void {
-        if (!option.presetImageUrl) {
-            console.warn('[Share] shareWithImage 需要提供 presetImageUrl');
-            return;
-        }
-        this.onShareWithImage(ShareEventName.ShareWithImage, option);
-    }
-
-    /**
-     * 快捷截图分享方法
-     * @param option 截图分享参数
-     */
-    async shareScreenshot(option: IShareScreenshotData): Promise<void> {
-        return this.onShareScreenshot(ShareEventName.ShareScreenshot, option);
-    }
-
-    /**
-     * 快捷朋友圈分享方法
-     * @param option 朋友圈分享参数
-     */
-    shareTimeline(option: IShareTimelineData): void {
-        this.onShareTimeline(ShareEventName.ShareTimeline, option);
-    }
-
-    /**
-     * 查询是否支持朋友圈转发
-     * @returns 是否支持
-     */
-    canShareToTimeline(): boolean {
-        return this.sdk.canShareToTimeline();
-    }
-
-    /**
-     * 注册右上角转发回调
-     * @param callback 分享内容回调，返回分享配置
-     */
-    registerShareMenu(callback: (option?: any) => any): void {
-        this.sdk.onShareAppMessage(callback);
-    }
-
-    /**
-     * 开启分享菜单
-     * @param option 配置选项
-     */
-    showShareMenu(option?: { withShareTicket?: boolean; menus?: string[] }): void {
-        this.sdk.showShareMenu(option);
-    }
-
-    /**
-     * 隐藏分享菜单
-     * @param option 配置选项
-     */
-    hideShareMenu(option?: { menus?: string[] }): void {
-        this.sdk.hideShareMenu(option);
-    }
-
-    //#endregion
-
-    /** 业务内存释放 */
-    destroy() {
-        super.destroy();
     }
 }

@@ -106,7 +106,8 @@ export class SdkMain {
         if (callback) {
             const idx = this.showCallbacks.indexOf(callback);
             if (idx !== -1) this.showCallbacks.splice(idx, 1);
-        } else {
+        }
+        else {
             this.showCallbacks.length = 0;
         }
     }
@@ -121,7 +122,8 @@ export class SdkMain {
         if (callback) {
             const idx = this.hideCallbacks.indexOf(callback);
             if (idx !== -1) this.hideCallbacks.splice(idx, 1);
-        } else {
+        }
+        else {
             this.hideCallbacks.length = 0;
         }
     }
@@ -136,7 +138,8 @@ export class SdkMain {
         if (callback) {
             const idx = this.errorCallbacks.indexOf(callback);
             if (idx !== -1) this.errorCallbacks.splice(idx, 1);
-        } else {
+        }
+        else {
             this.errorCallbacks.length = 0;
         }
     }
@@ -151,7 +154,8 @@ export class SdkMain {
         if (callback) {
             const idx = this.networkChangeCallbacks.indexOf(callback);
             if (idx !== -1) this.networkChangeCallbacks.splice(idx, 1);
-        } else {
+        }
+        else {
             this.networkChangeCallbacks.length = 0;
         }
     }

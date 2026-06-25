@@ -31,18 +31,7 @@ export class Sdk {
     /** 主业务逻辑 */
     readonly main: SdkMain;
 
-    /** 单例实例 */
-    private static _instance: Sdk | null = null;
-
-    /** 获取单例实例（懒加载） */
-    static get instance(): Sdk {
-        if (Sdk._instance === null) {
-            Sdk._instance = new Sdk();
-        }
-        return Sdk._instance;
-    }
-
-    private constructor() {
+    constructor() {
         this.model = new SdkModel();
         this.main = new SdkMain(this);
     }
@@ -106,15 +95,4 @@ export class Sdk {
     }
 
     //#endregion
-
-    /**
-     * 销毁单例，释放平台事件监听与广告资源。
-     * 通常仅在需要重新初始化 SDK 模块时调用。
-     */
-    static destroy(): void {
-        if (Sdk._instance) {
-            Sdk._instance.main.destroy();
-            Sdk._instance = null;
-        }
-    }
 }

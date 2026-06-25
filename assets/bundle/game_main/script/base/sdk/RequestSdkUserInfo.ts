@@ -101,7 +101,8 @@ export class RequestSdkUserInfo {
                 return { userInfo: undefined, message: '用户拒绝授权或获取失败' };
             }
             return result;
-        } catch (e: any) {
+        }
+        catch (e: any) {
             console.warn('[RequestSdkUserInfo] requestUserProfile 失败:', e);
             return { userInfo: undefined, message: e?.message || String(e) };
         }
