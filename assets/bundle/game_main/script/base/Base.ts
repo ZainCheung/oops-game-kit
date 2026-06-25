@@ -4,6 +4,7 @@ import { Network } from './network/Network';
 import { Prompt } from './prompt/Prompt';
 import { Share } from './share/Share';
 import { Sdk } from './sdk/Sdk';
+import { Advertising } from './advertising/Advertising';
 
 /** 基础模块 */
 export class Base {
@@ -16,6 +17,7 @@ export class Base {
         ecs.getEntity(Button);
         ecs.getEntity(Prompt);
         ecs.getEntity(Share);
+        ecs.getEntity(Advertising);
 
         this.network = ecs.getEntity(Network);
         this.sdk = new Sdk();
