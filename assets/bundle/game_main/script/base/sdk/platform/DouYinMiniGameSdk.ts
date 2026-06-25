@@ -91,21 +91,44 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
 
     getSystemInfo(): Promise<ISystemInfo> {
         try {
-            const info = this.tt.getSystemInfoSync();
-            return Promise.resolve({
-                brand: info.brand,
-                model: info.model,
-                platform: SdkPlatform.DouYinMiniGame,
-                system: info.system,
-                version: info.version,
-                screenWidth: info.screenWidth,
-                screenHeight: info.screenHeight,
-                pixelRatio: info.pixelRatio,
-                language: info.language,
-                SDKVersion: info.SDKVersion,
-                raw: info,
-            });
-        } catch (e) {
+            // 优先使用新 API（基础库 2.20.1+）
+            try {
+                const deviceInfo = this.tt.getDeviceInfo();
+                const windowInfo = this.tt.getWindowInfo();
+                const appBaseInfo = this.tt.getAppBaseInfo();
+                return Promise.resolve({
+                    brand: deviceInfo.brand,
+                    model: deviceInfo.model,
+                    platform: SdkPlatform.DouYinMiniGame,
+                    system: deviceInfo.system,
+                    version: appBaseInfo.version,
+                    screenWidth: windowInfo.screenWidth,
+                    screenHeight: windowInfo.screenHeight,
+                    pixelRatio: windowInfo.pixelRatio,
+                    language: 'zh',
+                    SDKVersion: appBaseInfo.SDKVersion,
+                    raw: { deviceInfo, windowInfo, appBaseInfo },
+                });
+            }
+            catch {
+                // 新 API 不存在，回退到旧 API
+                const info = this.tt.getSystemInfoSync();
+                return Promise.resolve({
+                    brand: info.brand,
+                    model: info.model,
+                    platform: SdkPlatform.DouYinMiniGame,
+                    system: info.system,
+                    version: info.version,
+                    screenWidth: info.screenWidth,
+                    screenHeight: info.screenHeight,
+                    pixelRatio: info.pixelRatio,
+                    language: info.language || 'zh',
+                    SDKVersion: info.SDKVersion,
+                    raw: info,
+                });
+            }
+        }
+        catch (e) {
             return Promise.reject(e);
         }
     }
@@ -250,7 +273,8 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                     }
                 },
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[DouYinSdk] createUserInfoButton 失败', e);
             return null;
         }
@@ -332,7 +356,8 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                 },
             });
             return this.wrapBannerAd(ad);
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[DouYinSdk] createBannerAd 失败', e);
             return null;
         }
@@ -404,7 +429,8 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                     if (cb) ad.offLoad?.(cb);
                 },
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[DouYinSdk] createRewardedVideoAd 失败', e);
             return null;
         }
@@ -430,7 +456,8 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                     if (cb) ad.offClose?.(cb);
                 },
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[DouYinSdk] createInterstitialAd 失败', e);
             return null;
         }
@@ -625,7 +652,8 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                         }),
                     fail: () => resolve({ needAuthorization: false }),
                 });
-            } catch {
+            }
+            catch {
                 resolve({ needAuthorization: false });
             }
         });
@@ -681,7 +709,8 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                 onUpdateFailed: (cb) => m.onUpdateFailed?.(cb),
                 applyUpdate: () => m.applyUpdate?.(),
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[DouYinSdk] getUpdateManager 失败', e);
             return null;
         }
@@ -715,7 +744,8 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                 onStop: (cb) => m.onStop?.(cb),
                 onError: (cb) => m.onError?.((err: any) => cb(this.mapAdError(err))),
             };
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[DouYinSdk] getGameRecorderManager 失败', e);
             return null;
         }
@@ -734,7 +764,8 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                 setFilterMsg: (msg) => m.setFilterMsg(msg),
                 addFilterMsg: (msg) => m.addFilterMsg(msg),
             };
-        } catch {
+        }
+        catch {
             return null;
         }
     }
@@ -789,7 +820,8 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
     canIUse(apiName: string): boolean {
         try {
             return this.tt.canIUse(apiName);
-        } catch {
+        }
+        catch {
             return false;
         }
     }

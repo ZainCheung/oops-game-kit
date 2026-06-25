@@ -187,19 +187,22 @@ export class SdkAdsManager {
 
     /** 获取屏幕尺寸 */
     private getScreenSize(): { width: number; height: number } {
-        let info: any;
+        let width = 375, height = 667;
         try {
             if (this.isWx) {
-                info = (wx as any).getSystemInfoSync();
-            } else if (this.isByteDance) {
-                const g: any = typeof globalThis !== 'undefined' ? globalThis : window;
-                info = g['tt'].getSystemInfoSync();
+                const windowInfo = (wx as any).getWindowInfo();
+                width = windowInfo.screenWidth;
+                height = windowInfo.screenHeight;
             }
-        } catch {}
-        return {
-            width: info?.screenWidth ?? 375,
-            height: info?.screenHeight ?? 667,
-        };
+            else if (this.isByteDance) {
+                const g: any = typeof globalThis !== 'undefined' ? globalThis : window;
+                const info = g['tt'].getSystemInfoSync();
+                width = info.screenWidth;
+                height = info.screenHeight;
+            }
+        }
+        catch { /* ignore */ }
+        return { width, height };
     }
 
     //#endregion
@@ -274,7 +277,8 @@ export class SdkAdsManager {
             this.bannerAd.show().catch((err) => {
                 console.log('[SdkAds] Banner 显示失败', err);
             });
-        } else {
+        }
+        else {
             this.bannerAd.hide();
         }
     }
@@ -389,7 +393,8 @@ export class SdkAdsManager {
             if (res.isEnded) {
                 // 正常播放结束，可以下发游戏奖励
                 closeAdsCallback?.(true);
-            } else {
+            }
+            else {
                 // 播放中途退出，不下发游戏奖励
                 closeAdsCallback?.(false);
             }
@@ -561,7 +566,8 @@ export class SdkAdsManager {
             if (!adsObj) return;
             if (show) {
                 adsObj.show().catch(() => {});
-            } else {
+            }
+            else {
                 adsObj.hide();
             }
         };

@@ -20,7 +20,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     }
 
     protected async execute() {
-        const label = '【登录流程】获取用户头像';
+        const label = `【登录流程】获取用户头像_${Date.now()}`;
         console.time(label);
         try {
             // 1. 打开登录界面
@@ -37,7 +37,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
             console.timeEnd(label);
             this.success();
-        } catch (err) {
+        }
+        catch (err) {
             console.timeEnd(label);
             console.error('【登录流程】获取用户头像失败', err);
             this.fail();
@@ -58,11 +59,12 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 // 用户需要同意隐私协议：这里直接同意（基础库要求用户有点击行为，
                 // 实际项目建议弹出自定义隐私弹窗，用户点击同意后再 resolve 'agree'）
                 oops.log.trace(`【登录流程】需要隐私授权: ${res.contractName}`);
-                (sdk as any).requirePrivacyAuthorize?.({}).catch(() => {});
+                (sdk as any).requirePrivacyAuthorize?.({}).catch(() => { });
             });
             await sdk.requirePrivacyAuthorize({ demandList: ['userInfo'] });
             oops.log.trace('【登录流程】用户隐私授权已通过');
-        } catch {
+        }
+        catch {
             // 拒绝或后台未配置：不阻断流程，后续 createUserInfoButton 会回退默认数据
             oops.log.trace('【登录流程】隐私授权未通过，使用默认用户信息');
         }
@@ -141,7 +143,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                         oops.log.trace(
                             `【登录流程】获取用户信息成功（原生按钮），昵称: ${res.userInfo.nickName}`
                         );
-                    } else {
+                    }
+                    else {
                         gsm.base.sdk.model.userInfo = {
                             nickName: 'Player',
                             avatarUrl: '',
@@ -164,10 +167,12 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                         oops.log.trace(
                             `【登录流程】获取用户信息成功（getUserInfo），昵称: ${res.userInfo.nickName}`
                         );
-                    } else {
+                    }
+                    else {
                         throw new Error('userInfo 为空');
                     }
-                } catch (e) {
+                }
+                catch (e) {
                     console.warn('【登录流程】getUserInfo 失败，使用默认数据', e);
                     gsm.base.sdk.model.userInfo = {
                         nickName: 'Player',
@@ -191,12 +196,10 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      * 使用 screen.windowSize 获取 Cocos 画布的逻辑尺寸，跨平台行为一致。
      */
     private getScreenLogicalSize(): { width: number; height: number } {
-        try {
-            const size = screen.windowSize;
-            if (size && size.width > 0 && size.height > 0) {
-                return { width: size.width, height: size.height };
-            }
-        } catch {}
+        const size = screen.windowSize;
+        if (size && size.width > 0 && size.height > 0) {
+            return { width: size.width, height: size.height };
+        }
         // 兜底：使用 visibleSize（设计分辨率），至少不会越界
         const v = view.getVisibleSize();
         return { width: v.width, height: v.height };
@@ -327,7 +330,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             });
 
             return debugNode;
-        } catch (e) {
+        }
+        catch (e) {
             console.error('【登录流程】绘制调试矩形失败', e);
             return null;
         }

@@ -100,19 +100,21 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     getSystemInfo(): Promise<ISystemInfo> {
         try {
-            const info = wx.getSystemInfoSync();
+            const deviceInfo = wx.getDeviceInfo();
+            const windowInfo = wx.getWindowInfo();
+            const appBaseInfo = wx.getAppBaseInfo();
             return Promise.resolve({
-                brand: info.brand,
-                model: info.model,
+                brand: deviceInfo.brand,
+                model: deviceInfo.model,
                 platform: SdkPlatform.WeChatMiniGame,
-                system: info.system,
-                version: info.version,
-                screenWidth: info.screenWidth,
-                screenHeight: info.screenHeight,
-                pixelRatio: info.pixelRatio,
-                language: info.language,
-                SDKVersion: info.SDKVersion,
-                raw: info,
+                system: deviceInfo.system,
+                version: appBaseInfo.version,
+                screenWidth: windowInfo.screenWidth,
+                screenHeight: windowInfo.screenHeight,
+                pixelRatio: windowInfo.pixelRatio,
+                language: 'zh', // 新 API 不包含 language 字段，使用默认值
+                SDKVersion: appBaseInfo.SDKVersion,
+                raw: { deviceInfo, windowInfo, appBaseInfo },
             });
         }
         catch (e) {
@@ -252,17 +254,21 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
             const safeResolve = (result: IUserInfoResult) => {
                 if (resolved) return;
                 resolved = true;
-                try { if (btn) btn.destroy(); } catch {}
+                try {
+                    if (btn) btn.destroy();
+                }
+                catch { /* ignore */ }
                 resolve(result);
             };
 
             // 全屏透明按钮，覆盖整个屏幕
             let screenW = 0, screenH = 0;
             try {
-                const info = wx.getSystemInfoSync();
-                screenW = info.screenWidth;
-                screenH = info.screenHeight;
-            } catch {
+                const windowInfo = wx.getWindowInfo();
+                screenW = windowInfo.screenWidth;
+                screenH = windowInfo.screenHeight;
+            }
+            catch {
                 screenW = 375;
                 screenH = 667;
             }
@@ -287,7 +293,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                     lang: lang ?? 'zh_CN',
                     withCredentials: false,
                 });
-            } catch (e) {
+            }
+            catch (e) {
                 console.warn('[WeChatSdk-zw3] createUserInfoButton 创建失败:', e);
                 resolve({ userInfo: undefined });
                 return;
@@ -299,7 +306,10 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 return;
             }
 
-            try { btn.show(); } catch (e) {
+            try {
+                btn.show();
+            }
+            catch (e) {
                 console.warn('[WeChatSdk-zw3] btn.show 失败:', e);
             }
             console.log('[WeChatSdk-zw3] getUserInfoViaButton: 全屏透明按钮已 show，等待用户点击');
@@ -325,7 +335,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                         iv: res.iv,
                         cloudID: res.cloudID,
                     });
-                } else {
+                }
+                else {
                     console.warn('[WeChatSdk-zw3] onTap 但 userInfo 为空（用户拒绝）');
                     safeResolve({ userInfo: undefined });
                 }
