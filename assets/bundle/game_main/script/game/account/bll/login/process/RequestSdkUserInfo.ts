@@ -21,8 +21,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
         const uiNode = await gsm.account.B_Account_ViewUI.openLogin();
         if (!uiNode) {
-            console.timeEnd(label);
-            this.fail();
+            console.error('【登录流程】打开登录界面失败，无法获取用户头像/昵称');
             return;
         }
 
