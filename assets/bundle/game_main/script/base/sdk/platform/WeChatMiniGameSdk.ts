@@ -181,26 +181,189 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         const sdkVersion = this.getSDKVersion();
         console.log(`[WeChatSdk-zw3] getUserInfo: 基础库版本=${sdkVersion}, lang=${lang}`);
 
-        // ========== 2026-06-25 新增:按基础库版本走不同分支 ==========
-        // 背景:基础库 < 2.27.1 时,createUserInfoButton.onTap 永远拿不到 userInfo(微信已知行为)
-        //      基础库 >= 2.27.1 但 < 2.32.3 时,要用 getUserProfile(已废弃但老库上还能用)
-        //      基础库 >= 2.32.3 时,新隐私合规要求 createUserInfoButton 走用户行为上下文
+        // ========== 2026-06-25 最终方案:双弹窗连续模式 ==========
+        // 思路：在 onNeedPrivacyAuthorization 的 showModal "同意" 按钮回调里
+        //      同步创建并 tap createUserInfoButton，让两个弹窗接连出现
+        // 流程：
+        //   1. requirePrivacyAuthorize → onNeedPrivacyAuthorization
+        //   2. 弹 showModal（隐私协议）
+        //   3. 用户点"同意" → resolve({event:'agree'})
+        //   4. 同步创建 createUserInfoButton 并立即 tap()
+        //   5. 微信连续弹出 scope.userInfo 授权弹窗
+        //   6. 用户点"允许" → onTap 返回 userInfo
+        // 老库走 getUserProfile 兜底
         const isOldSDK = this.compareSDKVersion(sdkVersion, '2.27.1') < 0;
-        const isMidSDK = this.compareSDKVersion(sdkVersion, '2.32.3') < 0;
 
         if (isOldSDK) {
-            console.warn(`[WeChatSdk-zw3] 基础库 ${sdkVersion} < 2.27.1,直接走 getUserProfile 兜底(老库不支持 createUserInfoButton 拿 userInfo)`);
+            console.warn(`[WeChatSdk-zw3] 基础库 ${sdkVersion} < 2.27.1,直接走 getUserProfile 兜底`);
             return this.tryWxGetUserProfile(lang);
         }
 
-        // 新库:先试 getUserInfo,失败再走 createUserInfoButton 全屏兜底
-        return this.tryWxGetUserInfo(lang).then((r) => {
-            if (r.userInfo) {
-                console.log('[WeChatSdk-zw3] getUserInfo: wx.getUserInfo 拿到数据, nickName=' + r.userInfo.nickName);
-                return r;
+        console.log('[WeChatSdk-zw3] getUserInfo: 走双弹窗连续模式');
+        return this.getUserInfoWithContinuousDialogs(lang, 60000);
+    }
+
+    /**
+     * 双弹窗连续模式获取用户信息
+     *
+     * 在 showModal 的"同意"按钮回调里，同步创建并 tap createUserInfoButton，
+     * 让微信连续弹出隐私协议 + scope.userInfo 授权弹窗。
+     */
+    private getUserInfoWithContinuousDialogs(
+        lang: 'en' | 'zh_CN' | 'zh_TW',
+        timeoutMs: number = 60000
+    ): Promise<IUserInfoResult> {
+        return new Promise((resolve) => {
+            const wxAny = wx as any;
+            let resolved = false;
+            let userInfoBtn: any = null;
+
+            const safeResolve = (result: IUserInfoResult) => {
+                if (resolved) return;
+                resolved = true;
+                try { if (userInfoBtn) userInfoBtn.destroy(); } catch { /* ignore */ }
+                resolve(result);
+            };
+
+            // 创建 createUserInfoButton 的函数（会在 showModal 同意回调里调用）
+            const createAndTapUserInfoButton = () => {
+                try {
+                    let screenW = 0, screenH = 0;
+                    try {
+                        const windowInfo = wx.getWindowInfo();
+                        screenW = windowInfo.screenWidth;
+                        screenH = windowInfo.screenHeight;
+                    } catch {
+                        screenW = 375; screenH = 667;
+                    }
+
+                    userInfoBtn = wx.createUserInfoButton({
+                        type: 'text',
+                        text: '',
+                        style: {
+                            left: 0, top: 0,
+                            width: screenW, height: screenH,
+                            backgroundColor: 'rgba(0,0,0,0)',
+                            borderColor: 'rgba(0,0,0,0)',
+                            color: 'rgba(0,0,0,0)',
+                            textAlign: 'center',
+                            fontSize: 1,
+                            borderRadius: 0,
+                            lineHeight: 1,
+                        },
+                        lang: lang ?? 'zh_CN',
+                        withCredentials: false,
+                    });
+
+                    userInfoBtn.onTap((res: any) => {
+                        console.log('[WeChatSdk-zw3] createUserInfoButton onTap 触发, res=' + JSON.stringify(res));
+                        if (res && res.userInfo && res.userInfo.nickName) {
+                            const info = res.userInfo;
+                            safeResolve({
+                                userInfo: {
+                                    nickName: info.nickName,
+                                    avatarUrl: info.avatarUrl,
+                                    gender: info.gender,
+                                    language: info.language,
+                                    country: info.country,
+                                    province: info.province,
+                                    city: info.city,
+                                    raw: info,
+                                },
+                                rawData: res.rawData,
+                                signature: res.signature,
+                                encryptedData: res.encryptedData,
+                                iv: res.iv,
+                                cloudID: res.cloudID,
+                            });
+                        } else {
+                            console.warn('[WeChatSdk-zw3] onTap 但 userInfo 为空（用户拒绝）');
+                            safeResolve({ userInfo: undefined });
+                        }
+                    });
+
+                    userInfoBtn.show();
+
+                    // 关键：立即调用 tap()，触发 scope.userInfo 授权弹窗
+                    // 此时还在 showModal 的 success 回调（用户交互事件）中，满足微信要求
+                    if (typeof userInfoBtn.tap === 'function') {
+                        console.log('[WeChatSdk-zw3] 同步调用 createUserInfoButton.tap()');
+                        userInfoBtn.tap();
+                    } else {
+                        console.warn('[WeChatSdk-zw3] createUserInfoButton 不支持 tap()，等待用户点击');
+                    }
+                } catch (e) {
+                    console.warn('[WeChatSdk-zw3] createAndTapUserInfoButton 失败:', e);
+                    safeResolve({ userInfo: undefined });
+                }
+            };
+
+            // 注册 onNeedPrivacyAuthorization：弹 showModal，同意后同步 tap createUserInfoButton
+            if (typeof wxAny.onNeedPrivacyAuthorization === 'function') {
+                wxAny.onNeedPrivacyAuthorization((resolveFn: (res: { event: string }) => void, eventInfo: any) => {
+                    console.log('[WeChatSdk] 隐私授权回调触发:', eventInfo);
+
+                    if (typeof wxAny.showModal === 'function') {
+                        wxAny.showModal({
+                            title: '隐私保护提示',
+                            content: '为了向您提供游戏服务，我们需要获取您的昵称和头像信息。是否同意？',
+                            confirmText: '同意',
+                            cancelText: '拒绝',
+                            success: (modalRes: any) => {
+                                if (modalRes.confirm) {
+                                    console.log('[WeChatSdk] 用户同意隐私协议');
+                                    resolveFn({ event: 'agree' });
+                                    // 关键：同步创建并 tap createUserInfoButton
+                                    // showModal 的 success 回调算用户交互事件，满足微信要求
+                                    createAndTapUserInfoButton();
+                                } else {
+                                    console.log('[WeChatSdk] 用户拒绝隐私协议');
+                                    resolveFn({ event: 'disagree' });
+                                    safeResolve({ userInfo: undefined });
+                                }
+                            },
+                        });
+                    } else {
+                        resolveFn({ event: 'agree' });
+                        createAndTapUserInfoButton();
+                    }
+                });
+                console.log('[WeChatSdk] 隐私授权监听器已注册（双弹窗连续模式）');
+            } else {
+                // 不支持隐私授权，直接走 createUserInfoButton
+                createAndTapUserInfoButton();
             }
-            console.warn('[WeChatSdk-zw3] getUserInfo: wx.getUserInfo 拿不到数据，降级到 createUserInfoButton 全屏兜底');
-            return this.getUserInfoViaButton(lang, 60000);
+
+            // 触发 requirePrivacyAuthorize
+            if (typeof wxAny.requirePrivacyAuthorize === 'function') {
+                wxAny.requirePrivacyAuthorize({
+                    success: () => {
+                        console.log('[WeChatSdk-zw3] requirePrivacyAuthorize 成功');
+                        // 如果 onNeedPrivacyAuthorization 没触发（已授权），直接创建按钮
+                        if (!resolved && !userInfoBtn) {
+                            console.log('[WeChatSdk-zw3] 隐私已授权，直接创建按钮');
+                            createAndTapUserInfoButton();
+                        }
+                    },
+                    fail: (err: any) => {
+                        console.warn('[WeChatSdk-zw3] requirePrivacyAuthorize 失败', err);
+                        if (!resolved && !userInfoBtn) {
+                            createAndTapUserInfoButton();
+                        }
+                    },
+                });
+            } else {
+                // 不支持 requirePrivacyAuthorize，直接创建按钮
+                createAndTapUserInfoButton();
+            }
+
+            // 超时兜底
+            setTimeout(() => {
+                if (!resolved) {
+                    console.warn(`[WeChatSdk-zw3] 双弹窗连续模式超时 (${timeoutMs}ms)`);
+                    safeResolve({ userInfo: undefined });
+                }
+            }, timeoutMs);
         });
     }
 
@@ -215,6 +378,66 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         catch {
             return '0.0.0';
         }
+    }
+
+    /**
+     * 确保隐私授权已通过
+     *
+     * 微信新版基础库（2.32.3+）要求：createUserInfoButton 必须在用户同意隐私协议后才能拿到 userInfo。
+     * 如果用户尚未同意隐私协议，onTap 会返回空 userInfo。
+     *
+     * 此方法会：
+     * 1. 检查是否需要隐私授权（wx.getPrivacySetting）
+     * 2. 如果需要，调用 wx.requirePrivacyAuthorize 触发隐私授权弹窗
+     * 3. 用户同意后继续后续流程
+     *
+     * 如果平台不支持隐私授权 API 或用户已授权，直接 resolve。
+     */
+    private ensurePrivacyAuthorized(): Promise<void> {
+        return new Promise((resolve) => {
+            const wxAny = wx as any;
+
+            // 不支持隐私授权 API，直接跳过
+            if (typeof wxAny.getPrivacySetting !== 'function') {
+                console.log('[WeChatSdk-zw3] 隐私授权: 不支持 getPrivacySetting，跳过');
+                resolve();
+                return;
+            }
+
+            wxAny.getPrivacySetting({
+                success: (res: any) => {
+                    if (!res.needAuthorization) {
+                        console.log('[WeChatSdk-zw3] 隐私授权: 已授权，无需弹窗');
+                        resolve();
+                        return;
+                    }
+
+                    console.log('[WeChatSdk-zw3] 隐私授权: 需要用户同意隐私协议');
+                    this._registerCorrectPrivacyListener();
+
+                    if (typeof wxAny.requirePrivacyAuthorize !== 'function') {
+                        console.warn('[WeChatSdk-zw3] 隐私授权: 不支持 requirePrivacyAuthorize');
+                        resolve();
+                        return;
+                    }
+
+                    wxAny.requirePrivacyAuthorize({
+                        success: () => {
+                            console.log('[WeChatSdk-zw3] 隐私授权: 用户已同意');
+                            resolve();
+                        },
+                        fail: (err: any) => {
+                            console.warn('[WeChatSdk-zw3] 隐私授权: 用户拒绝或失败', err);
+                            resolve(); // 即使拒绝也继续，让 createUserInfoButton 自己处理
+                        },
+                    });
+                },
+                fail: () => {
+                    console.warn('[WeChatSdk-zw3] 隐私授权: getPrivacySetting 失败');
+                    resolve();
+                },
+            });
+        });
     }
 
     /**
@@ -1058,19 +1281,51 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     /**
      * 注册正确签名的隐私授权监听器（覆盖游戏层的错误监听器）
+     *
+     * 关键点：resolve 必须在用户交互事件中调用，不能直接异步调用。
+     * 微信 errno:104 "click action before resolve is needed" 就是因为
+     * 直接 resolve({event:'agree'}) 没有用户交互上下文。
+     *
+     * 解决方案：用 wx.showModal 显示原生确认框，用户点"同意"/"拒绝"时
+     * 在 showModal 的 success 回调里调用 resolve（showModal 回调算用户交互事件）。
      */
     private _registerCorrectPrivacyListener(): void {
         const fn = (wx as any).onNeedPrivacyAuthorization;
         if (typeof fn !== 'function') return;
 
-        // 注册正确签名的监听器 (resolve, eventInfo)
         fn((resolveFn: (res: { event: string }) => void, eventInfo: any) => {
             console.log('[WeChatSdk] 隐私授权回调触发:', eventInfo);
-            // 调用 resolve 通知微信用户已同意
-            resolveFn({ event: 'agree' });
+
+            const wxAny = wx as any;
+            if (typeof wxAny.showModal === 'function') {
+                // 用 wx.showModal 显示原生确认框，让用户主动点击同意/拒绝
+                wxAny.showModal({
+                    title: '隐私保护提示',
+                    content: '为了向您提供游戏服务，我们需要获取您的昵称和头像信息。是否同意？',
+                    confirmText: '同意',
+                    cancelText: '拒绝',
+                    success: (modalRes: any) => {
+                        if (modalRes.confirm) {
+                            console.log('[WeChatSdk] 用户同意隐私协议');
+                            resolveFn({ event: 'agree' });
+                        } else {
+                            console.log('[WeChatSdk] 用户拒绝隐私协议');
+                            resolveFn({ event: 'disagree' });
+                        }
+                    },
+                    fail: () => {
+                        console.warn('[WeChatSdk] showModal 失败，默认同意');
+                        resolveFn({ event: 'agree' });
+                    },
+                });
+            } else {
+                // 兜底：showModal 不可用，直接同意
+                console.log('[WeChatSdk] showModal 不可用，直接同意');
+                resolveFn({ event: 'agree' });
+            }
         });
 
-        console.log('[WeChatSdk] 隐私授权监听器已注册（覆盖式）');
+        console.log('[WeChatSdk] 隐私授权监听器已注册（覆盖式 showModal 版）');
     }
 
     /**
