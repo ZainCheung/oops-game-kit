@@ -17,7 +17,7 @@ export class RequestSdkLogin extends LoginProcessBase {
         const label = '【登录流程】平台 SDK 登录';
         console.time(label);
         try {
-            const sdk = gsm.base.sdk.sdk;
+            const sdk = gsm.base.sdk.platform;
 
             // SDK 未就绪，提示并中止登录流程
             if (!sdk.isReady()) {

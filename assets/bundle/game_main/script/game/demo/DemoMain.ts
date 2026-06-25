@@ -59,7 +59,7 @@ export class DemoMain extends GameComponent {
 
     /** 插屏广告 */
     btnA1() {
-        const sdk = gsm.base.sdk.sdk;
+        const sdk = gsm.base.sdk.platform;
         oops.gui.toast('创建插屏广告...');
         const ad = sdk.createInterstitialAd({ adUnitId: 'demo_interstitial_adunit' });
         if (!ad) {
@@ -78,7 +78,7 @@ export class DemoMain extends GameComponent {
 
     /** 激励广告 */
     btnA2() {
-        const sdk = gsm.base.sdk.sdk;
+        const sdk = gsm.base.sdk.platform;
         oops.gui.toast('创建激励广告...');
         const ad = sdk.createRewardedVideoAd({ adUnitId: 'demo_rewarded_adunit' });
         if (!ad) {
@@ -102,7 +102,7 @@ export class DemoMain extends GameComponent {
 
     /** banner广告 */
     btnA3() {
-        const sdk = gsm.base.sdk.sdk;
+        const sdk = gsm.base.sdk.platform;
         if (this.bannerAd) {
             this.bannerAd.hide();
             this.bannerAd.destroy();
@@ -147,7 +147,7 @@ export class DemoMain extends GameComponent {
     /** 分享按钮 - 默认分享（无图片） */
     @debounce.click()
     ShareButton() {
-        const sdk = gsm.base.sdk.sdk;
+        const sdk = gsm.base.sdk.platform;
         console.log('[Demo] ShareButton: 触发分享');
 
         sdk.shareAppMessage({
@@ -158,7 +158,7 @@ export class DemoMain extends GameComponent {
     /** 分享按钮2 - 自定义图片分享 */
     @debounce.click()
     ShareButton2() {
-        const sdk = gsm.base.sdk.sdk;
+        const sdk = gsm.base.sdk.platform;
         console.log('[Demo] ShareButton2: 触发自定义图片分享');
 
         // 使用预设图片分享（替换为你的实际图片URL）
@@ -171,7 +171,7 @@ export class DemoMain extends GameComponent {
     /** 分享按钮3 - 分享到朋友圈（仅微信支持） */
     @debounce.click()
     ShareButton3() {
-        const sdk = gsm.base.sdk.sdk;
+        const sdk = gsm.base.sdk.platform;
         console.log('[Demo] ShareButton3: 触发朋友圈分享');
 
         if (!sdk.canShareToTimeline()) {

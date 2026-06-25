@@ -32,7 +32,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             }
 
             // 2. 创建全屏原生按钮并等用户点击（内部会调 this.success() / this.fail()）
-            const sdk = gsm.base.sdk.sdk;
+            const sdk = gsm.base.sdk.platform;
             this.requestUserInfo(sdk, uiNode);
         }
         catch (err) {

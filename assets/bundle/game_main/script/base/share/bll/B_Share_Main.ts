@@ -55,7 +55,7 @@ export class B_Share_Main extends CCBusiness<Share> {
 
     /** 获取SDK实例 */
     private get sdk() {
-        return gsm.base.sdk.sdk;
+        return gsm.base.sdk.platform;
     }
 
     /** 主动分享给好友 */

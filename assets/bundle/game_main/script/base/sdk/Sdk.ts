@@ -34,9 +34,9 @@ export class Sdk {
     /** SDK 管理器 */
     private readonly manager: SdkManager = new SdkManager();
     /** 当前平台的 SDK 实现接口 */
-    readonly sdk: ISdk = this.manager.init();
+    readonly platform: ISdk = this.manager.init();
     /** 高级广告管理器（封装各广告的创建、显示/隐藏、回调） */
-    readonly ads: SdkAdsManager = new SdkAdsManager(this.sdk, this.manager.platform);
+    readonly ads: SdkAdsManager = new SdkAdsManager(this.platform, this.manager.platform);
 
     // ==================== 数据模型（扁平） ====================
 
@@ -71,7 +71,7 @@ export class Sdk {
     }
 
     private initEvents() {
-        console.log(`[SDK] 平台 = ${this.manager.platform}, 准备就绪 = ${this.sdk.isReady()}`);
+        console.log(`[SDK] 平台 = ${this.manager.platform}, 准备就绪 = ${this.platform.isReady()}`);
 
         // 转发原生事件到注册的回调
         this.onShowCb = (res: any) => {
@@ -81,16 +81,16 @@ export class Sdk {
             }
             this.showCallbacks.forEach(cb => cb(res));
         };
-        this.sdk.onShow(this.onShowCb);
+        this.platform.onShow(this.onShowCb);
 
         this.onHideCb = () => this.hideCallbacks.forEach(cb => cb());
-        this.sdk.onHide(this.onHideCb);
+        this.platform.onHide(this.onHideCb);
 
         this.onErrorCb = (err: string) => this.errorCallbacks.forEach(cb => cb(err));
-        this.sdk.onError(this.onErrorCb);
+        this.platform.onError(this.onErrorCb);
 
         this.onNetworkChangeCb = (res: INetworkStatusChangeEvent) => this.networkChangeCallbacks.forEach(cb => cb(res));
-        this.sdk.onNetworkStatusChange(this.onNetworkChangeCb);
+        this.platform.onNetworkStatusChange(this.onNetworkChangeCb);
     }
 
     /** 重置模型数据 */
@@ -193,10 +193,10 @@ export class Sdk {
 
     /** 销毁，解绑原生事件并释放广告资源 */
     destroy() {
-        if (this.onShowCb) this.sdk.offShow(this.onShowCb);
-        if (this.onHideCb) this.sdk.offHide(this.onHideCb);
-        if (this.onErrorCb) this.sdk.offError(this.onErrorCb);
-        if (this.onNetworkChangeCb) this.sdk.offNetworkStatusChange(this.onNetworkChangeCb);
+        if (this.onShowCb) this.platform.offShow(this.onShowCb);
+        if (this.onHideCb) this.platform.offHide(this.onHideCb);
+        if (this.onErrorCb) this.platform.offError(this.onErrorCb);
+        if (this.onNetworkChangeCb) this.platform.offNetworkStatusChange(this.onNetworkChangeCb);
         this.onShowCb = this.onHideCb = this.onErrorCb = this.onNetworkChangeCb = undefined;
         this.showCallbacks.length = 0;
         this.hideCallbacks.length = 0;
