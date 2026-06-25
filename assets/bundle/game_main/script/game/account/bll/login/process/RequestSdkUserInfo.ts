@@ -16,6 +16,7 @@ import { LoginProcessBase } from '../LoginProcessBase';
 export class RequestSdkUserInfo extends LoginProcessBase {
     constructor() {
         super(LoginProcessType.SdkUserInfo);
+        console.log('========== RequestSdkUserInfo 2026-06-25 版本: 全屏原生按钮 + 禁用 Cocos Button 组件 ==========');
     }
 
     protected async execute() {

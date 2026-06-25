@@ -23,6 +23,7 @@ const LoginProcessConfig: BTNodeJson = {
         { type: 'RequestEnterGame' },
     ],
 };
+console.log('========== B_Account_Login 2026-06-25 版本: 行为树中已启用 RequestSdkUserInfo 节点 ==========');
 
 /** 重连流程配置 */
 const ReconnectProcessConfig: BTNodeJson = {
