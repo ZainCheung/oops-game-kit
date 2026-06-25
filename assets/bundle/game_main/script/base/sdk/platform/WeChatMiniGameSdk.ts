@@ -1,5 +1,3 @@
-/// <reference path="../../../libs/wechat-minigame-typings/index.d.ts" />
-
 import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
@@ -221,7 +219,10 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
             const safeResolve = (result: IUserInfoResult) => {
                 if (resolved) return;
                 resolved = true;
-                try { if (userInfoBtn) userInfoBtn.destroy(); } catch { /* ignore */ }
+                try {
+                    if (userInfoBtn) userInfoBtn.destroy();
+                }
+                catch { /* ignore */ }
                 resolve(result);
             };
 
@@ -233,7 +234,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                         const windowInfo = wx.getWindowInfo();
                         screenW = windowInfo.screenWidth;
                         screenH = windowInfo.screenHeight;
-                    } catch {
+                    }
+                    catch {
                         screenW = 375; screenH = 667;
                     }
 
@@ -276,7 +278,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                                 iv: res.iv,
                                 cloudID: res.cloudID,
                             });
-                        } else {
+                        }
+                        else {
                             console.warn('[WeChatSdk-zw3] onTap 但 userInfo 为空（用户拒绝）');
                             safeResolve({ userInfo: undefined });
                         }
@@ -289,10 +292,12 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                     if (typeof userInfoBtn.tap === 'function') {
                         console.log('[WeChatSdk-zw3] 同步调用 createUserInfoButton.tap()');
                         userInfoBtn.tap();
-                    } else {
+                    }
+                    else {
                         console.warn('[WeChatSdk-zw3] createUserInfoButton 不支持 tap()，等待用户点击');
                     }
-                } catch (e) {
+                }
+                catch (e) {
                     console.warn('[WeChatSdk-zw3] createAndTapUserInfoButton 失败:', e);
                     safeResolve({ userInfo: undefined });
                 }
@@ -316,20 +321,23 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                                     // 关键：同步创建并 tap createUserInfoButton
                                     // showModal 的 success 回调算用户交互事件，满足微信要求
                                     createAndTapUserInfoButton();
-                                } else {
+                                }
+                                else {
                                     console.log('[WeChatSdk] 用户拒绝隐私协议');
                                     resolveFn({ event: 'disagree' });
                                     safeResolve({ userInfo: undefined });
                                 }
                             },
                         });
-                    } else {
+                    }
+                    else {
                         resolveFn({ event: 'agree' });
                         createAndTapUserInfoButton();
                     }
                 });
                 console.log('[WeChatSdk] 隐私授权监听器已注册（双弹窗连续模式）');
-            } else {
+            }
+            else {
                 // 不支持隐私授权，直接走 createUserInfoButton
                 createAndTapUserInfoButton();
             }
@@ -352,7 +360,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                         }
                     },
                 });
-            } else {
+            }
+            else {
                 // 不支持 requirePrivacyAuthorize，直接创建按钮
                 createAndTapUserInfoButton();
             }
@@ -1308,7 +1317,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                         if (modalRes.confirm) {
                             console.log('[WeChatSdk] 用户同意隐私协议');
                             resolveFn({ event: 'agree' });
-                        } else {
+                        }
+                        else {
                             console.log('[WeChatSdk] 用户拒绝隐私协议');
                             resolveFn({ event: 'disagree' });
                         }
@@ -1318,7 +1328,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                         resolveFn({ event: 'agree' });
                     },
                 });
-            } else {
+            }
+            else {
                 // 兜底：showModal 不可用，直接同意
                 console.log('[WeChatSdk] showModal 不可用，直接同意');
                 resolveFn({ event: 'agree' });
