@@ -360,13 +360,6 @@ export interface IUserCloudStorageResult {
 }
 
 /**
- * 订阅消息返回结果
- */
-export interface ISubscribeMessageResult {
-    [tmplId: string]: 'accept' | 'reject' | 'ban' | 'filter';
-}
-
-/**
  * 客服会话参数
  */
 export interface ICustomerServiceOption {
@@ -397,19 +390,6 @@ export interface IPrivacySetting {
 }
 
 /**
- * 视频号参数
- */
-export interface IChannelsOption {
-    /** 视频号 username/finderUsername */
-    finderUserName?: string;
-    /** feed id */
-    feedId?: string;
-    /** nonceId */
-    nonceId?: string;
-    [key: string]: any;
-}
-
-/**
  * 录屏管理接口
  */
 export interface IGameRecorderManager {
@@ -420,18 +400,6 @@ export interface IGameRecorderManager {
     onStart?(callback: () => void): void;
     onStop?(callback: (res: { duration: number; videoPath: string; videoSize: number }) => void): void;
     onError?(callback: (err: IAdError) => void): void;
-}
-
-/**
- * 实时日志管理接口
- */
-export interface IRealtimeLogManager {
-    info(...args: any[]): void;
-    warn(...args: any[]): void;
-    error(...args: any[]): void;
-    debug(...args: any[]): void;
-    setFilterMsg(msg: string): void;
-    addFilterMsg(msg: string): void;
 }
 
 /**

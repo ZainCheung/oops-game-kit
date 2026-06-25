@@ -1,7 +1,6 @@
 import { SdkPlatform, SdkVibrateType } from '../SdkEnum';
 import { ISdk } from '../ISdk';
 import type {
-    IChannelsOption,
     ICustomAd,
     ICustomAdOption,
     ICustomerServiceConversationOption,
@@ -19,14 +18,12 @@ import type {
     IPayOption,
     IPayResult,
     IPrivacySetting,
-    IRealtimeLogManager,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
     ISceneOption,
     ISceneResult,
     IShareOption,
     IShareToTimelineOption,
-    ISubscribeMessageResult,
     ISystemInfo,
     IUpdateManager,
     IUserCloudStorageResult,
@@ -224,12 +221,6 @@ export class DefaultSdk implements ISdk {
     }
     onNetworkStatusChange(_callback: (res: INetworkStatusChangeEvent) => void): void {}
     offNetworkStatusChange(_callback?: (res: INetworkStatusChangeEvent) => void): void {}
-    getScreenBrightness(): Promise<number> {
-        return Promise.resolve(1);
-    }
-    setScreenBrightness(_value: number): Promise<void> {
-        return Promise.resolve();
-    }
     setKeepScreenOn(_keepScreenOn: boolean): Promise<void> {
         return Promise.resolve();
     }
@@ -261,14 +252,6 @@ export class DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 订阅消息 ==========
-
-    requestSubscribeMessage(_tmplIds: string[]): Promise<ISubscribeMessageResult> {
-        return this.reject<ISubscribeMessageResult>('requestSubscribeMessage');
-    }
-
-    //#endregion
-
     //#region ========== 隐私合规 ==========
 
     getPrivacySetting(): Promise<IPrivacySetting> {
@@ -287,21 +270,7 @@ export class DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 视频号 ==========
-
-    openChannelsUserProfile(_option: IChannelsOption): Promise<void> {
-        return this.reject('openChannelsUserProfile');
-    }
-    openChannelsLive(_option: IChannelsOption): Promise<void> {
-        return this.reject('openChannelsLive');
-    }
-    openChannelsVideo(_option: IChannelsOption): Promise<void> {
-        return this.reject('openChannelsVideo');
-    }
-
-    //#endregion
-
-    //#region ========== 更新、子包、录屏、日志 ==========
+    //#region ========== 更新、子包、录屏 ==========
 
     getUpdateManager(): IUpdateManager | null {
         this.notSupported('getUpdateManager');
@@ -313,16 +282,6 @@ export class DefaultSdk implements ISdk {
     getGameRecorderManager(): IGameRecorderManager | null {
         this.notSupported('getGameRecorderManager');
         return null;
-    }
-    getRealtimeLogManager(): IRealtimeLogManager | null {
-        return {
-            info: (..._args: any[]) => console.log('[RealtimeLog]', ..._args),
-            warn: (..._args: any[]) => console.warn('[RealtimeLog]', ..._args),
-            error: (..._args: any[]) => console.error('[RealtimeLog]', ..._args),
-            debug: (..._args: any[]) => console.debug('[RealtimeLog]', ..._args),
-            setFilterMsg: (_msg: string) => {},
-            addFilterMsg: (_msg: string) => {},
-        };
     }
 
     //#endregion

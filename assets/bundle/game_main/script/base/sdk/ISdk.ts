@@ -1,6 +1,5 @@
 import { SdkVibrateType } from './SdkEnum';
 import type {
-    IChannelsOption,
     ICustomAd,
     ICustomAdOption,
     ICustomerServiceConversationOption,
@@ -18,14 +17,12 @@ import type {
     IPayOption,
     IPayResult,
     IPrivacySetting,
-    IRealtimeLogManager,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
     ISceneOption,
     ISceneResult,
     IShareOption,
     IShareToTimelineOption,
-    ISubscribeMessageResult,
     ISystemInfo,
     IUpdateManager,
     IUserCloudStorageResult,
@@ -189,12 +186,6 @@ export interface ISdk {
     onNetworkStatusChange(callback: (res: INetworkStatusChangeEvent) => void): void;
     offNetworkStatusChange(callback?: (res: INetworkStatusChangeEvent) => void): void;
 
-    /** 获取屏幕亮度（0~1） */
-    getScreenBrightness(): Promise<number>;
-
-    /** 设置屏幕亮度（0~1） */
-    setScreenBrightness(value: number): Promise<void>;
-
     /** 是否保持屏幕常亮 */
     setKeepScreenOn(keepScreenOn: boolean): Promise<void>;
 
@@ -223,13 +214,6 @@ export interface ISdk {
 
     //#endregion
 
-    //#region ========== 订阅消息 ==========
-
-    /** 请求订阅消息 */
-    requestSubscribeMessage(tmplIds: string[]): Promise<ISubscribeMessageResult>;
-
-    //#endregion
-
     //#region ========== 隐私合规 ==========
 
     /** 获取隐私设置 */
@@ -249,20 +233,7 @@ export interface ISdk {
 
     //#endregion
 
-    //#region ========== 视频号 ==========
-
-    /** 打开视频号主页 */
-    openChannelsUserProfile(option: IChannelsOption): Promise<void>;
-
-    /** 打开视频号直播 */
-    openChannelsLive(option: IChannelsOption): Promise<void>;
-
-    /** 打开视频号视频 */
-    openChannelsVideo(option: IChannelsOption): Promise<void>;
-
-    //#endregion
-
-    //#region ========== 更新、子包、录屏、日志 ==========
+    //#region ========== 更新、子包、录屏 ==========
 
     /** 获取更新管理器（仅微信小游戏） */
     getUpdateManager(): IUpdateManager | null;
@@ -272,9 +243,6 @@ export interface ISdk {
 
     /** 获取录屏管理器（仅部分小游戏平台） */
     getGameRecorderManager(): IGameRecorderManager | null;
-
-    /** 获取实时日志管理器 */
-    getRealtimeLogManager(): IRealtimeLogManager | null;
 
     //#endregion
 

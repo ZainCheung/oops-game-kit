@@ -3,7 +3,6 @@ import type {
     IAdError,
     IBannerAd,
     IBannerAdOption,
-    IChannelsOption,
     ICustomAd,
     ICustomAdOption,
     ICustomerServiceConversationOption,
@@ -21,14 +20,12 @@ import type {
     IPayOption,
     IPayResult,
     IPrivacySetting,
-    IRealtimeLogManager,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
     ISceneOption,
     ISceneResult,
     IShareOption,
     IShareToTimelineOption,
-    ISubscribeMessageResult,
     ISystemInfo,
     IUpdateManager,
     IUserCloudStorageResult,
@@ -555,18 +552,6 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
         if (callback) this.tt.offNetworkStatusChange(callback as any);
     }
 
-    getScreenBrightness(): Promise<number> {
-        return this.promisify<{ value: number }>(
-            this.tt.getScreenBrightness.bind(this.tt)
-        ).then((res) => res.value);
-    }
-
-    setScreenBrightness(value: number): Promise<void> {
-        return this.promisify<void>(this.tt.setScreenBrightness.bind(this.tt), { value }).then(
-            () => undefined
-        );
-    }
-
     setKeepScreenOn(keepScreenOn: boolean): Promise<void> {
         return this.promisify<void>(this.tt.setKeepScreenOn.bind(this.tt), {
             keepScreenOn,
@@ -627,17 +612,6 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 订阅消息 ==========
-
-    requestSubscribeMessage(tmplIds: string[]): Promise<ISubscribeMessageResult> {
-        return this.promisify<ISubscribeMessageResult>(
-            this.tt.requestSubscribeMessage.bind(this.tt),
-            { tmplIds }
-        );
-    }
-
-    //#endregion
-
     //#region ========== 隐私合规 ==========
 
     getPrivacySetting(): Promise<IPrivacySetting> {
@@ -677,23 +651,7 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 视频号 ==========
-
-    openChannelsUserProfile(_option: IChannelsOption): Promise<void> {
-        return this.reject('openChannelsUserProfile');
-    }
-
-    openChannelsLive(_option: IChannelsOption): Promise<void> {
-        return this.reject('openChannelsLive');
-    }
-
-    openChannelsVideo(_option: IChannelsOption): Promise<void> {
-        return this.reject('openChannelsVideo');
-    }
-
-    //#endregion
-
-    //#region ========== 更新、子包、录屏、日志 ==========
+    //#region ========== 更新、子包、录屏 ==========
 
     getUpdateManager(): IUpdateManager | null {
         const fn = this.tt.getUpdateManager;
@@ -747,25 +705,6 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
         }
         catch (e) {
             console.error('[DouYinSdk] getGameRecorderManager 失败', e);
-            return null;
-        }
-    }
-
-    getRealtimeLogManager(): IRealtimeLogManager | null {
-        const fn = this.tt.getRealtimeLogManager;
-        if (typeof fn !== 'function') return null;
-        try {
-            const m = fn();
-            return {
-                info: (...args) => m.info(...args),
-                warn: (...args) => m.warn(...args),
-                error: (...args) => m.error(...args),
-                debug: (...args) => m.debug?.(...args),
-                setFilterMsg: (msg) => m.setFilterMsg(msg),
-                addFilterMsg: (msg) => m.addFilterMsg(msg),
-            };
-        }
-        catch {
             return null;
         }
     }

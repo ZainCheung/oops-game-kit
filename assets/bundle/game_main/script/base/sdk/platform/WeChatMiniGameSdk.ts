@@ -3,7 +3,6 @@ import type {
     IAdError,
     IBannerAd,
     IBannerAdOption,
-    IChannelsOption,
     ICustomAd,
     ICustomAdOption,
     ICustomerServiceConversationOption,
@@ -21,14 +20,10 @@ import type {
     IPayOption,
     IPayResult,
     IPrivacySetting,
-    IRealtimeLogManager,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
-    ISceneOption,
-    ISceneResult,
     IShareOption,
     IShareToTimelineOption,
-    ISubscribeMessageResult,
     ISystemInfo,
     IUpdateManager,
     IUserCloudStorageResult,
@@ -62,14 +57,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     constructor() {
         super(SdkPlatform.WeChatMiniGame);
         // 延迟注册隐私监听器，确保在游戏层之后执行
-        setTimeout(() => {
-            this._initPrivacyListener();
-        }, 0);
-    }
-
-    /** 是否在微信小游戏环境 */
-    static isAvailable(): boolean {
-        return typeof wx !== 'undefined';
+        this._initPrivacyListener();
     }
 
     //#region ========== 内部辅助 ==========
@@ -96,28 +84,23 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#region ========== 平台与生命周期 ==========
 
-    getSystemInfo(): Promise<ISystemInfo> {
-        try {
-            const deviceInfo = wx.getDeviceInfo();
-            const windowInfo = wx.getWindowInfo();
-            const appBaseInfo = wx.getAppBaseInfo();
-            return Promise.resolve({
-                brand: deviceInfo.brand,
-                model: deviceInfo.model,
-                platform: SdkPlatform.WeChatMiniGame,
-                system: deviceInfo.system,
-                version: appBaseInfo.version,
-                screenWidth: windowInfo.screenWidth,
-                screenHeight: windowInfo.screenHeight,
-                pixelRatio: windowInfo.pixelRatio,
-                language: 'zh', // 新 API 不包含 language 字段，使用默认值
-                SDKVersion: appBaseInfo.SDKVersion,
-                raw: { deviceInfo, windowInfo, appBaseInfo },
-            });
-        }
-        catch (e) {
-            return Promise.reject(e);
-        }
+    async getSystemInfo(): Promise<ISystemInfo> {
+        const deviceInfo = wx.getDeviceInfo();
+        const windowInfo = wx.getWindowInfo();
+        const appBaseInfo = wx.getAppBaseInfo();
+        return {
+            brand: deviceInfo.brand,
+            model: deviceInfo.model,
+            platform: SdkPlatform.WeChatMiniGame,
+            system: deviceInfo.system,
+            version: appBaseInfo.version,
+            screenWidth: windowInfo.screenWidth,
+            screenHeight: windowInfo.screenHeight,
+            pixelRatio: windowInfo.pixelRatio,
+            language: 'zh', // 新 API 不包含 language 字段，使用默认值
+            SDKVersion: appBaseInfo.SDKVersion,
+            raw: { deviceInfo, windowInfo, appBaseInfo },
+        };
     }
 
     getLaunchOptions(): ILaunchOptions {
@@ -219,10 +202,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
             const safeResolve = (result: IUserInfoResult) => {
                 if (resolved) return;
                 resolved = true;
-                try {
-                    if (userInfoBtn) userInfoBtn.destroy();
-                }
-                catch { /* ignore */ }
+                if (userInfoBtn) userInfoBtn.destroy();
                 resolve(result);
             };
 
@@ -1169,18 +1149,6 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         if (callback) (wx as any).offNetworkStatusChange(callback as any);
     }
 
-    getScreenBrightness(): Promise<number> {
-        return this.promisify<{ value: number }>(wx.getScreenBrightness.bind(wx)).then(
-            (res) => res.value
-        );
-    }
-
-    setScreenBrightness(value: number): Promise<void> {
-        return this.promisify<void>(wx.setScreenBrightness.bind(wx), { value }).then(
-            () => undefined
-        );
-    }
-
     setKeepScreenOn(keepScreenOn: boolean): Promise<void> {
         return this.promisify<void>(wx.setKeepScreenOn.bind(wx), { keepScreenOn }).then(
             () => undefined
@@ -1236,35 +1204,23 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 订阅消息 ==========
-
-    requestSubscribeMessage(tmplIds: string[]): Promise<ISubscribeMessageResult> {
-        return this.promisify<ISubscribeMessageResult>(
-            wx.requestSubscribeMessage.bind(wx),
-            { tmplIds }
-        );
-    }
-
-    //#endregion
-
     //#region ========== 隐私合规 ==========
 
     getPrivacySetting(): Promise<IPrivacySetting> {
+        const fn = (wx as any).getPrivacySetting;
+        if (typeof fn !== 'function') {
+            return Promise.resolve({ needAuthorization: false });
+        }
         return new Promise((resolve) => {
-            try {
-                wx.getPrivacySetting({
-                    success: (res: any) =>
-                        resolve({
-                            needAuthorization: res.needAuthorization,
-                            privacyContractName: res.privacyContractName,
-                            raw: res,
-                        }),
-                    fail: () => resolve({ needAuthorization: false }),
-                });
-            }
-            catch {
-                resolve({ needAuthorization: false });
-            }
+            fn({
+                success: (res: any) =>
+                    resolve({
+                        needAuthorization: res.needAuthorization,
+                        privacyContractName: res.privacyContractName,
+                        raw: res,
+                    }),
+                fail: () => resolve({ needAuthorization: false }),
+            });
         });
     }
 
@@ -1349,44 +1305,18 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 视频号 ==========
-
-    openChannelsUserProfile(option: IChannelsOption): Promise<void> {
-        const fn = (wx as any).openChannelsUserProfile;
-        if (typeof fn !== 'function') return this.reject('openChannelsUserProfile');
-        return this.promisify<void>(fn.bind(wx), option).then(() => undefined);
-    }
-
-    openChannelsLive(option: IChannelsOption): Promise<void> {
-        const fn = (wx as any).openChannelsLive;
-        if (typeof fn !== 'function') return this.reject('openChannelsLive');
-        return this.promisify<void>(fn.bind(wx), option).then(() => undefined);
-    }
-
-    openChannelsVideo(option: IChannelsOption): Promise<void> {
-        const fn = (wx as any).openChannelsVideo;
-        if (typeof fn !== 'function') return this.reject('openChannelsVideo');
-        return this.promisify<void>(fn.bind(wx), option).then(() => undefined);
-    }
-
-    //#endregion
-
-    //#region ========== 更新、子包、录屏、日志 ==========
+    //#region ========== 更新、子包、录屏 ==========
 
     getUpdateManager(): IUpdateManager | null {
-        try {
-            const m = wx.getUpdateManager();
-            return {
-                onCheckForUpdate: (cb) => m.onCheckForUpdate(cb as any),
-                onUpdateReady: (cb) => m.onUpdateReady(cb),
-                onUpdateFailed: (cb) => m.onUpdateFailed(cb),
-                applyUpdate: () => m.applyUpdate(),
-            };
-        }
-        catch (e) {
-            console.error('[WeChatSdk] getUpdateManager 失败', e);
-            return null;
-        }
+        const fn = (wx as any).getUpdateManager;
+        if (typeof fn !== 'function') return null;
+        const m = fn();
+        return {
+            onCheckForUpdate: (cb) => m.onCheckForUpdate(cb as any),
+            onUpdateReady: (cb) => m.onUpdateReady(cb),
+            onUpdateFailed: (cb) => m.onUpdateFailed(cb),
+            applyUpdate: () => m.applyUpdate(),
+        };
     }
 
     loadSubpackage(name: string): Promise<void> {
@@ -1406,52 +1336,16 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
             this.notSupported('getGameRecorderManager');
             return null;
         }
-        try {
-            const m = fn();
-            return {
-                start: (opt) => m.start(opt ?? {}),
-                stop: () => m.stop(),
-                pause: () => m.pause(),
-                resume: () => m.resume(),
-                onStart: (cb) => (m.onStart ? m.onStart(cb) : undefined),
-                onStop: (cb) => (m.onStop ? m.onStop(cb) : undefined),
-                onError: (cb) => (m.onError ? m.onError((err: any) => cb(this.mapAdError(err))) : undefined),
-            };
-        }
-        catch (e) {
-            console.error('[WeChatSdk] getGameRecorderManager 失败', e);
-            return null;
-        }
-    }
-
-    getRealtimeLogManager(): IRealtimeLogManager | null {
-        try {
-            const m = wx.getRealtimeLogManager();
-            return {
-                info: (...args) => m.info(...args),
-                warn: (...args) => m.warn(...args),
-                error: (...args) => m.error(...args),
-                debug: (...args) => (m as any).debug?.(...args),
-                setFilterMsg: (msg) => m.setFilterMsg(msg),
-                addFilterMsg: (msg) => m.addFilterMsg(msg),
-            };
-        }
-        catch {
-            return null;
-        }
-    }
-
-    //#endregion
-
-    //#region ========== 抖音侧边栏场景 ==========
-
-    checkScene(_option: ISceneOption): Promise<ISceneResult> {
-        // 微信不支持抖音侧边栏场景
-        return this.reject<ISceneResult>('checkScene');
-    }
-
-    navigateToScene(_option: ISceneOption): Promise<ISceneResult> {
-        return this.reject<ISceneResult>('navigateToScene');
+        const m = fn();
+        return {
+            start: (opt) => m.start(opt ?? {}),
+            stop: () => m.stop(),
+            pause: () => m.pause(),
+            resume: () => m.resume(),
+            onStart: (cb) => (m.onStart ? m.onStart(cb) : undefined),
+            onStop: (cb) => (m.onStop ? m.onStop(cb) : undefined),
+            onError: (cb) => (m.onError ? m.onError((err: any) => cb(this.mapAdError(err))) : undefined),
+        };
     }
 
     //#endregion
@@ -1459,12 +1353,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     //#region ========== 能力检测 ==========
 
     canIUse(apiName: string): boolean {
-        try {
-            return (wx as any).canIUse(apiName);
-        }
-        catch {
-            return false;
-        }
+        const fn = (wx as any).canIUse;
+        return typeof fn === 'function' ? fn(apiName) : false;
     }
 
     isReady(): boolean {
