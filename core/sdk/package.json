@@ -1,5 +1,5 @@
 {
-    "name": "oops-sdk-bundle",
+    "name": "oops-sdk",
     "version": "1.0.0",
     "description": "Oops Framework SDK 模块打包工程，将 src/sdk 目录编译为单一 JS（d.ts 手动维护）",
     "private": true,
