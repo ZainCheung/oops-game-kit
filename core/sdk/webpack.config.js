@@ -81,7 +81,7 @@ module.exports = (env, argv) => {
                             join_vars: true,      // 合并变量声明
                         },
                         mangle: {
-                            // 安全混淆：只混淆局部变量名，不碰类名/函数名/顶层变量
+                            // 保留类名和函数名，方便生产环境报错调试
                             toplevel: false,
                             keep_classnames: true,
                             keep_fnames: true,
