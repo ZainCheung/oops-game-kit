@@ -39,7 +39,6 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         const uiNode = await gsm.account.B_Account_ViewUI.openLogin();
         if (!uiNode) {
             console.error('【登录流程】打开登录界面失败');
-            this.finish(await this.fetchUserInfo(), true);
             return;
         }
 
@@ -49,8 +48,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             btn.on(NodeEventType.TOUCH_END, () => this.handleEnterClick());
         }
         else {
-            console.warn('【登录流程】找不到 btnRequestSdkUserInfo 节点');
-            this.finish(await this.fetchUserInfo(), true);
+            console.error('【登录流程】找不到 btnRequestSdkUserInfo 节点');
         }
     }
 
