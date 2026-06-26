@@ -1,4 +1,4 @@
-import type { IShareOption } from '../sdk/SdkTypes';
+import type { IShareOption } from '../../libs/sdk.js';
 
 /** Share模块事件枚举 */
 export enum ShareEventName {

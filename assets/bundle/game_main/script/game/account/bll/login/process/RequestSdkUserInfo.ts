@@ -1,5 +1,5 @@
 import { find, NodeEventType } from 'cc';
-import { IUserInfo, IUserInfoResult } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
+import { IUserInfo, IUserInfoResult } from '../../../../../libs/sdk.js';
 import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
