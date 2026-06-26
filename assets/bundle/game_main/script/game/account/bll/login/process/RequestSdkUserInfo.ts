@@ -31,6 +31,52 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         super(LoginProcessType.SdkUserInfo);
     }
 
+    /**
+     * 初始化微信隐私授权监听器（必须在游戏启动时调用一次）
+     *
+     * 做两件事：
+     *  1. 覆盖 SDK 默认的 wx.onNeedPrivacyAuthorization 监听器
+     *     SDK 默认用 showModal 半原生框，必须用我们自己的 handler 覆盖
+     *     覆盖式注册：最后一次生效，所以必须在 SDK 之后调
+     *  2. 主动拉一次 wx.requirePrivacyAuthorize，触发隐私监听器
+     *     （新用户：弹自定义弹窗；老用户：直接 success）
+     *
+     * 用 setTimeout 替代 scheduleOnce，因为本类不是 Component
+     */
+    static initPrivacyAuthorization(): void {
+        if (typeof wx === 'undefined') {
+            return;
+        }
+
+        // 1. 覆盖 wx.onNeedPrivacyAuthorization（用我们的自定义弹窗）
+        const registerPrivacy = () => {
+            if (typeof wx.onNeedPrivacyAuthorization === 'function') {
+                wx.onNeedPrivacyAuthorization((resolveFn: any, eventInfo: any) => {
+                    const contractName = eventInfo?.contractName || '用户隐私协议';
+                    console.log(`【Main】SDK 触发隐私授权，协议名: ${contractName}`);
+                    // 弹我们的自定义弹窗 VC_Account_Login
+                    RequestSdkUserInfo.showPrivacyDialog(contractName, resolveFn, eventInfo);
+                });
+                console.log('【Main】已覆盖 wx.onNeedPrivacyAuthorization（自定义弹窗版）');
+            }
+        };
+
+        // 等 SDK 初始化完成后再覆盖（必须在 SDK 之后）
+        // 用 setTimeout 延迟到下一帧，确保 SDK 注册完
+        setTimeout(registerPrivacy, 0);
+
+        // 2. 主动拉一次 wx.requirePrivacyAuthorize，触发隐私监听器
+        setTimeout(() => {
+            if (typeof wx.requirePrivacyAuthorize === 'function') {
+                wx.requirePrivacyAuthorize({
+                    success: () => console.log('【Main】wx.requirePrivacyAuthorize: 用户已同意隐私'),
+                    fail: () => console.log('【Main】wx.requirePrivacyAuthorize: 用户拒绝隐私'),
+                    complete: () => { /* ignore */ },
+                });
+            }
+        }, 300);
+    }
+
     protected async execute() {
         const label = '【登录流程】获取用户头像';
         console.time(label);
@@ -320,3 +366,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         this.success();
     }
 }
+
+// 模块加载时自动初始化微信隐私授权监听器
+// ES Module 特性：模块只执行一次，保证 initPrivacyAuthorization 只调用一次
+// 加载时机：本模块被 B_Account_Login.ts import 时触发（即 gsm.account 创建时）
+RequestSdkUserInfo.initPrivacyAuthorization();
