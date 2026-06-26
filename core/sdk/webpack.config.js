@@ -12,7 +12,7 @@ const TerserPlugin = require('terser-webpack-plugin');
  * 2. `wx` / `tt` 为平台全局变量，运行时注入，无需打包。
  * 3. 入口 src/index.ts 导出对外公开的类、接口与枚举。
  * 4. 输出格式为 ES Module，与 Cocos Creator 3.x 脚本系统兼容。
- * 5. Production 模式下启用代码混淆和压缩。
+ * 5. Production 模式下只压缩（去空格、注释、换行），不混淆。
  */
 module.exports = (env, argv) => {
     const isProduction = argv.mode === 'production';
@@ -69,19 +69,26 @@ module.exports = (env, argv) => {
                 new TerserPlugin({
                     terserOptions: {
                         compress: {
-                            drop_console: true, // 移除所有 console 语句
-                            drop_debugger: true, // 移除 debugger 语句
-                            passes: 2, // 压缩次数，多次压缩可以获得更小的体积
+                            drop_console: true,
+                            drop_debugger: true,
+                            // 安全压缩：只启用不影响运行时行为的基本优化
+                            sequences: true,      // 合并连续语句
+                            dead_code: true,      // 移除死代码
+                            conditionals: true,   // 优化 if 条件
+                            booleans: true,       // 优化布尔表达式
+                            unused: true,         // 移除未使用变量
+                            if_return: true,      // 优化 if-return 模式
+                            join_vars: true,      // 合并变量声明
                         },
                         mangle: {
-                            toplevel: true, // 混淆顶层作用域的变量名和函数名
-                            // 注意：如果代码中有使用字符串访问属性（如 obj['methodName']），
-                            // 开启 properties 混淆会导致运行时错误
-                            // properties: true, // 混淆属性名（谨慎使用）
+                            // 安全混淆：只混淆局部变量名，不碰类名/函数名/顶层变量
+                            toplevel: false,
+                            keep_classnames: true,
+                            keep_fnames: true,
                         },
                         format: {
-                            comments: false, // 移除所有注释
-                            beautify: false, // 不美化输出（压缩成一行）
+                            comments: false,
+                            beautify: false,
                         },
                     }
                 })
