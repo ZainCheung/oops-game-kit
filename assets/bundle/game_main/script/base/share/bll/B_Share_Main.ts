@@ -22,33 +22,13 @@ export class B_Share_Main extends CCBusiness<Share> {
             ShareEventName.CanShareTimeline
         );
 
-        // ========== 2026-06-25 新增:开启右上角分享菜单(走 ISdk 接口,保持复用性) ==========
-        // 坑:this.sdk getter 走 gsm.base.sdk,而 gsm.base 此时还没赋值(Base 构造中)
-        // 解:用 Sdk.instance 单例,绕过 gsm.base 链路,直接拿到 ISdk 实例。
-        // 这样业务层后续用 sdk.shareAppMessage / sdk.shareToTimeline 也能正常跑。
+        // 设计原则（Readme.md）：通用逻辑，零硬编码常量
+        // 只在 SDK 不可用时跳过；分享菜单由业务层 ShareAssets.registerAll() 注册
+        // 分享内容（imageUrl / title 等）由业务层 ShareAssets.ts 提供
+        // B_Share_Main 不预设任何游戏专属数据
         setTimeout(() => {
-            try {
-                if (!this.sdk) {
-                    console.warn('[Share] sdk 不可用,跳过菜单注册');
-                    return;
-                }
-                console.log('[Share] 注册 showShareMenu + onShareAppMessage ====== 2026-06-25 版本 ======');
-                this.sdk.showShareMenu({
-                    withShareTicket: false,
-                    menus: ['shareAppMessage', 'shareTimeline'],
-                });
-                this.sdk.onShareAppMessage(() => {
-                    return {
-                        title: '一起来玩!',
-                        // 自定义分享卡封面图(必须是公网可访问的 PNG/JPG,微信会下载后当卡片图)
-                        // 注意:Telegram 图床可能不稳定,正式上线建议换成自己的 OSS/COS
-                        imageUrl: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWERBqPPiU_5bT6fNXX9bA5WlPcOTAlwAChCwAAoQQ6VXdWZitGoNuCTwE.png',
-                    };
-                });
-                console.log('[Share] 右上角分享菜单已开启');
-            }
-            catch (e) {
-                console.warn('[Share] 注册分享菜单失败', e);
+            if (!this.sdk) {
+                console.warn('[Share] sdk 不可用，跳过初始化');
             }
         }, 0);
     }
