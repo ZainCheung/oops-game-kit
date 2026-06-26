@@ -203,7 +203,7 @@ module.exports = [
       'no-fallthrough': 'off',
       'no-useless-escape': 'warn',
       'no-control-regex': 'off',
-      'no-mixed-spaces-and-tabs': 'error',
+      'no-mixed-spaces-and-tabs': 'off',
       'no-unreachable': 'error',
       'no-prototype-builtins': 'off',
       'no-undef': 'off'
