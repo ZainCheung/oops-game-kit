@@ -1,9 +1,9 @@
 import { find, NodeEventType } from 'cc';
-import { IUserInfo } from '../../../../../libs/sdk.js';
 import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
 import { oops } from 'db://oops-framework/core/Oops.js';
+import { IUserInfo } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
 
 /**
  * 登录流程 —— 获取用户头像/昵称
