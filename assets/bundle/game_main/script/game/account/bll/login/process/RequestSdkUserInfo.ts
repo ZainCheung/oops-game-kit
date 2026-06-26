@@ -182,11 +182,12 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
     /**
      * 处理"同意 + 拿昵称头像"按钮
-     * 流程：调 sdk.getUserProfile 弹 1 次原生框拿真昵称头像
+     * 流程：调 sdk.getUserProfile 拿昵称头像（微信弹原生框，抖音静默授权）
      */
     private async handleRequestClick(): Promise<void> {
-        // 微信规定：拿昵称头像必须用 getUserProfile 或 createUserInfoButton
-        // 这俩 API 都会弹 1 次原生框（不可避免）
+        // 统一入口：sdk.getUserProfile
+        // - 微信：弹 1 次原生框拿真昵称头像
+        // - 抖音：静默授权，不弹框
         try {
             const res = await gsm.base.sdk.platform.getUserProfile({
                 desc: '用于在游戏中展示你的身份信息',

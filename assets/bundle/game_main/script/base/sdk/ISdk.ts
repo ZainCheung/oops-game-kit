@@ -26,7 +26,6 @@ import type {
     ISystemInfo,
     IUpdateManager,
     IUserCloudStorageResult,
-    IUserInfoButton,
     IUserInfoResult,
     IBannerAd,
     IBannerAdOption,
@@ -81,29 +80,12 @@ export interface ISdk {
     /** 校验登录态是否过期 */
     checkSession(): Promise<boolean>;
 
-    /** 获取用户信息 */
-    getUserInfo(option?: {
-        lang?: 'en' | 'zh_CN' | 'zh_TW';
-        withCredentials?: boolean;
-    }): Promise<IUserInfoResult>;
-
     /**
-     * 创建用户信息按钮（带授权）。
-     * @returns 平台无关的按钮对象；平台不支持时返回 null
-     */
-    createUserInfoButton(option: {
-        type?: 'text' | 'image';
-        text?: string;
-        image?: string;
-        style?: { left: number; top: number; width: number; height: number; [k: string]: any };
-        lang?: 'en' | 'zh_CN' | 'zh_TW';
-        withCredentials?: boolean;
-    }): IUserInfoButton | null;
-
-    /**
-     * 获取用户信息（弹 1 次原生框拿真昵称头像）
-     * 微信对应 wx.getUserProfile，必须由用户交互触发。
-     * @param option.desc 用途说明（展示给用户）
+     * 获取用户信息（统一入口，各平台实现差异由 SDK 内部处理）
+     * - 微信：弹 1 次原生框拿真昵称头像（wx.getUserProfile）
+     * - 抖音：静默授权（tt.getUserInfo）
+     * - H5/编辑器：返回模拟数据
+     * @param option.desc 用途说明（展示给用户，仅微信会显示）
      */
     getUserProfile(option: { desc: string; lang?: 'en' | 'zh_CN' | 'zh_TW' }): Promise<IUserInfoResult>;
 

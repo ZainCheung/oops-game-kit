@@ -79,22 +79,6 @@ export interface IUserInfoResult {
 }
 
 /**
- * 用户信息按钮（创建后由平台返回，统一接口）
- */
-export interface IUserInfoButton {
-    /** 显示按钮 */
-    show(): void;
-    /** 隐藏按钮 */
-    hide(): void;
-    /** 销毁按钮 */
-    destroy(): void;
-    /** 监听用户点击事件 */
-    onTap(callback: (res: IUserInfoResult) => void): void;
-    /** 取消监听用户点击事件 */
-    offTap(callback?: (res: IUserInfoResult) => void): void;
-}
-
-/**
  * 启动参数
  */
 export interface ILaunchOptions {

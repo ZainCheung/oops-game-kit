@@ -29,7 +29,6 @@ import type {
     ISystemInfo,
     IUpdateManager,
     IUserCloudStorageResult,
-    IUserInfoButton,
     IUserInfoResult,
 } from '../SdkTypes';
 import { ISdk } from '../ISdk';
@@ -185,13 +184,15 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
             .catch(() => false);
     }
 
-    getUserInfo(option?: {
-        lang?: 'en' | 'zh_CN' | 'zh_TW';
-        withCredentials?: boolean;
-    }): Promise<IUserInfoResult> {
+    /**
+     * 获取用户信息（静默授权，不弹原生框）
+     * 抖音对应 tt.getUserInfo，用户进入游戏时已同意授权。
+     * option.desc 仅用于统一签名，抖音不会展示给用户。
+     */
+    getUserProfile(option: { desc: string; lang?: 'en' | 'zh_CN' | 'zh_TW' }): Promise<IUserInfoResult> {
         return this.promisify<any>(this.tt.getUserInfo.bind(this.tt), {
-            lang: option?.lang ?? 'zh_CN',
-            withCredentials: option?.withCredentials ?? false,
+            lang: option.lang ?? 'zh_CN',
+            withCredentials: false,
         }).then((res) => ({
             userInfo: {
                 nickName: res.userInfo?.nickName,
@@ -208,73 +209,6 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
             encryptedData: res.encryptedData,
             iv: res.iv,
         }));
-    }
-
-    createUserInfoButton(option: {
-        type?: 'text' | 'image';
-        text?: string;
-        image?: string;
-        style?: { left: number; top: number; width: number; height: number; [k: string]: any };
-        lang?: 'en' | 'zh_CN' | 'zh_TW';
-        withCredentials?: boolean;
-    }): IUserInfoButton | null {
-        try {
-            const btn = this.tt.createUserInfoButton({
-                type: option.type ?? 'text',
-                text: option.text,
-                image: option.image,
-                style: option.style as any,
-                lang: option.lang ?? 'zh_CN',
-                withCredentials: option.withCredentials ?? false,
-            });
-
-            const listeners = new Map<(res: IUserInfoResult) => void, (res: any) => void>();
-
-            return {
-                show: () => btn.show(),
-                hide: () => btn.hide(),
-                destroy: () => {
-                    listeners.clear();
-                    btn.destroy();
-                },
-                onTap: (callback) => {
-                    const wrapped = (res: any) => {
-                        const info = res?.userInfo;
-                        if (!info) {
-                            callback({ userInfo: undefined });
-                            return;
-                        }
-                        callback({
-                            userInfo: {
-                                nickName: info.nickName,
-                                avatarUrl: info.avatarUrl,
-                                gender: info.gender,
-                                language: info.language,
-                                raw: info,
-                            },
-                            rawData: res.rawData,
-                            signature: res.signature,
-                            encryptedData: res.encryptedData,
-                            iv: res.iv,
-                        });
-                    };
-                    listeners.set(callback, wrapped);
-                    btn.onTap(wrapped);
-                },
-                offTap: (callback) => {
-                    if (!callback) return;
-                    const wrapped = listeners.get(callback);
-                    if (wrapped) {
-                        btn.offTap(wrapped);
-                        listeners.delete(callback);
-                    }
-                },
-            };
-        }
-        catch (e) {
-            console.error('[DouYinSdk] createUserInfoButton 失败', e);
-            return null;
-        }
     }
 
     //#endregion
