@@ -193,22 +193,27 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
         return this.promisify<any>(this.tt.getUserInfo.bind(this.tt), {
             lang: option.lang ?? 'zh_CN',
             withCredentials: false,
-        }).then((res) => ({
-            userInfo: {
-                nickName: res.userInfo?.nickName,
-                avatarUrl: res.userInfo?.avatarUrl,
-                gender: res.userInfo?.gender,
-                language: res.userInfo?.language,
-                country: res.userInfo?.country,
-                province: res.userInfo?.province,
-                city: res.userInfo?.city,
-                raw: res.userInfo,
-            },
-            rawData: res.rawData,
-            signature: res.signature,
-            encryptedData: res.encryptedData,
-            iv: res.iv,
-        }));
+        })
+            .then((res) => ({
+                userInfo: {
+                    nickName: res.userInfo?.nickName || 'Player',
+                    avatarUrl: res.userInfo?.avatarUrl || '',
+                    gender: res.userInfo?.gender ?? 0,
+                    language: res.userInfo?.language,
+                    country: res.userInfo?.country,
+                    province: res.userInfo?.province,
+                    city: res.userInfo?.city,
+                    raw: res.userInfo,
+                },
+                rawData: res.rawData,
+                signature: res.signature,
+                encryptedData: res.encryptedData,
+                iv: res.iv,
+            }))
+            .catch((err) => {
+                console.warn('[DouYinSdk] getUserProfile 失败，返回默认用户信息:', err);
+                return { userInfo: { nickName: 'Player', avatarUrl: '', gender: 0 } };
+            });
     }
 
     //#endregion

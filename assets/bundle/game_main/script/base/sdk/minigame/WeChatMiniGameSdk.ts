@@ -160,8 +160,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     getUserProfile(option: { desc: string; lang?: 'en' | 'zh_CN' | 'zh_TW' }): Promise<IUserInfoResult> {
         const fn = (wx as any).getUserProfile;
         if (typeof fn !== 'function') {
-            console.warn('[WeChatSdk] getUserProfile 不可用');
-            return Promise.resolve({ userInfo: undefined });
+            console.warn('[WeChatSdk] getUserProfile 不可用，返回默认用户信息');
+            return Promise.resolve({ userInfo: { nickName: 'Player', avatarUrl: '', gender: 0 } });
         }
         return new Promise<IUserInfoResult>((resolve) => {
             fn({
@@ -181,7 +181,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                                     city: info.city,
                                     raw: info,
                                 }
-                            : undefined,
+                            : { nickName: 'Player', avatarUrl: '', gender: 0 },
                         rawData: res.rawData,
                         signature: res.signature,
                         encryptedData: res.encryptedData,
@@ -191,7 +191,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 },
                 fail: (err: any) => {
                     console.warn('[WeChatSdk] getUserProfile 失败/取消:', err);
-                    resolve({ userInfo: undefined });
+                    resolve({ userInfo: { nickName: 'Player', avatarUrl: '', gender: 0 } });
                 },
             });
         });
