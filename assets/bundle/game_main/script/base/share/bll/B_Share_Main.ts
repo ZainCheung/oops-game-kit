@@ -21,16 +21,6 @@ export class B_Share_Main extends CCBusiness<Share> {
             ShareEventName.HideShareMenu,
             ShareEventName.CanShareTimeline
         );
-
-        // 设计原则（Readme.md）：通用逻辑，零硬编码常量
-        // 只在 SDK 不可用时跳过；分享菜单由业务层 ShareAssets.registerAll() 注册
-        // 分享内容（imageUrl / title 等）由业务层 ShareAssets.ts 提供
-        // B_Share_Main 不预设任何游戏专属数据
-        setTimeout(() => {
-            if (!this.sdk) {
-                console.warn('[Share] sdk 不可用，跳过初始化');
-            }
-        }, 0);
     }
 
     /** 获取SDK实例 */

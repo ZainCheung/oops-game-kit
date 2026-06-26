@@ -1,5 +1,5 @@
 import { find, NodeEventType } from 'cc';
-import { IUserInfo, IUserInfoResult } from '../../../../../libs/sdk.js';
+import { IUserInfo } from '../../../../../libs/sdk.js';
 import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
@@ -53,7 +53,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
             // 2. 绑定三个按钮
             this.bindButtons(uiNode);
-        } catch (err) {
+        }
+        catch (err) {
             console.timeEnd(label);
             console.error('【登录流程】获取用户头像失败', err);
             this.applyDefaultAndFinish();
@@ -71,7 +72,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     gender: raw.gender ?? 0,
                 };
             }
-        } catch (e) {
+        }
+        catch (e) {
             console.warn('【登录流程】读缓存失败:', e);
         }
         return null;
@@ -82,7 +84,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         try {
             wx?.setStorageSync?.(CACHE_KEY, userInfo);
             console.log('【登录流程】用户信息已写入本地缓存:', userInfo.nickName);
-        } catch (e) {
+        }
+        catch (e) {
             console.warn('【登录流程】写缓存失败:', e);
         }
     }
@@ -101,7 +104,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 console.log('【登录流程】玩家点 btnRequestSdkUserInfo（同意 + 拿昵称头像）');
                 this.handleRequestClick();
             });
-        } else {
+        }
+        else {
             console.warn('【登录流程】找不到 btnRequestSdkUserInfo 节点');
         }
 
@@ -112,7 +116,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 console.log('【登录流程】玩家点 btnPrimarily（仅同意，不拿昵称，零原生框）');
                 this.handlePrimarilyClick();
             });
-        } else {
+        }
+        else {
             console.warn('【登录流程】找不到 btnPrimarily 节点');
         }
 
@@ -155,7 +160,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     console.log('【登录流程】wx.getUserProfile 成功:', res?.userInfo?.nickName);
                     if (res?.userInfo) {
                         this.applyAndFinish(res.userInfo);
-                    } else {
+                    }
+                    else {
                         this.applyDefaultAndFinish();
                     }
                 },
@@ -164,7 +170,8 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     this.applyDefaultAndFinish();
                 },
             });
-        } else {
+        }
+        else {
             console.warn('【登录流程】wx.getUserProfile 不可用，使用默认');
             this.applyDefaultAndFinish();
         }
@@ -187,7 +194,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      *  - btnPrimarily          → resolveFn({ event: 'agree' })
      *  - btnRejectSdkUserInfo  → resolveFn({ event: 'disagree' })
      */
-    public static showPrivacyDialog(
+    static showPrivacyDialog(
         contractName: string,
         resolveFn: (res: { event: 'agree' | 'disagree' | 'exposureAuthorization' }) => void,
         eventInfo?: any
@@ -199,13 +206,19 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 const uiNode = await gsm.account.B_Account_ViewUI.openLogin();
                 if (!uiNode) {
                     console.error('【登录流程】打开 VC_Account_Login 失败，按拒绝处理');
-                    try { resolveFn({ event: 'disagree' }); } catch (e) { /* ignore */ }
+                    try {
+                        resolveFn({ event: 'disagree' });
+                    }
+                    catch (e) { /* ignore */ }
                     return;
                 }
 
                 // 上报曝光
                 console.log('【登录流程】弹窗已曝光，上报 exposureAuthorization');
-                try { resolveFn({ event: 'exposureAuthorization' }); } catch (e) { /* ignore */ }
+                try {
+                    resolveFn({ event: 'exposureAuthorization' });
+                }
+                catch (e) { /* ignore */ }
 
                 // btnRequestSdkUserInfo → agree
                 const btnRequest = find('btnRequestSdkUserInfo', uiNode);
@@ -213,12 +226,19 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     btnRequest.on(NodeEventType.TOUCH_END, () => {
                         console.log('【登录流程】玩家点 btnRequestSdkUserInfo，上报 agree');
                         gsm.account.B_Account_ViewUI.removeLogin();
-                        try { resolveFn({ event: 'agree' }); } catch (e) { /* ignore */ }
+                        try {
+                            resolveFn({ event: 'agree' });
+                        }
+                        catch (e) { /* ignore */ }
                     });
-                } else {
+                }
+                else {
                     console.warn('【登录流程】showPrivacyDialog: 找不到 btnRequestSdkUserInfo，按拒绝处理');
                     gsm.account.B_Account_ViewUI.removeLogin();
-                    try { resolveFn({ event: 'disagree' }); } catch (e) { /* ignore */ }
+                    try {
+                        resolveFn({ event: 'disagree' });
+                    }
+                    catch (e) { /* ignore */ }
                 }
 
                 // btnPrimarily → agree
@@ -227,7 +247,10 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     btnPrimarily.on(NodeEventType.TOUCH_END, () => {
                         console.log('【登录流程】玩家点 btnPrimarily，上报 agree');
                         gsm.account.B_Account_ViewUI.removeLogin();
-                        try { resolveFn({ event: 'agree' }); } catch (e) { /* ignore */ }
+                        try {
+                            resolveFn({ event: 'agree' });
+                        }
+                        catch (e) { /* ignore */ }
                     });
                 }
 
@@ -237,7 +260,10 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                     btnReject.on(NodeEventType.TOUCH_END, () => {
                         console.log('【登录流程】玩家点 btnRejectSdkUserInfo，上报 disagree');
                         gsm.account.B_Account_ViewUI.removeLogin();
-                        try { resolveFn({ event: 'disagree' }); } catch (e) { /* ignore */ }
+                        try {
+                            resolveFn({ event: 'disagree' });
+                        }
+                        catch (e) { /* ignore */ }
                     });
                 }
 
@@ -254,9 +280,13 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                         }
                     });
                 }
-            } catch (e) {
+            }
+            catch (e) {
                 console.error('【登录流程】showPrivacyDialog 处理异常，按拒绝处理:', e);
-                try { resolveFn({ event: 'disagree' }); } catch (e2) { /* ignore */ }
+                try {
+                    resolveFn({ event: 'disagree' });
+                }
+                catch (e2) { /* ignore */ }
             }
         })();
     }
@@ -286,9 +316,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             this.writeCache(gsm.base.sdk.userInfo);
         }
         console.log('【登录流程】用户信息已写入 gsm:', gsm.base.sdk.userInfo);
-        if (gsm.account.B_Account_ViewUI?.removeLogin) {
-            try { gsm.account.B_Account_ViewUI.removeLogin(); } catch {}
-        }
+        gsm.account.B_Account_ViewUI.removeLogin();
         this.success();
     }
 }

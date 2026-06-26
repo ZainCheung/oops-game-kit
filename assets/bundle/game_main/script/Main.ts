@@ -4,7 +4,7 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { Root } from 'db://oops-framework/core/Root';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { Base } from './base/Base';
-import { registerAll as registerShareAssets } from './base/share/ShareAssets';
+import { registerAll as registerShareAssets } from './game/demo/DemoMain';
 import { Account } from './game/account/Account';
 import { gsm } from './game/common/GameSingletonModule';
 import { Initialize } from './game/initialize/Initialize';
