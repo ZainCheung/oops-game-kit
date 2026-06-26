@@ -1,9 +1,9 @@
 import { find, NodeEventType } from 'cc';
+import { oops } from 'db://oops-framework/core/Oops';
+import { IUserInfo } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
 import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
-import { IUserInfo } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
-import { oops } from 'db://oops-framework/core/Oops';
 
 /**
  * 登录流程 —— 获取用户名
@@ -20,11 +20,6 @@ const CACHE_KEY = 'RequestSdkUserInfo_Cache';
 export class RequestSdkUserInfo extends LoginProcessBase {
     constructor() {
         super(LoginProcessType.SdkUserInfo);
-    }
-
-    /** 获取 SDK 接口（ISdk） */
-    private get sdk() {
-        return gsm.base.sdk.platform;
     }
 
     protected async execute() {
@@ -54,13 +49,12 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
     /** 点击按钮：调 SDK 获取用户名 */
     private async handleEnterClick(): Promise<void> {
-        gsm.account.B_Account_ViewUI.removeLogin();
         this.finish(await this.fetchUserInfo(), true);
     }
 
     /** 从 SDK 获取用户信息（SDK 保证总有返回，失败时由 SDK 返回兜底） */
     private async fetchUserInfo(): Promise<IUserInfo> {
-        const res = await this.sdk.getUserProfile({
+        const res = await gsm.base.sdk.platform.getUserProfile({
             desc: '用于在游戏中展示你的身份信息',
         });
         return res.userInfo!;
