@@ -92,6 +92,9 @@ export class DemoMain extends GameComponent {
         // 注册新手引导
         // this.event.emit(GuideEventName.AutoBind, { ui: this.node });
 
+        // 业务层：注册游戏专属的分享素材（按 Readme.md 原则，通用层零硬编码）
+        registerAll();
+
         // 显示红点（count=1）
         this.event.emit(RedDotEventName.Update, { key: 'Demo', count: 1 });
     }

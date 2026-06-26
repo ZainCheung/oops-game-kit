@@ -4,7 +4,6 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { Root } from 'db://oops-framework/core/Root';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { Base } from './base/Base';
-import { registerAll as registerShareAssets } from './game/demo/DemoMain';
 import { Account } from './game/account/Account';
 import { gsm } from './game/common/GameSingletonModule';
 import { Initialize } from './game/initialize/Initialize';
@@ -33,9 +32,6 @@ export class Main extends Root {
         gsm.base = new Base();
         gsm.account = ecs.getEntity(Account);
         gsm.initialize = ecs.getEntity(Initialize);
-
-        // 业务层：注册游戏专属的分享素材（按 Readme.md 原则，通用层零硬编码）
-        registerShareAssets();
 
         // 微信小游戏：进游戏第一时间覆盖 SDK 默认的 wx.onNeedPrivacyAuthorization 监听器
         // SDK 默认用 showModal 半原生框，必须用我们自己的 handler 覆盖
