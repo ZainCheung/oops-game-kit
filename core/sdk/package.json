@@ -9,6 +9,7 @@
     },
     "devDependencies": {
         "@types/node": "^20.11.0",
+        "terser-webpack-plugin": "^5.6.1",
         "ts-loader": "^9.5.1",
         "typescript": "^5.4.0",
         "webpack": "^5.90.0",
