@@ -1,9 +1,7 @@
 import { sys } from 'cc';
 import { SdkPlatform } from './SdkEnum';
 import { ISdk } from './ISdk';
-import { DefaultSdk } from './platform/DefaultSdk';
-import { DouYinMiniGameSdk } from './platform/DouYinMiniGameSdk';
-import { WeChatMiniGameSdk } from './platform/WeChatMiniGameSdk';
+import { DefaultSdk, WeChatMiniGameSdk, DouYinMiniGameSdk } from './minigame';
 
 /**
  * SDK 管理器

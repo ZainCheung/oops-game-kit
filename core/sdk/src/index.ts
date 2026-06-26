@@ -12,11 +12,8 @@
  * 类型声明：assets/bundle/game_main/script/libs/sdk.d.ts
  */
 
-// ===== 内部导入全部 SDK 源码（打包到 JS bundle）=====
-// SdkManager 内部会注册所有平台实现，需要确保都被引入
-import './sdk/platform/DefaultSdk';
-
 // ===== 对外公开（仅实际使用的定义）=====
+// Sdk 内部通过 SdkManager 自动导入所有平台实现（DefaultSdk / WeChatMiniGameSdk / DouYinMiniGameSdk）
 export { Sdk } from './sdk/Sdk';
 export type { ISdk } from './sdk/ISdk';
 export type {
