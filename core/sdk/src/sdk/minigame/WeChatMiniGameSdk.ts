@@ -1,4 +1,4 @@
-import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../SdkEnum';
+import { SdkNetworkType, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
     IBannerAd,
@@ -55,7 +55,7 @@ import { DefaultSdk } from './DefaultSdk';
  */
 export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     constructor() {
-        super(SdkPlatform.WeChatMiniGame);
+        super('WeChatMiniGame' as any);
         // 延迟注册隐私监听器，确保在游戏层之后执行
         this._initPrivacyListener();
     }
@@ -91,7 +91,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         return {
             brand: deviceInfo.brand,
             model: deviceInfo.model,
-            platform: SdkPlatform.WeChatMiniGame,
+            platform: 'WeChatMiniGame',
             system: deviceInfo.system,
             version: appBaseInfo.version,
             screenWidth: windowInfo.screenWidth,

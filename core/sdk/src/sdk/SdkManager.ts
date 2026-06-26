@@ -1,7 +1,6 @@
 import { sys } from 'cc';
-import { SdkPlatform } from './SdkEnum';
 import { ISdk } from './ISdk';
-import { DefaultSdk, WeChatMiniGameSdk, DouYinMiniGameSdk } from './minigame';
+import { DefaultSdk, DouYinMiniGameSdk, WeChatMiniGameSdk } from './minigame';
 
 /**
  * SDK 管理器
@@ -19,26 +18,27 @@ import { DefaultSdk, WeChatMiniGameSdk, DouYinMiniGameSdk } from './minigame';
  * 接入新平台：
  * ```ts
  * const manager = new SdkManager();
- * manager.register(SdkPlatform.DouYinMiniGame, () => new DouYinMiniGameSdk());
+ * manager.register(sys.Platform.BYTEDANCE_MINI_GAME, () => new DouYinMiniGameSdk());
  * ```
  */
 export class SdkManager {
     /** 已注册的平台工厂表 */
-    private factories = new Map<SdkPlatform, () => ISdk>();
+    private factories = new Map<sys.Platform, () => ISdk>();
     /** 单例缓存 */
-    private instances = new Map<SdkPlatform, ISdk>();
+    private instances = new Map<sys.Platform, ISdk>();
     /** 当前平台实现 */
     private _sdk: ISdk | null = null;
     /** 当前平台类型 */
-    private _platform: SdkPlatform = SdkPlatform.Unknown;
+    private _platform: sys.Platform = sys.Platform.EDITOR;
 
     constructor() {
         // 注册默认平台实现
-        this.register(SdkPlatform.WeChatMiniGame, () => new WeChatMiniGameSdk());
-        this.register(SdkPlatform.DouYinMiniGame, () => new DouYinMiniGameSdk());
+        this.register(sys.Platform.WECHAT_GAME, () => new WeChatMiniGameSdk());
+        this.register(sys.Platform.BYTEDANCE_MINI_GAME, () => new DouYinMiniGameSdk());
         // H5/未知平台使用 DefaultSdk
-        this.register(SdkPlatform.H5, () => new DefaultSdk(SdkPlatform.H5));
-        this.register(SdkPlatform.Unknown, () => new DefaultSdk(SdkPlatform.Unknown));
+        this.register(sys.Platform.MOBILE_BROWSER, () => new DefaultSdk(sys.Platform.MOBILE_BROWSER));
+        this.register(sys.Platform.DESKTOP_BROWSER, () => new DefaultSdk(sys.Platform.DESKTOP_BROWSER));
+        this.register(sys.Platform.EDITOR, () => new DefaultSdk(sys.Platform.EDITOR));
     }
 
     /**
@@ -46,7 +46,7 @@ export class SdkManager {
      * @param platform 平台类型
      * @param factory  工厂函数（返回该平台的 SDK 实例）
      */
-    register(platform: SdkPlatform, factory: () => ISdk): void {
+    register(platform: sys.Platform, factory: () => ISdk): void {
         this.factories.set(platform, factory);
         // 清掉旧的缓存实例，下次获取时用新工厂
         this.instances.delete(platform);
@@ -64,40 +64,8 @@ export class SdkManager {
      *
      * @returns 当前平台枚举
      */
-    detectPlatform(): SdkPlatform {
-        const p = sys.platform;
-        const P = sys.Platform;
-
-        // 小游戏平台
-        if (p === P.WECHAT_GAME) return SdkPlatform.WeChatMiniGame;
-        if (p === P.BYTEDANCE_MINI_GAME) return SdkPlatform.DouYinMiniGame;
-        if (p === P.OPPO_MINI_GAME) return SdkPlatform.OPPO;
-        if (p === P.VIVO_MINI_GAME) return SdkPlatform.Vivo;
-        if (p === P.XIAOMI_QUICK_GAME) return SdkPlatform.XiaoMi;
-        if (p === P.HUAWEI_QUICK_GAME) return SdkPlatform.Huawei;
-        if (p === P.ALIPAY_MINI_GAME) return SdkPlatform.Alipay;
-        if (p === P.OPENHARMONY) return SdkPlatform.OpenHarmony;
-        // 百度小游戏（部分版本支持）
-        if ((P as any).BAIDU_MINI_GAME && p === (P as any).BAIDU_MINI_GAME) {
-            return SdkPlatform.BaiDu;
-        }
-
-        // 浏览器（H5）
-        if (p === P.MOBILE_BROWSER || p === P.DESKTOP_BROWSER) return SdkPlatform.H5;
-
-        // 原生（WIN32/MACOS/ANDROID/IOS/OHOS）
-        if (
-            p === P.ANDROID ||
-            p === P.IOS ||
-            p === (P as any).WIN32 ||
-            p === (P as any).MACOS ||
-            p === (P as any).OHOS
-        ) {
-            return SdkPlatform.Native;
-        }
-
-        // 编辑器及其它未知环境（sys.Platform.EDIT 等）
-        return SdkPlatform.Unknown;
+    detectPlatform(): sys.Platform {
+        return sys.platform;
     }
 
     /**
@@ -114,11 +82,11 @@ export class SdkManager {
     /**
      * 获取/创建指定平台的 SDK 实例（单例）
      */
-    private getOrCreate(platform: SdkPlatform): ISdk {
+    private getOrCreate(platform: sys.Platform): ISdk {
         let instance = this.instances.get(platform);
         if (instance) return instance;
         const factory =
-            this.factories.get(platform) ?? this.factories.get(SdkPlatform.Unknown)!;
+            this.factories.get(platform) ?? this.factories.get(sys.Platform.EDITOR)!;
         instance = factory();
         this.instances.set(platform, instance);
         return instance;
@@ -134,7 +102,7 @@ export class SdkManager {
     }
 
     /** 当前平台枚举 */
-    get platform(): SdkPlatform {
+    get platform(): sys.Platform {
         if (!this._sdk) this.init();
         return this._platform;
     }
@@ -153,6 +121,6 @@ export class SdkManager {
         this.factories.clear();
         this.instances.clear();
         this._sdk = null;
-        this._platform = SdkPlatform.Unknown;
+        this._platform = sys.Platform.EDITOR;
     }
 }

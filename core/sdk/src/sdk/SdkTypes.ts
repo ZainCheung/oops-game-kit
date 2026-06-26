@@ -1,4 +1,4 @@
-import { SdkNetworkType, SdkPlatform } from './SdkEnum';
+import { SdkNetworkType } from './SdkEnum';
 
 /**
  * 系统信息（平台无关的精简版，各平台实现时自行映射）
@@ -9,7 +9,7 @@ export interface ISystemInfo {
     /** 型号 */
     model: string;
     /** 平台 */
-    platform: SdkPlatform;
+    platform: string;
     /** 系统 */
     system: string;
     /** 客户端版本 */

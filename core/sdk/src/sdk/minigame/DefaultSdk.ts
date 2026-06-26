@@ -1,6 +1,8 @@
-import { SdkPlatform, SdkVibrateType } from '../SdkEnum';
 import { ISdk } from '../ISdk';
+import { SdkVibrateType } from '../SdkEnum';
 import type {
+    IBannerAd,
+    IBannerAdOption,
     ICustomAd,
     ICustomAdOption,
     ICustomerServiceConversationOption,
@@ -29,8 +31,6 @@ import type {
     IUserCloudStorageResult,
     IUserInfoButton,
     IUserInfoResult,
-    IBannerAd,
-    IBannerAdOption,
 } from '../SdkTypes';
 
 /**
@@ -43,10 +43,10 @@ import type {
  * 接入新平台时不需要修改本类，只需新增一个实现 {@link ISdk} 的类即可。
  */
 export class DefaultSdk implements ISdk {
-    protected _platform: SdkPlatform = SdkPlatform.Unknown;
+    protected _platform: string = 'Unknown';
     protected _ready: boolean = true;
 
-    constructor(platform: SdkPlatform = SdkPlatform.Unknown) {
+    constructor(platform: string = 'Unknown') {
         this._platform = platform;
     }
 

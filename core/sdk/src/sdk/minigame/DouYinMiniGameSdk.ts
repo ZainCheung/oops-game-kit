@@ -1,4 +1,4 @@
-import { SdkNetworkType, SdkPlatform, SdkVibrateType } from '../SdkEnum';
+import { SdkNetworkType, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
     IBannerAd,
@@ -50,7 +50,7 @@ import { DefaultSdk } from './DefaultSdk';
  */
 export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
     constructor() {
-        super(SdkPlatform.DouYinMiniGame);
+        super('DouYinMiniGame' as any);
     }
 
     /** 抖音小游戏全局对象 */
@@ -96,7 +96,7 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                 return Promise.resolve({
                     brand: deviceInfo.brand,
                     model: deviceInfo.model,
-                    platform: SdkPlatform.DouYinMiniGame,
+                    platform: 'DouYinMiniGame',
                     system: deviceInfo.system,
                     version: appBaseInfo.version,
                     screenWidth: windowInfo.screenWidth,
@@ -113,7 +113,7 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                 return Promise.resolve({
                     brand: info.brand,
                     model: info.model,
-                    platform: SdkPlatform.DouYinMiniGame,
+                    platform: 'DouYinMiniGame',
                     system: info.system,
                     version: info.version,
                     screenWidth: info.screenWidth,
