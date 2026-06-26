@@ -581,11 +581,12 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
         return this.promisify<void>(fn.bind(this.tt), option ?? {}).then(() => undefined);
     }
 
-    onNeedPrivacyAuthorization(
-        callback: (res: { contractName: string; [k: string]: any }) => void
-    ): void {
-        const fn = this.tt.onNeedPrivacyAuthorization;
-        if (typeof fn === 'function') fn(callback);
+    /**
+     * 抖音暂不开放自定义隐私弹窗（保留接口签名以便后续扩展）
+     * 占位实现：直接 resolve，不抛错。
+     */
+    setCustomPrivacyDialog(_dialog: any): void {
+        // TODO: 抖音侧接入自定义隐私弹窗时再实现
     }
 
     //#endregion

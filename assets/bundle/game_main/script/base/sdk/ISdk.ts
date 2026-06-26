@@ -2,6 +2,7 @@ import { SdkVibrateType } from './SdkEnum';
 import type {
     ICustomAd,
     ICustomAdOption,
+    ICustomPrivacyDialog,
     ICustomerServiceConversationOption,
     ICustomerServiceOption,
     IGameRecorderManager,
@@ -205,22 +206,49 @@ export interface ISdk {
 
     //#region ========== 隐私合规 ==========
 
-    /** 获取隐私设置 */
+    /**
+     * 获取隐私设置。
+     * - needAuthorization=true：用户尚未同意隐私协议，需要拉起弹窗
+     * - needAuthorization=false：用户已同意或游戏无需隐私协议
+     */
     getPrivacySetting(): Promise<IPrivacySetting>;
 
-    /** 需要用户授权隐私协议 */
+    /**
+     * 主动请求隐私授权。
+     * - 已同意且协议未变 → 直接进 success
+     * - 未同意 → 触发 {@link setCustomPrivacyDialog} 注入的弹窗
+     * - 还没注入自定义弹窗 → SDK 内部 fallback 到平台原生 wx.showModal（走原生弹窗链路）
+     *
+     * 调用顺序建议：业务层在第一次需要用户信息前（如 RequestSdkUserInfo.execute）调一次
+     * {@link setCustomPrivacyDialog} 注入自定义弹窗；之后才能命中自定义链路。
+     */
     requirePrivacyAuthorize(option?: { demandList?: string[]; [k: string]: any }): Promise<void>;
 
-    /** 监听需要隐私授权 */
-    onNeedPrivacyAuthorization(callback: (res: { contractName: string; [k: string]: any }) => void): void;
+    /**
+     * 注册自定义隐私弹窗（**唯一**给游戏层注入自定义弹窗的通道）。
+     *
+     * SDK 在触发隐私弹窗时会调用 dialog.onTrigger(resolve, eventInfo)：
+     * - dialog.onTrigger 必须弹起自定义 UI（如 VC_Account_Login prefab）
+     * - 玩家点了"同意"按钮 → 在点击回调里调 resolve({ event: 'agree' })
+     * - 玩家点了"拒绝"按钮 → 在点击回调里调 resolve({ event: 'disagree' })
+     * - 玩家点了《隐私保护指引》链接 → 调 dialog.onOpenContract()，SDK 内部调 wx.openPrivacyContract
+     * - resolve 必须在用户点击事件中调用（不能异步直接调）
+     *
+     * 设计原则：
+     * - 平台 SDK 只负责平台 API 调用 + 协议解析
+     * - 自定义 UI 完全由游戏层提供，SDK 不内置任何弹窗
+     * - 重复注册会覆盖前一次（最后注册生效）
+     * - 不在 Main.ts 等无关脚本里调，**只在真正需要用户信息的业务脚本里调**（如 RequestSdkUserInfo）
+     */
+    setCustomPrivacyDialog(dialog: ICustomPrivacyDialog): void;
 
-    /** 统一请求隐私授权（确保只注册一次监听器，防止重复打印） */
-    requestPrivacyAuthorize(option?: { demandList?: string[]; [k: string]: any }): Promise<void>;
-
-    /** 打开隐私协议详情页（仅微信支持） */
+    /**
+     * 打开隐私协议详情页（仅微信支持）。
+     * 自定义弹窗里的《隐私保护指引》链接点击后调用此接口。
+     */
     openPrivacyContract(): Promise<void>;
 
-    /** 重置隐私授权状态 */
+    /** 重置隐私授权状态（用于测试 / 切换账号） */
     resetPrivacyAuthorization(): void;
 
     //#endregion
