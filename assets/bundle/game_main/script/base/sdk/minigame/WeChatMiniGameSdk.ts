@@ -5,6 +5,7 @@ import type {
     IBannerAdOption,
     ICustomAd,
     ICustomAdOption,
+    ICustomPrivacyDialog,
     ICustomerServiceConversationOption,
     ICustomerServiceOption,
     IGameRecorderManager,
@@ -674,7 +675,16 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#endregion
 
-    //#region ========== 隐私合规 ==========
+//#region ========== 隐私合规 ==========
+
+    /** 游戏层通过 setCustomPrivacyDialog 注入的自定义弹窗实现 */
+    private _customPrivacyDialog: ICustomPrivacyDialog | null = null;
+
+    /**
+     * 当前 wx.onNeedPrivacyAuthorization 是否已注册"用 dialog 触发"的监听器
+     * （区别于 SDK 构造时的占位监听器 —— 占位只在 dialog 未注入时启用 showModal）
+     */
+    private _customListenerRegistered = false;
 
     getPrivacySetting(): Promise<IPrivacySetting> {
         const fn = (wx as any).getPrivacySetting;
@@ -694,6 +704,25 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         });
     }
 
+    /**
+     * 主动请求隐私授权。
+     *
+     * 触发链路：
+     *   1. 业务层先调 setCustomPrivacyDialog 注入 VC_Account_Login prefab 实现
+     *   2. 业务层调 requirePrivacyAuthorize
+     *   3. SDK 把 wx.onNeedPrivacyAuthorization 监听器切换到"用 dialog"版本（覆盖式注册，最后一次生效）
+     *   4. 调 wx.requirePrivacyAuthorize
+     *      - 用户已同意 → success
+     *      - 用户未同意 → 触发监听器 → 调 dialog.onTrigger(resolve, eventInfo)
+     *        → 业务层的 prefab 弹出来 → 玩家点按钮 → 在点击回调里调 resolve({event})
+     *        → SDK 把结果上报给微信 → 微信恢复被挂起的 wx.requirePrivacyAuthorize
+     *   5. requirePrivacyAuthorize 进入 success / fail
+     *
+     * 全流程严格保证：
+     *   - 自定义弹窗（业务层 prefab）只弹 1 次（_customListenerRegistered 标志位）
+     *   - 失败/拒绝分支不进原生弹窗（业务层自己拿兜底 userInfo 继续，不阻塞游戏主流程）
+     *   - 第二次启动时玩家已同意 → 不弹任何东西
+     */
     requirePrivacyAuthorize(option?: {
         demandList?: string[];
         [k: string]: any;
@@ -701,20 +730,31 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         const fn = (wx as any).requirePrivacyAuthorize;
         if (typeof fn !== 'function') return Promise.resolve();
 
-        // 先注册正确签名的监听器（覆盖游戏层）
-        this._registerCorrectPrivacyListener();
+        // 已注入 dialog → 重新注册 listener（覆盖式，后注册生效）
+        if (this._customPrivacyDialog) {
+            this._registerCustomPrivacyListener();
+        }
+        // 没注入 → 保持占位监听器（触发时走 wx.showModal 原生兜底，1 次）
 
         return this.promisify<void>(fn.bind(wx), option ?? {}).then(() => undefined);
     }
 
-    onNeedPrivacyAuthorization(
-        callback: (res: { contractName: string;[k: string]: any }) => void
-    ): void {
-        const fn = (wx as any).onNeedPrivacyAuthorization;
-        if (typeof fn === 'function') fn(callback);
+    /**
+     * 注册自定义隐私弹窗（**唯一**给业务脚本注入的通道）。
+     *
+     * 调用时机：业务层在第一次需要用户信息前（如 RequestSdkUserInfo.execute）调一次。
+     * 重复调用会覆盖之前的 dialog（最后注入的生效）。
+     */
+    setCustomPrivacyDialog(dialog: ICustomPrivacyDialog): void {
+        this._customPrivacyDialog = dialog;
+        // 立即重新注册 listener，让下一次 requirePrivacyAuthorize 触发时直接命中 dialog
+        if (typeof (wx as any)?.onNeedPrivacyAuthorization === 'function') {
+            this._registerCustomPrivacyListener();
+        }
+        console.log('[WeChatSdk] 自定义隐私弹窗已注入（' + (dialog ? 'dialog=' + (dialog.constructor?.name ?? 'anonymous') : 'null') + '）');
     }
 
-    /** 打开隐私协议详情页 */
+    /** 打开隐私协议详情页（仅微信支持） */
     openPrivacyContract(): Promise<void> {
         const fn = (wx as any).openPrivacyContract;
         if (typeof fn !== 'function') {
@@ -724,62 +764,78 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     }
 
     /**
-     * 注册正确签名的隐私授权监听器（覆盖游戏层的错误监听器）
+     * 注册"使用注入 dialog 触发"的隐私监听器（覆盖式注册）。
      *
-     * 关键点：resolve 必须在用户交互事件中调用，不能直接异步调用。
-     * 微信 errno:104 "click action before resolve is needed" 就是因为
-     * 直接 resolve({event:'agree'}) 没有用户交互上下文。
-     *
-     * 解决方案：用 wx.showModal 显示原生确认框，用户点"同意"/"拒绝"时
-     * 在 showModal 的 success 回调里调用 resolve（showModal 回调算用户交互事件）。
+     * 关键点：
+     * - 必须在业务脚本调 setCustomPrivacyDialog 之后才执行此方法，否则 dialog 还没值
+     * - 一旦注册，触发时一定走 dialog.onTrigger，不再走 wx.showModal
+     * - resolve 必须在 prefab 按钮的点击回调里调用（异步直接调会被微信 errno:104 拒绝）
      */
-    private _registerCorrectPrivacyListener(): void {
+    private _registerCustomPrivacyListener(): void {
+        if (!this._customPrivacyDialog) return;
+        if (this._customListenerRegistered) return; // 避免重复注册
+
         const fn = (wx as any).onNeedPrivacyAuthorization;
         if (typeof fn !== 'function') return;
 
+        const dialog = this._customPrivacyDialog;
         fn((resolveFn: (res: { event: string }) => void, eventInfo: any) => {
             console.log('[WeChatSdk] 隐私授权回调触发:', eventInfo);
 
-            const wxAny = wx as any;
-            if (typeof wxAny.showModal === 'function') {
-                // 用 wx.showModal 显示原生确认框，让用户主动点击同意/拒绝
-                wxAny.showModal({
-                    title: '隐私保护提示',
-                    content: '为了向您提供游戏服务，我们需要获取您的昵称和头像信息。是否同意？',
-                    confirmText: '同意',
-                    cancelText: '拒绝',
-                    success: (modalRes: any) => {
-                        if (modalRes.confirm) {
-                            console.log('[WeChatSdk] 用户同意隐私协议');
-                            resolveFn({ event: 'agree' });
-                        }
-                        else {
-                            console.log('[WeChatSdk] 用户拒绝隐私协议');
-                            resolveFn({ event: 'disagree' });
-                        }
+            try {
+                dialog.onTrigger(
+                    (result) => {
+                        console.log('[WeChatSdk] 玩家点击隐私弹窗:', result.event);
+                        resolveFn(result);
                     },
-                    fail: () => {
-                        console.warn('[WeChatSdk] showModal 失败，默认同意');
-                        resolveFn({ event: 'agree' });
-                    },
-                });
+                    eventInfo ?? {}
+                );
             }
-            else {
-                // 兜底：showModal 不可用，直接同意
-                console.log('[WeChatSdk] showModal 不可用，直接同意');
-                resolveFn({ event: 'agree' });
+            catch (err) {
+                // dialog 抛错时不能让 requirePrivacyAuthorize 永久 pending
+                console.error('[WeChatSdk] 自定义弹窗触发失败，降级为拒绝:', err);
+                resolveFn({ event: 'disagree' });
             }
         });
 
-        console.log('[WeChatSdk] 隐私授权监听器已注册（覆盖式 showModal 版）');
+        this._customListenerRegistered = true;
+        console.log('[WeChatSdk] 隐私授权监听器已注册（自定义 dialog 版）');
     }
 
     /**
-     * 初始化隐私授权监听器（在 SDK 创建时调用）
+     * 初始化占位监听器（在 SDK 创建时调用）。
+     *
+     * 占位监听器：dialog 未注入时使用 wx.showModal 原生兜底，
+     * 触发后只弹 1 次 wx.showModal，结束后不再触发。
      */
     private _initPrivacyListener(): void {
-        this._registerCorrectPrivacyListener();
-        console.log('[WeChatSdk] 隐私授权监听器初始化完成');
+        if (typeof (wx as any)?.onNeedPrivacyAuthorization !== 'function') return;
+
+        // 占位监听器（dialog 未注入前生效）
+        (wx as any).onNeedPrivacyAuthorization(
+            (resolveFn: (res: { event: string }) => void, _eventInfo: any) => {
+                console.log('[WeChatSdk] 隐私授权触发（占位监听器，dialog 未注入）');
+
+                const wxAny = wx as any;
+                if (typeof wxAny.showModal === 'function') {
+                    wxAny.showModal({
+                        title: '隐私保护提示',
+                        content: '为了向您提供游戏服务，我们需要获取您的昵称和头像信息。是否同意？',
+                        confirmText: '同意',
+                        cancelText: '拒绝',
+                        success: (modalRes: any) => {
+                            resolveFn({ event: modalRes.confirm ? 'agree' : 'disagree' });
+                        },
+                        fail: () => resolveFn({ event: 'agree' }),
+                    });
+                }
+                else {
+                    resolveFn({ event: 'agree' });
+                }
+            }
+        );
+
+        console.log('[WeChatSdk] 隐私授权占位监听器已注册');
     }
 
     //#endregion

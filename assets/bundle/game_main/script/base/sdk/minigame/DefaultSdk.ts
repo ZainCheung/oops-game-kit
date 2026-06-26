@@ -5,6 +5,7 @@ import type {
     IBannerAdOption,
     ICustomAd,
     ICustomAdOption,
+    ICustomPrivacyDialog,
     ICustomerServiceConversationOption,
     ICustomerServiceOption,
     IGameRecorderManager,
@@ -266,18 +267,27 @@ export class DefaultSdk implements ISdk {
     getPrivacySetting(): Promise<IPrivacySetting> {
         return Promise.resolve({ needAuthorization: false });
     }
+
+    /**
+     * 开发/编辑器/浏览器平台无需走微信隐私流程。
+     * 默认直接 resolve，让上层业务继续往下走。
+     */
     requirePrivacyAuthorize(_option?: { demandList?: string[]; [k: string]: any }): Promise<void> {
+        console.log('[SDK][开发模式] requirePrivacyAuthorize → 直接通过');
         return Promise.resolve();
     }
-    onNeedPrivacyAuthorization(_callback: (res: { contractName: string; [k: string]: any }) => void): void {}
 
-    requestPrivacyAuthorize(_option?: { demandList?: string[]; [k: string]: any }): Promise<void> {
-        return Promise.resolve();
+    /**
+     * 开发模式：保存 dialog 引用但不实际触发。
+     * （真平台在 WeChatMiniGameSdk 里实现真弹窗）
+     */
+    setCustomPrivacyDialog(_dialog: ICustomPrivacyDialog): void {
+        console.log('[SDK][开发模式] setCustomPrivacyDialog → 已忽略（开发模式无隐私弹窗）');
     }
 
     /** 开发模式：模拟打开隐私协议 */
     openPrivacyContract(): Promise<void> {
-        console.log('[SDK] 开发模式: openPrivacyContract');
+        console.log('[SDK][开发模式] openPrivacyContract');
         return Promise.resolve();
     }
 

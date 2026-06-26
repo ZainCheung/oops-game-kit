@@ -422,6 +422,59 @@ export interface IPrivacySetting {
 }
 
 /**
+ * 隐私授权结果 resolve 入参
+ * - agree      : 用户同意隐私协议
+ * - disagree   : 用户拒绝隐私协议
+ * - exposureAuthorization : 弹窗页面已曝光（用于上报）
+ */
+export type PrivacyResolveEvent = 'agree' | 'disagree' | 'exposureAuthorization';
+
+/**
+ * resolve 回调签名（在用户点击事件里调用）
+ */
+export type PrivacyResolveCallback = (result: { event: PrivacyResolveEvent }) => void;
+
+/**
+ * 触发本次 onNeedPrivacyAuthorization 事件的关联信息
+ */
+export interface IPrivacyEventInfo {
+    /** 触发事件的接口或组件名（如 'getUserInfo'、'UserInfoButton.onTap'） */
+    referrer?: string;
+    [key: string]: any;
+}
+
+/**
+ * 自定义隐私弹窗契约 —— SDK 不内置任何 UI，由调用方注入
+ *
+ * 触发时机：玩家首次进入游戏 / 协议更新 / 主动调 requirePrivacyAuthorize
+ * 注入时机：业务层第一次需要用到用户信息前（任意游戏脚本皆可注入）
+ *
+ * 工作流：
+ *   1. SDK 内部监听 onNeedPrivacyAuthorization 事件 → 调 dialog.onTrigger
+ *   2. dialog.onTrigger 弹起自定义 UI（prefab / DOM / native）
+ *   3. 玩家点了"同意"→ 在点击回调里调 resolve({ event: 'agree' })
+ *      玩家点了"拒绝"→ 在点击回调里调 resolve({ event: 'disagree' })
+ *      弹窗页面打开时 → 调 resolve({ event: 'exposureAuthorization' })
+ *   4. SDK 把 resolve 结果上报给平台，平台恢复被挂起的隐私接口
+ *
+ * 注意：resolve 必须**在用户点击事件中**调用（异步直接调会被微信 errno:104 拒绝）
+ */
+export interface ICustomPrivacyDialog {
+    /**
+     * SDK 触发隐私弹窗时回调。
+     * @param resolve  必须由游戏层在用户点击事件中调用
+     * @param eventInfo 触发事件的接口信息
+     */
+    onTrigger(resolve: PrivacyResolveCallback, eventInfo: IPrivacyEventInfo): void;
+
+    /**
+     * 玩家点了"《隐私保护指引》"链接时调用 → SDK 内部调 wx.openPrivacyContract
+     * （微信 2.2.1 要求必须用 wx.openPrivacyContract 打开，不能用普通跳转）
+     */
+    onOpenContract?(): void;
+}
+
+/**
  * 录屏管理接口
  */
 export interface IGameRecorderManager {
