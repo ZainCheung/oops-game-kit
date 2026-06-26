@@ -75,7 +75,7 @@ export class B_Guide_Main extends CCBusiness<Guide> {
 
                 var gvp = oops.gui.guide.addComponent(VC_Guide_Prompt);
                 this.ent.add(gvp);
-                
+
                 // 新手引导配置
                 this.ent.M_Guide_Main.prompts = oops.res.get('gui/guide/config', JsonAsset)!.json as Record<
                     string,
