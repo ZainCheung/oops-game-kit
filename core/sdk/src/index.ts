@@ -15,8 +15,6 @@
 // ===== 内部导入全部 SDK 源码（打包到 JS bundle）=====
 // SdkManager 内部会注册所有平台实现，需要确保都被引入
 import './sdk/platform/DefaultSdk';
-import './sdk/platform/WeChatMiniGameSdk';
-import './sdk/platform/DouYinMiniGameSdk';
 
 // ===== 对外公开（仅实际使用的定义）=====
 export { Sdk } from './sdk/Sdk';

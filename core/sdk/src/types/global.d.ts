@@ -6,10 +6,7 @@
  */
 
 // 引用项目自带的微信小游戏 typings，提供 WechatMinigame 命名空间
-/// <reference path="../../../../assets/bundle/game_main/script/utils/wechat-minigame-typings/index.d.ts" />
-
-/** 微信小游戏全局对象 */
-declare const wx: any;
+/// <reference path="../libs/wechat-minigame-typings/index.d.ts" />
 
 /** 抖音小游戏全局对象 */
 declare const tt: any;
