@@ -4,7 +4,7 @@
     "description": "Oops Framework SDK 模块打包工程，将 src/sdk 目录编译为单一 JS（d.ts 手动维护）",
     "private": true,
     "scripts": {
-        "build": "webpack --config webpack.config.js --mode production",
+        "build": "node -e \"const fs=require('fs'),p='../../assets/bundle/game_main/script/libs/sdk.js.map';fs.existsSync(p)&&fs.unlinkSync(p)\" && webpack --config webpack.config.js --mode production",
         "watch": "webpack --config webpack.config.js --mode development --watch"
     },
     "devDependencies": {
