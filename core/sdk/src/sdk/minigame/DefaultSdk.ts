@@ -127,6 +127,25 @@ export class DefaultSdk implements ISdk {
         return null;
     }
 
+    /**
+     * 开发模式：返回模拟用户信息（不弹原生框）
+     * 微信小游戏会覆写为 wx.getUserProfile
+     */
+    getUserProfile(_option: { desc: string; lang?: 'en' | 'zh_CN' | 'zh_TW' }): Promise<IUserInfoResult> {
+        console.log(`[SDK] 开发模式: getUserProfile(${_option.desc})`);
+        return Promise.resolve({
+            userInfo: {
+                nickName: '测试用户',
+                avatarUrl: '',
+                gender: 0,
+                language: 'zh_CN',
+                country: '中国',
+            },
+            rawData: '',
+            signature: '',
+        });
+    }
+
     //#endregion
 
     //#region ========== 分享 ==========
@@ -274,6 +293,12 @@ export class DefaultSdk implements ISdk {
     onNeedPrivacyAuthorization(_callback: (res: { contractName: string; [k: string]: any }) => void): void {}
 
     requestPrivacyAuthorize(_option?: { demandList?: string[]; [k: string]: any }): Promise<void> {
+        return Promise.resolve();
+    }
+
+    /** 开发模式：模拟打开隐私协议 */
+    openPrivacyContract(): Promise<void> {
+        console.log('[SDK] 开发模式: openPrivacyContract');
         return Promise.resolve();
     }
 

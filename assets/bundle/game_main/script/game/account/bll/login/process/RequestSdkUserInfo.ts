@@ -3,8 +3,7 @@ import { IUserInfo } from '../../../../../libs/sdk.js';
 import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
-
-declare const wx: any;
+import { oops } from 'db://oops-framework/core/Oops.js';
 
 /**
  * 登录流程 —— 获取用户头像/昵称
@@ -19,61 +18,61 @@ declare const wx: any;
  *  - btnPrimarily           点击 → 仅同意隐私（零原生框，玩家昵称用 Player）
  *  - btnRejectSdkUserInfo   点击 → 拒绝（零原生框，兜底默认 Player）
  *
- * **不走 SDK 的隐私 API**（老 SDK 没这些方法）：
- *  - 不调 sdk.preAgreePrivacy()（SDK 老版本没有）
- *  - 不调 sdk.requestUserInfo()（SDK 老版本没有）
- *  - 直接用 wx 原生 API：wx.login / wx.getUserInfo / wx.getUserProfile
+ * **平台访问**：所有平台 API 通过 gsm.base.sdk.platform（ISdk 接口）访问，
+ *  禁止直接调用 wx。这样 H5/编辑器环境可由 DefaultSdk 兜底。
  */
 const CACHE_KEY = 'RequestSdkUserInfo_Cache_v1';
 
 export class RequestSdkUserInfo extends LoginProcessBase {
+
     constructor() {
         super(LoginProcessType.SdkUserInfo);
     }
 
+    /** 获取 SDK 接口（ISdk） */
+    private get sdk() {
+        return gsm.base.sdk.platform;
+    }
+
     /**
-     * 初始化微信隐私授权监听器（必须在游戏启动时调用一次）
+     * 初始化微信隐私授权监听器（在 execute 首次执行时调用一次）
      *
      * 做两件事：
-     *  1. 覆盖 SDK 默认的 wx.onNeedPrivacyAuthorization 监听器
+     *  1. 覆盖 SDK 默认的 onNeedPrivacyAuthorization 监听器
      *     SDK 默认用 showModal 半原生框，必须用我们自己的 handler 覆盖
      *     覆盖式注册：最后一次生效，所以必须在 SDK 之后调
-     *  2. 主动拉一次 wx.requirePrivacyAuthorize，触发隐私监听器
+     *  2. 主动拉一次 requirePrivacyAuthorize，触发隐私监听器
      *     （新用户：弹自定义弹窗；老用户：直接 success）
      *
      * 用 setTimeout 替代 scheduleOnce，因为本类不是 Component
      */
-    static initPrivacyAuthorization(): void {
-        if (typeof wx === 'undefined') {
-            return;
-        }
+    private initPrivacyAuthorization(): void {
+        const sdk = this.sdk;
 
-        // 1. 覆盖 wx.onNeedPrivacyAuthorization（用我们的自定义弹窗）
+        // 1. 覆盖 onNeedPrivacyAuthorization（用我们的自定义弹窗）
         const registerPrivacy = () => {
-            if (typeof wx.onNeedPrivacyAuthorization === 'function') {
-                wx.onNeedPrivacyAuthorization((resolveFn: any, eventInfo: any) => {
-                    const contractName = eventInfo?.contractName || '用户隐私协议';
-                    console.log(`【Main】SDK 触发隐私授权，协议名: ${contractName}`);
-                    // 弹我们的自定义弹窗 VC_Account_Login
-                    RequestSdkUserInfo.showPrivacyDialog(contractName, resolveFn, eventInfo);
-                });
-                console.log('【Main】已覆盖 wx.onNeedPrivacyAuthorization（自定义弹窗版）');
-            }
+            sdk.onNeedPrivacyAuthorization((res: { contractName: string;[k: string]: any }) => {
+                const contractName = res?.contractName || '用户隐私协议';
+                console.log(`【Main】SDK 触发隐私授权，协议名: ${contractName}`);
+                // 弹我们的自定义弹窗 VC_Account_Login
+                // 注意：onNeedPrivacyAuthorization 的回调签名在不同平台不一致
+                // 微信原生是 (resolveFn, eventInfo)，ISdk 这里已统一为 (res)
+                // 因此需要从 res 中取出 resolveFn
+                const resolveFn = (res as any)?.resolveFn ?? (() => { /* ignore */ });
+                RequestSdkUserInfo.showPrivacyDialog(contractName, resolveFn, res);
+            });
+            console.log('【Main】已覆盖 onNeedPrivacyAuthorization（自定义弹窗版）');
         };
 
         // 等 SDK 初始化完成后再覆盖（必须在 SDK 之后）
         // 用 setTimeout 延迟到下一帧，确保 SDK 注册完
         setTimeout(registerPrivacy, 0);
 
-        // 2. 主动拉一次 wx.requirePrivacyAuthorize，触发隐私监听器
+        // 2. 主动拉一次 requirePrivacyAuthorize，触发隐私监听器
         setTimeout(() => {
-            if (typeof wx.requirePrivacyAuthorize === 'function') {
-                wx.requirePrivacyAuthorize({
-                    success: () => console.log('【Main】wx.requirePrivacyAuthorize: 用户已同意隐私'),
-                    fail: () => console.log('【Main】wx.requirePrivacyAuthorize: 用户拒绝隐私'),
-                    complete: () => { /* ignore */ },
-                });
-            }
+            sdk.requirePrivacyAuthorize()
+                .then(() => console.log('【Main】requirePrivacyAuthorize: 用户已同意隐私'))
+                .catch(() => console.log('【Main】requirePrivacyAuthorize: 用户拒绝隐私'));
         }, 300);
     }
 
@@ -81,6 +80,9 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         const label = '【登录流程】获取用户头像';
         console.time(label);
         try {
+            // 初始化隐私授权监听器（首次执行时注册一次，幂等）
+            this.initPrivacyAuthorization();
+
             // 0. 先查本地缓存，命中则直接 finish（零弹窗）
             const cached = this.readCache();
             if (cached) {
@@ -109,31 +111,21 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
     /** 读取本地缓存的用户信息 */
     private readCache(): IUserInfo | null {
-        try {
-            const raw = wx?.getStorageSync?.(CACHE_KEY);
-            if (raw && typeof raw === 'object' && raw.nickName) {
-                return {
-                    nickName: raw.nickName,
-                    avatarUrl: raw.avatarUrl || '',
-                    gender: raw.gender ?? 0,
-                };
-            }
-        }
-        catch (e) {
-            console.warn('【登录流程】读缓存失败:', e);
+        const raw = oops.storage.getJson<IUserInfo>(CACHE_KEY, null!);
+        if (raw && raw.nickName) {
+            return {
+                nickName: raw.nickName,
+                avatarUrl: raw.avatarUrl || '',
+                gender: raw.gender ?? 0,
+            };
         }
         return null;
     }
 
     /** 写入本地缓存 */
     private writeCache(userInfo: IUserInfo): void {
-        try {
-            wx?.setStorageSync?.(CACHE_KEY, userInfo);
-            console.log('【登录流程】用户信息已写入本地缓存:', userInfo.nickName);
-        }
-        catch (e) {
-            console.warn('【登录流程】写缓存失败:', e);
-        }
+        oops.storage.set(CACHE_KEY, userInfo);
+        console.log('【登录流程】用户信息已写入本地缓存:', userInfo.nickName);
     }
 
     /**
@@ -176,49 +168,39 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             });
         }
 
-        // linkPrivacyContract：协议链接（可选，调 wx.openPrivacyContract）
+        // linkPrivacyContract：协议链接（可选，调 sdk.openPrivacyContract）
         const linkPrivacy = find('linkPrivacyContract', uiNode);
         if (linkPrivacy) {
             linkPrivacy.on(NodeEventType.TOUCH_END, () => {
                 console.log('【登录流程】玩家点《隐私保护指引》链接');
-                if (typeof wx?.openPrivacyContract === 'function') {
-                    wx.openPrivacyContract({
-                        success: () => console.log('【登录流程】openPrivacyContract 成功'),
-                        fail: (err: any) => console.warn('【登录流程】openPrivacyContract 失败:', err),
-                        complete: () => { /* ignore */ },
-                    });
-                }
+                gsm.base.sdk.platform.openPrivacyContract().catch((err: any) =>
+                    console.warn('【登录流程】openPrivacyContract 失败:', err)
+                );
             });
         }
     }
 
     /**
      * 处理"同意 + 拿昵称头像"按钮
-     * 流程：直接调 wx.getUserProfile 弹 1 次原生框拿真昵称头像
+     * 流程：调 sdk.getUserProfile 弹 1 次原生框拿真昵称头像
      */
-    private handleRequestClick(): void {
-        // 微信规定：拿昵称头像必须用 wx.getUserProfile 或 wx.createUserInfoButton
+    private async handleRequestClick(): Promise<void> {
+        // 微信规定：拿昵称头像必须用 getUserProfile 或 createUserInfoButton
         // 这俩 API 都会弹 1 次原生框（不可避免）
-        if (typeof wx?.getUserProfile === 'function') {
-            wx.getUserProfile({
+        try {
+            const res = await gsm.base.sdk.platform.getUserProfile({
                 desc: '用于在游戏中展示你的身份信息',
-                success: (res: any) => {
-                    console.log('【登录流程】wx.getUserProfile 成功:', res?.userInfo?.nickName);
-                    if (res?.userInfo) {
-                        this.applyAndFinish(res.userInfo);
-                    }
-                    else {
-                        this.applyDefaultAndFinish();
-                    }
-                },
-                fail: (err: any) => {
-                    console.warn('【登录流程】wx.getUserProfile 失败/取消:', err);
-                    this.applyDefaultAndFinish();
-                },
             });
+            console.log('【登录流程】getUserProfile 成功:', res?.userInfo?.nickName);
+            if (res?.userInfo) {
+                this.applyAndFinish(res.userInfo);
+            }
+            else {
+                this.applyDefaultAndFinish();
+            }
         }
-        else {
-            console.warn('【登录流程】wx.getUserProfile 不可用，使用默认');
+        catch (err) {
+            console.warn('【登录流程】getUserProfile 失败/取消:', err);
             this.applyDefaultAndFinish();
         }
     }
@@ -233,7 +215,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
     /**
      * **静态方法**：弹隐私授权对话框 + 上报 3 个事件
-     * 由 Main.ts 覆盖 wx.onNeedPrivacyAuthorization 时调用
+     * 由 initPrivacyAuthorization 覆盖 onNeedPrivacyAuthorization 时调用
      *
      * 三个按钮的事件上报：
      *  - btnRequestSdkUserInfo → resolveFn({ event: 'agree' })
@@ -317,13 +299,9 @@ export class RequestSdkUserInfo extends LoginProcessBase {
                 const linkPrivacy = find('linkPrivacyContract', uiNode);
                 if (linkPrivacy) {
                     linkPrivacy.on(NodeEventType.TOUCH_END, () => {
-                        if (typeof wx?.openPrivacyContract === 'function') {
-                            wx.openPrivacyContract({
-                                success: () => { /* ignore */ },
-                                fail: (err: any) => console.warn('openPrivacyContract 失败:', err),
-                                complete: () => { /* ignore */ },
-                            });
-                        }
+                        gsm.base.sdk.platform.openPrivacyContract().catch((err: any) =>
+                            console.warn('openPrivacyContract 失败:', err)
+                        );
                     });
                 }
             }
@@ -366,8 +344,3 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         this.success();
     }
 }
-
-// 模块加载时自动初始化微信隐私授权监听器
-// ES Module 特性：模块只执行一次，保证 initPrivacyAuthorization 只调用一次
-// 加载时机：本模块被 B_Account_Login.ts import 时触发（即 gsm.account 创建时）
-RequestSdkUserInfo.initPrivacyAuthorization();

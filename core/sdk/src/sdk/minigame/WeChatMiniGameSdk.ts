@@ -299,6 +299,50 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         }
     }
 
+    /**
+     * 获取用户信息（弹 1 次原生框拿真昵称头像）
+     * 对应 wx.getUserProfile，必须由用户点击事件触发。
+     */
+    getUserProfile(option: { desc: string; lang?: 'en' | 'zh_CN' | 'zh_TW' }): Promise<IUserInfoResult> {
+        const fn = (wx as any).getUserProfile;
+        if (typeof fn !== 'function') {
+            console.warn('[WeChatSdk] getUserProfile 不可用');
+            return Promise.resolve({ userInfo: undefined });
+        }
+        return new Promise<IUserInfoResult>((resolve) => {
+            fn({
+                desc: option.desc,
+                lang: option.lang ?? 'zh_CN',
+                success: (res: any) => {
+                    const info = res?.userInfo;
+                    resolve({
+                        userInfo: info
+                            ? {
+                                    nickName: info.nickName,
+                                    avatarUrl: info.avatarUrl,
+                                    gender: info.gender,
+                                    language: info.language,
+                                    country: info.country,
+                                    province: info.province,
+                                    city: info.city,
+                                    raw: info,
+                                }
+                            : undefined,
+                        rawData: res.rawData,
+                        signature: res.signature,
+                        encryptedData: res.encryptedData,
+                        iv: res.iv,
+                        cloudID: res.cloudID,
+                    });
+                },
+                fail: (err: any) => {
+                    console.warn('[WeChatSdk] getUserProfile 失败/取消:', err);
+                    resolve({ userInfo: undefined });
+                },
+            });
+        });
+    }
+
     //#endregion
 
     //#region ========== 分享 ==========
@@ -814,6 +858,15 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     ): void {
         const fn = (wx as any).onNeedPrivacyAuthorization;
         if (typeof fn === 'function') fn(callback);
+    }
+
+    /** 打开隐私协议详情页 */
+    openPrivacyContract(): Promise<void> {
+        const fn = (wx as any).openPrivacyContract;
+        if (typeof fn !== 'function') {
+            return this.reject('openPrivacyContract');
+        }
+        return this.promisify<void>(fn.bind(wx)).then(() => undefined);
     }
 
     /**

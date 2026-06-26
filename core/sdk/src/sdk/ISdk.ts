@@ -100,6 +100,13 @@ export interface ISdk {
         withCredentials?: boolean;
     }): IUserInfoButton | null;
 
+    /**
+     * 获取用户信息（弹 1 次原生框拿真昵称头像）
+     * 微信对应 wx.getUserProfile，必须由用户交互触发。
+     * @param option.desc 用途说明（展示给用户）
+     */
+    getUserProfile(option: { desc: string; lang?: 'en' | 'zh_CN' | 'zh_TW' }): Promise<IUserInfoResult>;
+
     //#endregion
 
     //#region ========== 分享 ==========
@@ -227,6 +234,9 @@ export interface ISdk {
 
     /** 统一请求隐私授权（确保只注册一次监听器，防止重复打印） */
     requestPrivacyAuthorize(option?: { demandList?: string[]; [k: string]: any }): Promise<void>;
+
+    /** 打开隐私协议详情页（仅微信支持） */
+    openPrivacyContract(): Promise<void>;
 
     /** 重置隐私授权状态 */
     resetPrivacyAuthorization(): void;
