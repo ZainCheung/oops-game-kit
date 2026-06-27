@@ -1,4 +1,4 @@
-import { find, Node, NodeEventType } from 'cc';
+import { find, NodeEventType } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { IUserInfo } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
 import { gsm } from '../../../../common/GameSingletonModule';
@@ -35,9 +35,9 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
     protected async execute() {
         // 0. 命中缓存直接 finish
-        const cached = this.readCache();
-        if (cached) {
-            this.finish(cached);
+        const raw = oops.storage.getJson<IUserInfo | null>(CACHE_KEY, null);
+        if (raw?.nickName) {
+            this.finish(raw);
             return;
         }
 
@@ -49,23 +49,16 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             await gsm.base.sdk.platform.requirePrivacyAuthorize();
         }
         catch (err) {
-            // 拒绝 / 异常 → 不阻断游戏主流程，走 fallback Player
-            console.warn('【登录流程】隐私协议未同意，使用兜底用户信息', err);
-            this.finish(this.fallbackUserInfo(), true);
+            oops.gui.toast('必须同意才可以玩');
             return;
         }
 
         // 3. 协议已同意 → 调 SDK 拿真实昵称头像（**唯一一次原生弹窗**）
-        try {
-            const realUserInfo = await gsm.base.sdk.platform.getUserProfile({
-                desc: '用于在游戏中展示你的身份信息',
-            });
-            this.finish(realUserInfo.userInfo ?? this.fallbackUserInfo(), true);
-        }
-        catch (err) {
-            console.warn('【登录流程】获取用户信息失败，使用兜底用户信息', err);
-            this.finish(this.fallbackUserInfo(), true);
-        }
+        // 注意：getUserProfile 在各平台 SDK 内部已兜底（失败时返回默认用户信息，不会抛异常），无需 try/catch
+        const realUserInfo = await gsm.base.sdk.platform.getUserProfile({
+            desc: '用于在游戏中展示你的身份信息',
+        });
+        this.finish(realUserInfo.userInfo ?? { nickName: 'Player', avatarUrl: '', gender: 0 }, true);
     }
 
     /**
@@ -99,59 +92,32 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      *   btnRejectSdkUserInfo   → resolve({ event: 'disagree' })  拒绝协议（走 fallback，不阻断游戏）
      */
     private async showPrivacyDialog(resolve: PrivacyResolveCallback): Promise<void> {
-        let uiNode: Node | null = null;
-        try {
-            uiNode = await gsm.account.B_Account_ViewUI.openLogin();
-            if (!uiNode) {
-                console.error('【登录流程】打开登录界面失败');
-                resolve({ event: 'disagree' });
+        const uiNode = await gsm.account.B_Account_ViewUI.openLogin();
+        if (!uiNode) {
+            console.error('【登录流程】打开登录界面失败');
+            resolve({ event: 'disagree' });
+            return;
+        }
+
+        // 绑定按钮：点击即 resolve 对应事件
+        const bindBtn = (name: string, event: 'agree' | 'disagree') => {
+            const btn = find(name, uiNode);
+            if (!btn) {
+                console.error(`【登录流程】找不到按钮 ${name}`);
                 return;
             }
-
-            // 绑定按钮：点击即 resolve 对应事件
-            const bindBtn = (name: string, event: 'agree' | 'disagree') => {
-                const btn = find(name, uiNode!);
-                if (!btn) {
-                    console.error(`【登录流程】找不到按钮 ${name}`);
-                    return;
-                }
-                btn.once(NodeEventType.TOUCH_END, () => {
-                    gsm.account.B_Account_ViewUI.removeLogin();
-                    resolve({ event });
-                });
-            };
-
-            bindBtn('btnRequestSdkUserInfo', 'agree');
-            bindBtn('btnPrimarily', 'agree');
-            bindBtn('btnRejectSdkUserInfo', 'disagree');
-
-            // 通知平台：弹窗页面已曝光
-            resolve({ event: 'exposureAuthorization' });
-        }
-        catch (err) {
-            console.error('【登录流程】自定义隐私弹窗异常', err);
-            if (uiNode) gsm.account.B_Account_ViewUI.removeLogin();
-            resolve({ event: 'disagree' });
-        }
-    }
-
-    /** 兜底用户信息（拒绝 / 异常时使用，保证游戏主流程不被阻断） */
-    private fallbackUserInfo(): IUserInfo {
-        return {
-            nickName: 'Player',
-            avatarUrl: '',
-            gender: 0,
-            country: '',
-            province: '',
-            city: '',
-            language: '',
+            btn.once(NodeEventType.TOUCH_END, () => {
+                gsm.account.B_Account_ViewUI.removeLogin();
+                resolve({ event });
+            });
         };
-    }
 
-    /** 读取本地缓存 */
-    private readCache(): IUserInfo | null {
-        const raw = oops.storage.getJson<IUserInfo | null>(CACHE_KEY, null);
-        return raw?.nickName ? raw : null;
+        bindBtn('btnRequestSdkUserInfo', 'agree');
+        bindBtn('btnPrimarily', 'agree');
+        bindBtn('btnRejectSdkUserInfo', 'disagree');
+
+        // 通知平台：弹窗页面已曝光
+        resolve({ event: 'exposureAuthorization' });
     }
 
     /** 结束流程 */
