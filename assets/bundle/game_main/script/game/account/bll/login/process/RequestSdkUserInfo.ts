@@ -1,10 +1,10 @@
 import { oops } from 'db://oops-framework/core/Oops';
+import type { ICustomPrivacyDialog, IPrivacyEventInfo, PrivacyResolveCallback } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
 import { IUserInfo } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
 import { gsm } from '../../../../common/GameSingletonModule';
+import { V_Account_Authorization } from '../../../view/V_Account_Authorization';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
-import type { ICustomPrivacyDialog, IPrivacyEventInfo, PrivacyResolveCallback } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
-import { V_Account_Authorization } from '../../../view/V_Account_Authorization';
 
 /**
  * 登录流程 —— 获取用户名
@@ -14,7 +14,7 @@ import { V_Account_Authorization } from '../../../view/V_Account_Authorization';
  *   2. 注入自定义隐私弹窗（prefab 按钮 → SDK resolve）
  *   3. 调 sdk.requirePrivacyAuthorize() 触发 SDK 内的微信隐私流程
  *   4. 协议同意 → 调 sdk.getUserProfile() 拿昵称头像（**原生弹窗就这一次**）
- *   5. 协议拒绝 / 异常 → 走 fallback Player（保证游戏主流程不被阻断）
+ *   5. 弹窗打开异常 → resolve({event:'disagree'}) → Promise reject（框架自动处理）
  *   6. 写本地缓存 + finish
  *
  * 不在本脚本写：
@@ -23,10 +23,16 @@ import { V_Account_Authorization } from '../../../view/V_Account_Authorization';
  *   - 隐私交互流程的整体编排（写 WeChatMiniGameSdk.requirePrivacyAuthorize）
  *
  * 全流程弹窗次数：
- *   - 第一次启动：1 次自定义弹窗（prefab） + 1 次原生弹窗（wx.getUserProfile）
+ *   - 第一次启动：最多 3 轮（自定义弹窗 + wx.getUserProfile），getUserProfile 被取消时会重试
  *   - 第二次启动：0 次（缓存命中）
+ *
+ * 微信环境注意：
+ *   wx.getUserProfile 必须由用户点击事件触发。若用户在原生弹窗中取消，下一轮重试时
+ *   requirePrivacyAuthorize 可能直接 resolve（隐私协议已同意），导致 getUserProfile 因
+ *   缺少点击上下文而再次失败。如遇到此问题，需将 getUserProfile 调用前移到按钮点击
+ *   回调中（V_Account_Authorization.btnRequestSdkUserInfo）。
  */
-const CACHE_KEY = 'RequestSdkUserInfo_Cache';
+
 
 export class RequestSdkUserInfo extends LoginProcessBase {
     constructor() {
@@ -35,31 +41,43 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
     protected async execute() {
         // 0. 命中缓存直接 finish
-        const raw = oops.storage.getJson<IUserInfo | null>(CACHE_KEY, null);
+        const raw = oops.storage.getJson<IUserInfo | null>('GameUserInfoCache', null);
         if (raw?.nickName) {
             this.finish(raw);
             return;
         }
 
-        // 1. 注入自定义隐私弹窗（业务层 prefab 按钮 → SDK resolve）
-        gsm.base.sdk.platform.setCustomPrivacyDialog(this.buildPrivacyDialog());
+        let retries = 0;
+        const MAX_RETRIES = 1;
 
-        // 2. 触发 SDK 内的微信隐私流程
-        try {
+        while (retries < MAX_RETRIES) {
+            // 1. 注入自定义隐私弹窗（业务层 prefab 按钮 → SDK resolve）
+            gsm.base.sdk.platform.setCustomPrivacyDialog(this.buildPrivacyDialog());
+
+            // 2. 触发 SDK 内的微信隐私流程
+            // 注意：拒绝按钮不再触发 disagree，Promise 只会 resolve（用户点击同意）
+            //       或永久 pending（用户未操作）。异常仅来自弹窗打开失败/组件获取失败。
             await gsm.base.sdk.platform.requirePrivacyAuthorize();
-        }
-        catch (err) {
+
+            // 3. 协议已同意 → 调 SDK 拿真实昵称头像（**唯一一次原生弹窗**）
+            // 注意：getUserProfile 在各平台 SDK 内部已兜底（失败时返回默认用户信息，不会抛异常），无需 try/catch
+            const realUserInfo = await gsm.base.sdk.platform.getUserProfile({
+                desc: '用于在游戏中展示你的身份信息',
+            });
+
+            // 检查是否成功获取（微信取消/失败时 rawData 不存在，开发模式有 rawData: 'mock'）
+            if (realUserInfo.rawData) {
+                this.finish(realUserInfo.userInfo ?? { nickName: 'Player', avatarUrl: '', gender: 0 }, true);
+                return;
+            }
+
+            // getUserProfile 被取消或失败 → toast 提示，继续循环重新授权
             oops.gui.toast('必须同意才可以玩');
-            this.fail();
-            return;
+            retries++;
         }
 
-        // 3. 协议已同意 → 调 SDK 拿真实昵称头像（**唯一一次原生弹窗**）
-        // 注意：getUserProfile 在各平台 SDK 内部已兜底（失败时返回默认用户信息，不会抛异常），无需 try/catch
-        const realUserInfo = await gsm.base.sdk.platform.getUserProfile({
-            desc: '用于在游戏中展示你的身份信息',
-        });
-        this.finish(realUserInfo.userInfo ?? { nickName: 'Player', avatarUrl: '', gender: 0 }, true);
+        // 超过最大重试次数，用户始终拒绝授权，退出小游戏
+        await gsm.base.sdk.platform.exitMiniProgram();
     }
 
     /**
@@ -87,13 +105,20 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     /**
      * 弹业务侧自定义隐私弹窗（V_Account_Authorization prefab）。
      *
-     * 按钮 → resolve 事件映射：
-     *   btnRequestSdkUserInfo  → resolve({ event: 'agree' })     同意协议 + 授权拿昵称头像
-     *   btnPrimarily           → resolve({ event: 'agree' })     同意协议但不授权拿昵称头像（走 fallback）
-     *   btnRejectSdkUserInfo   → resolve({ event: 'disagree' })  拒绝协议（走 fallback，不阻断游戏）
+     * 按钮行为：
+     *   btnRequestSdkUserInfo  → onPrivacyAction('agree') + this.remove()  同意并关闭弹窗
+     *   btnPrimarily           → onPrivacyAction('agree')（不关闭弹窗）    同意，弹窗保持打开
+     *   btnRejectSdkUserInfo   → oops.gui.toast('必须同意才可以玩')         拒绝，仅提示，不触发 resolve
+     *
+     * 说明：拒绝按钮不触发 disagree，目的是强制用户必须点击同意才能继续，弹窗不可跳过。
      */
     private async showPrivacyDialog(resolve: PrivacyResolveCallback): Promise<void> {
         const uiNode = await gsm.account.B_Account_ViewUI.openAuthorization();
+        if (!uiNode) {
+            console.error('【登录流程】打开登录界面失败');
+            resolve({ event: 'disagree' });
+            return;
+        }
 
         const vc = uiNode.getComponent(V_Account_Authorization);
         if (!vc) {
@@ -114,7 +139,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     private finish(userInfo: IUserInfo, writeCache = false): void {
         gsm.base.sdk.userInfo = userInfo;
         if (writeCache) {
-            oops.storage.set(CACHE_KEY, userInfo);
+            oops.storage.set('GameUserInfoCache', userInfo);
         }
         console.log('【登录流程】用户信息:', userInfo);
         this.success();

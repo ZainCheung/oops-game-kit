@@ -121,7 +121,7 @@ export class DefaultSdk implements ISdk {
                 language: 'zh_CN',
                 country: '中国',
             },
-            rawData: '',
+            rawData: 'mock',
             signature: '',
         });
     }
@@ -268,7 +268,7 @@ export class DefaultSdk implements ISdk {
         return Promise.resolve({ needAuthorization: false });
     }
 
-    private _customPrivacyDialog: ICustomPrivacyDialog | null = null;
+    protected _customPrivacyDialog: ICustomPrivacyDialog | null = null;
 
     /**
      * 开发/编辑器/浏览器平台：

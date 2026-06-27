@@ -1,4 +1,5 @@
 import { _decorator } from 'cc';
+import { oops } from 'db://oops-framework/core/Oops';
 import { gui } from 'db://oops-framework/core/gui/Gui';
 import { LayerType } from 'db://oops-framework/core/gui/layer/LayerEnum';
 import { GameComponent } from 'db://oops-framework/module/common/GameComponent';
@@ -17,19 +18,21 @@ export class V_Account_Authorization extends GameComponent {
     }
 
     //#region 按钮事件
+
+    /** 允许获取用户信息 */
     private btnRequestSdkUserInfo(): void {
         this.onPrivacyAction?.('agree');
         this.remove();
     }
 
-    private btnPrimarily(): void {
-        this.onPrivacyAction?.('agree');
-        this.remove();
+    /** 用户隐私保护指引 */
+    private btnRejectSdkUserInfo(): void {
+        oops.gui.toast('必须同意才可以玩');
     }
 
-    private btnRejectSdkUserInfo(): void {
-        this.onPrivacyAction?.('disagree');
-        this.remove();
+    /** 拒绝获取用户信息 */
+    private btnPrimarily(): void {
+        oops.gui.toast('用户隐私保护指引');
     }
     //#endregion
 }

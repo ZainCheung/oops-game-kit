@@ -3,7 +3,6 @@ import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import { gsm } from '../../common/GameSingletonModule';
-import { ConfigCommonStorage } from '../../common/config/ConfigGameStorage';
 import type { Initialize } from '../Initialize';
 import { VC_Initialize_Loading } from './VC_Initialize_Loading';
 
@@ -47,10 +46,10 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     private loadLanguage(): Promise<void> {
         return new Promise((resolve, reject) => {
             // 设置默认语言
-            let lan = oops.storage.get(ConfigCommonStorage.Language);
+            let lan = oops.storage.get('Language');
             if (lan == null || lan == '') {
                 lan = oops.config.game.languageDefault;
-                oops.storage.set(ConfigCommonStorage.Language, lan);
+                oops.storage.set('Language', lan);
             }
 
             // 加载语言包资源

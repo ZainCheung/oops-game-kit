@@ -1,3 +1,5 @@
+import { sys } from 'cc';
+import { ISdk } from '../ISdk';
 import { SdkNetworkType, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
@@ -31,7 +33,6 @@ import type {
     IUserCloudStorageResult,
     IUserInfoResult,
 } from '../SdkTypes';
-import { ISdk } from '../ISdk';
 import { DefaultSdk } from './DefaultSdk';
 
 /**
@@ -49,7 +50,7 @@ import { DefaultSdk } from './DefaultSdk';
  */
 export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
     constructor() {
-        super('DouYinMiniGame' as any);
+        super(sys.Platform.BYTEDANCE_MINI_GAME);
     }
 
     /** 抖音小游戏全局对象 */
@@ -620,7 +621,7 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
                 name,
                 success: () => resolve(),
                 fail: (err: any) => reject(err),
-                complete: () => {},
+                complete: () => { },
             });
         });
     }
