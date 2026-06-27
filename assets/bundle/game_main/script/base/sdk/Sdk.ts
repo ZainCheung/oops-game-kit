@@ -1,6 +1,7 @@
 import { sys } from 'cc';
 import { AnalysisSdkManager } from './analysis';
 import { ISdk } from './ISdk';
+import { monitoring } from './monitoring';
 import { SdkManager } from './SdkManager';
 import type { IUserInfo } from './SdkTypes';
 import {
@@ -11,6 +12,7 @@ import {
     SdkNetworkChangeCallback,
     SdkShowCallback,
 } from './SdkTypes';
+
 
 
 /**
@@ -70,6 +72,41 @@ export class Sdk {
     constructor() {
         this.initEvents();
         this.initAnalysis();
+        this.initMonitoring();
+    }
+
+    /**
+     * 初始化 Bugly 监控 SDK。
+     * 根据当前平台自动选择对应实现。
+     * - Android 原生 → 通过 JSB 调用原生 Bugly
+     * - 微信/抖音小游戏 → 使用 bugly-mp-sdk
+     * - 其他平台保持空实现，不阻塞流程
+     */
+    private initMonitoring(): void {
+        if (sys.platform === sys.Platform.ANDROID) {
+            monitoring.init({
+                appId: '4180d5a92e',
+                appKey: '71d2b689-7734-4b17-a29c-cd',
+                version: '1.0.0',
+                debug: false,
+            });
+        }
+        else if (sys.platform === sys.Platform.WECHAT_GAME) {
+            monitoring.init({
+                // TODO: 配置微信小游戏 Bugly App ID
+                appId: '',
+                version: '1.0.0',
+                debug: false,
+            });
+        }
+        else if (sys.platform === sys.Platform.BYTEDANCE_MINI_GAME) {
+            monitoring.init({
+                // TODO: 配置抖音小游戏 Bugly App ID
+                appId: '',
+                version: '1.0.0',
+                debug: false,
+            });
+        }
     }
 
     /**
