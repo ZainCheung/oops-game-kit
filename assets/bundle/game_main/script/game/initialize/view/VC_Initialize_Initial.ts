@@ -28,6 +28,9 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
         oops.gui.setOpenFailure(this.onOpenFailure);
 
         await gsm.initialize.addUi(VC_Initialize_Loading);
+
+        // 移除初始画面
+        this.remove();
     }
 
     /** 窗口打开失败事件 */
