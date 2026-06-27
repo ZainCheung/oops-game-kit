@@ -1,10 +1,10 @@
-import { find, NodeEventType } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { IUserInfo } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
 import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
 import type { ICustomPrivacyDialog, IPrivacyEventInfo, PrivacyResolveCallback } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
+import { VC_Account_Login } from '../../../view/VC_Account_Login';
 
 /**
  * 登录流程 —— 获取用户名
@@ -50,6 +50,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         }
         catch (err) {
             oops.gui.toast('必须同意才可以玩');
+            this.fail();
             return;
         }
 
@@ -99,22 +100,16 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             return;
         }
 
-        // 绑定按钮：点击即 resolve 对应事件
-        const bindBtn = (name: string, event: 'agree' | 'disagree') => {
-            const btn = find(name, uiNode);
-            if (!btn) {
-                console.error(`【登录流程】找不到按钮 ${name}`);
-                return;
-            }
-            btn.once(NodeEventType.TOUCH_END, () => {
-                gsm.account.B_Account_ViewUI.removeLogin();
-                resolve({ event });
-            });
-        };
+        const vc = uiNode.getComponent(VC_Account_Login);
+        if (!vc) {
+            console.error('【登录流程】获取 VC_Account_Login 组件失败');
+            resolve({ event: 'disagree' });
+            return;
+        }
 
-        bindBtn('btnRequestSdkUserInfo', 'agree');
-        bindBtn('btnPrimarily', 'agree');
-        bindBtn('btnRejectSdkUserInfo', 'disagree');
+        vc.onPrivacyAction = (action) => {
+            resolve({ event: action });
+        };
 
         // 通知平台：弹窗页面已曝光
         resolve({ event: 'exposureAuthorization' });
