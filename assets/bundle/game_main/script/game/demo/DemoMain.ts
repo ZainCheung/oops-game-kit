@@ -17,9 +17,15 @@ const { ccclass } = _decorator;
 //  - 所有游戏专属的分享素材（imageUrl / title / 路径等）统一放在这里
 //  - 任何游戏需要修改分享内容，**只改这里**，不要碰 B_Share_Main.ts
 //
+// 当前支持的分享入口：
+//  1. 自定义图片分享给好友（shareCustom，默认图就是 SHARE_IMAGE_URL）
+//  2. 截图分享（shareScreenshot，需调用方传入截图 base64）
+//  3. 朋友圈分享 —— 由 registerAll() 通过 wx.showShareMenu 配置,
+//     用户在右上角"..."菜单里点"分享到朋友圈"即可触发
+//
 // 使用方式：
-//  1. 游戏启动时（Main.ts）调用 registerAll() → 注册右上角菜单默认分享卡
-//  2. 玩家在游戏内点分享按钮 → 调 shareCustom(...) / shareScreenshot()
+//  - 游戏启动时调用 registerAll() 注册菜单默认分享卡
+//  - 玩家在游戏内点分享按钮 → 调 shareCustom(...) / shareScreenshot(...)
 
 /** 分享卡片封面图（玩家点右上角"..."时显示） */
 export const SHARE_IMAGE_URL =
@@ -50,27 +56,17 @@ export function registerAll(): void {
     });
 }
 
-/** 用默认图片分享给好友 */
-export function share(title: string, path?: string): void {
+/** 用自定义图片分享给好友（默认/可换 URL 共用） */
+export function shareCustom(title: string, presetImageUrl: string, path?: string): void {
     oops.message.dispatchEvent(ShareEventName.ShareWithImage, {
         title,
         path,
-        imageUrl: SHARE_IMAGE_URL,
+        presetImageUrl,
         withShareTicket: false,
     });
 }
 
-/** 用自定义图片分享给好友 */
-export function shareCustom(title: string, imageUrl: string, path?: string): void {
-    oops.message.dispatchEvent(ShareEventName.ShareWithImage, {
-        title,
-        path,
-        imageUrl,
-        withShareTicket: false,
-    });
-}
-
-/** 截图分享 */
+/** 截图分享 —— 调用方需传入截图 base64 数据 */
 export function shareScreenshot(title: string, screenshotData: string): void {
     oops.message.dispatchEvent(ShareEventName.ShareScreenshot, {
         title,
@@ -130,26 +126,21 @@ export class DemoMain extends GameComponent {
 
     //#region ========== 分享功能 ==========
 
-    /** 分享按钮 - 默认分享（使用预设图片） */
+    /**
+     * 截图分享按钮（节点名 ScreenshotShareButton）
+     * 截图数据当前为空字符串占位,后续接入游戏截图 API
+     */
     @debounce.click()
-    ShareButton() {
-        console.log('[Demo] ShareButton: 触发分享');
-        share(SHARE_TITLE);
-    }
-
-    /** 分享按钮2 - 自定义图片分享 */
-    @debounce.click()
-    ShareButton2() {
-        console.log('[Demo] ShareButton2: 触发自定义图片分享');
-        shareCustom('一起来玩！', 'https://example.com/share.png');
-    }
-
-    /** 分享按钮3 - 截图分享 */
-    @debounce.click()
-    ShareButton3() {
-        console.log('[Demo] ShareButton3: 触发截图分享');
-        // 实际使用时需传入截图 base64 数据
+    ScreenshotShareButton() {
+        console.log('[Demo] ScreenshotShareButton: 触发截图分享');
         shareScreenshot('来看看我的战绩！', '');
+    }
+
+    /** 自定义图片分享按钮(节点名 ChangeableShareButton) */
+    @debounce.click()
+    ChangeableShareButton() {
+        console.log('[Demo] ChangeableShareButton: 触发自定义图片分享');
+        shareCustom(SHARE_TITLE, SHARE_IMAGE_URL);
     }
 
     //#endregion
