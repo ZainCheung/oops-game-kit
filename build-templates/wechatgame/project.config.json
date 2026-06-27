@@ -1,17 +1,16 @@
 {
     "description": "项目配置文件。",
     "miniprogramRoot": "./",
+    "cloudfunctionRoot": "cloudfunctions/",
+    "compileType": "game",
     "setting": {
         "urlCheck": true,
         "postcss": true,
         "minified": true,
         "newFeature": false,
-    "enhance": true,
-    "useIsolateContext": true,
-    "cloudfunctionRoot": "cloudfunctions/"
-  },
-  "cloudfunctionTemplateRoot": "cloudfunctionTemplate",
-  "compileType": "game",
+        "enhance": true,
+        "useIsolateContext": true
+    },
     "libVersion": "widelyUsed",
     "appid": "",
     "projectname": "",
