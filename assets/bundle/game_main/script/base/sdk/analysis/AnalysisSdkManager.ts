@@ -1,7 +1,6 @@
 import { sys } from 'cc';
 import { AnalysisProperties, IAnalysisInitOption } from './AnalysisSdkTypes';
 import { EmptyAnalysisSdk } from './EmptyAnalysisSdk';
-import { AplusWebAnalysisSdk } from './platform/AplusWebAnalysisSdk';
 import { DouyinAnalysisSdk } from './platform/DouyinAnalysisSdk';
 import { WechatAnalysisSdk } from './platform/WechatAnalysisSdk';
 import { IAnalysisSdk } from './IAnalysisSdk';
@@ -49,7 +48,7 @@ export class AnalysisSdkManager implements IAnalysisSdk {
             case sys.Platform.WECHAT_GAME:
                 this.setSdk(new WechatAnalysisSdk());
                 await this.init({
-                    appId: '6a3f855c6f259537c7bf74d1',
+                    appId: '6a3fce7f6f259537c7bf87e2',
                     channel: 'wechat',
                     debug: true,
                     useOpenid: false,
@@ -71,13 +70,7 @@ export class AnalysisSdkManager implements IAnalysisSdk {
                 break;
 
             default:
-                this.setSdk(new AplusWebAnalysisSdk());
-                await this.init({
-                    appId: '6a3f8971cbfa69595166cb3c',
-                    channel: 'web',
-                    debug: true,
-                });
-                console.log('[友盟] Web/H5 数据分析 SDK 初始化成功');
+                console.log('[友盟] 当前平台不支持数据分析 SDK，使用空实现');
                 break;
         }
     }
