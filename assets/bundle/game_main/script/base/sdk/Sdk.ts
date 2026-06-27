@@ -1,7 +1,7 @@
 import { sys } from 'cc';
 import { AnalysisSdkManager } from './analysis';
 import { ISdk } from './ISdk';
-import { monitoring } from './monitoring';
+import { BuglyMonitoringSdk } from './monitoring';
 import { SdkManager } from './SdkManager';
 import type { IUserInfo } from './SdkTypes';
 import {
@@ -40,6 +40,8 @@ export class Sdk {
     readonly platform: ISdk = this.manager.init();
     /** 数据分析 SDK 管理器 */
     readonly analysis: AnalysisSdkManager = new AnalysisSdkManager();
+    /** Bugly 监控 SDK */
+    readonly monitoring: BuglyMonitoringSdk = new BuglyMonitoringSdk();
 
     // ==================== 数据模型（扁平） ====================
 
@@ -83,7 +85,7 @@ export class Sdk {
      * - 其他平台保持空实现，不阻塞流程
      */
     private initMonitoring(): void {
-        monitoring.initByPlatform();
+        this.monitoring.initByPlatform();
     }
 
     /**
