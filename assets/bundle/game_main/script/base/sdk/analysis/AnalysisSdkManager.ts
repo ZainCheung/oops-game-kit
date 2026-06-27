@@ -49,7 +49,7 @@ export class AnalysisSdkManager implements IAnalysisSdk {
             case sys.Platform.WECHAT_GAME:
                 this.setSdk(new WechatAnalysisSdk());
                 await this.init({
-                    appId: '6a3f855c6f259537c7bf74d1',
+                    appId: '6a3fce7f6f259537c7bf87e2',
                     channel: 'wechat',
                     debug: true,
                     useOpenid: false,
