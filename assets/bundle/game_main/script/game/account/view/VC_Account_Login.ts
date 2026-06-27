@@ -12,8 +12,8 @@ const { ccclass } = _decorator;
 /** VC_Account_Login 界面视图组件 */
 @ccclass('VC_Account_Login')
 @ecs.register('VC_Account_Login', false)
-@gui.register('VC_Account_Login', { layer: LayerType.UI, prefab: 'gui/account/prefab/VC_Account_Login' })
+@gui.register('VC_Account_Login', { layer: LayerType.PopUp, prefab: 'gui/account/prefab/VC_Account_Login' })
 export class VC_Account_Login extends CCView<Account> {
     /** 释放内存 */
-    reset() {}
+    reset() { }
 }
