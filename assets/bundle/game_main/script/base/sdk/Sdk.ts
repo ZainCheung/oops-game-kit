@@ -8,6 +8,7 @@ import {
 } from './SdkTypes';
 import { SdkManager } from './SdkManager';
 import { ISdk } from './ISdk';
+import { AnalysisSdkManager } from './analysis';
 import type { IUserInfo } from './SdkTypes';
 
 /**
@@ -33,6 +34,8 @@ export class Sdk {
     private readonly manager: SdkManager = new SdkManager();
     /** 当前平台的 SDK 实现接口 */
     readonly platform: ISdk = this.manager.init();
+    /** 数据分析 SDK 管理器 */
+    readonly analysis: AnalysisSdkManager = new AnalysisSdkManager();
 
     // ==================== 数据模型（扁平） ====================
 
