@@ -1,9 +1,14 @@
+import { sys } from 'cc';
 import {
     AnalysisProperties,
     AnalysisUserProperties,
     IAnalysisInitOption,
     ITrackOption,
 } from './AnalysisSdkTypes';
+import { EmptyAnalysisSdk } from './EmptyAnalysisSdk';
+import { AplusWebAnalysisSdk } from './entity/AplusWebAnalysisSdk';
+import { DouyinAnalysisSdk } from './entity/DouyinAnalysisSdk';
+import { WechatAnalysisSdk } from './entity/WechatAnalysisSdk';
 import { IAnalysisSdk } from './IAnalysisSdk';
 
 /**
@@ -13,11 +18,12 @@ import { IAnalysisSdk } from './IAnalysisSdk';
  * 1. 管理当前使用的 {@link IAnalysisSdk} 实现实例。
  * 2. 提供统一的访问入口 {@link getSdk} / {@link setSdk}。
  * 3. 默认未设置任何实现时，自动回退到 {@link EmptyAnalysisSdk}（空操作，不崩溃）。
+ * 4. 支持按平台自动初始化对应的数据分析 SDK。
  *
  * 使用方式：
  * ```typescript
  * const mgr = new AnalysisSdkManager();
- * mgr.init({ appId: 'xxx', serverUrl: 'https://xxx' });
+ * mgr.initByPlatform(sys.Platform.WECHAT_GAME); // 自动按平台创建并初始化
  *
  * // 之后通过 mgr.xxx 直接调用接口
  * mgr.trackEvent('LevelUp', { level: 10 });
@@ -44,8 +50,7 @@ export class AnalysisSdkManager implements IAnalysisSdk {
      */
     getSdk(): IAnalysisSdk {
         if (!this._sdk) {
-            // 懒加载空实现，避免未接入时外部调用报错
-            const { EmptyAnalysisSdk } = require('./EmptyAnalysisSdk');
+            // 未注入具体实现时，回退到空实现，避免外部调用报错
             this._sdk = new EmptyAnalysisSdk();
         }
         return this._sdk;
@@ -59,6 +64,56 @@ export class AnalysisSdkManager implements IAnalysisSdk {
     async init(option: IAnalysisInitOption): Promise<void> {
         await this.getSdk().init(option);
         this._initialized = true;
+    }
+
+    /**
+     * 按平台自动创建并初始化对应的数据分析 SDK。
+     * - 微信小游戏 → WechatAnalysisSdk
+     * - 抖音小游戏 → DouyinAnalysisSdk
+     * - Web/H5 → AplusWebAnalysisSdk
+     * - 其他平台 → EmptyAnalysisSdk（空操作，不阻塞）
+     *
+     * @param platform Cocos sys.Platform 枚举值
+     */
+    async initByPlatform(): Promise<void> {
+        switch (sys.platform) {
+            case sys.Platform.WECHAT_GAME:
+                this.setSdk(new WechatAnalysisSdk());
+                await this.init({
+                    appId: '6a3f855c6f259537c7bf74d1',
+                    serverUrl: '',
+                    channel: 'wechat',
+                    debug: true,
+                    useOpenid: false,
+                    autoGetOpenid: false,
+                });
+                console.log('[AnalysisSdkManager] 友盟+ 微信小游戏数据分析 SDK 初始化成功');
+                break;
+
+            case sys.Platform.BYTEDANCE_MINI_GAME:
+                this.setSdk(new DouyinAnalysisSdk());
+                await this.init({
+                    appId: '', // TODO: 请填写抖音小游戏的友盟 AppKey
+                    serverUrl: '',
+                    channel: 'douyin',
+                    debug: true,
+                    useOpenid: false,
+                    autoGetOpenid: false,
+                });
+                console.log('[AnalysisSdkManager] 友盟+ 抖音小游戏数据分析 SDK 初始化成功');
+                break;
+
+            default:
+                this.setSdk(new AplusWebAnalysisSdk());
+                await this.init({
+                    appId: '6a3f8971cbfa69595166cb3c',
+                    serverUrl: '',
+                    channel: 'web',
+                    debug: true,
+                });
+                console.log('[AnalysisSdkManager] 友盟+ Web/H5 数据分析 SDK 初始化成功');
+                break;
+        }
     }
 
     isInitialized(): boolean {

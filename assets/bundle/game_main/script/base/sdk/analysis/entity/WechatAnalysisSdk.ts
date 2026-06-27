@@ -1,3 +1,6 @@
+/** 全局变量声明 */
+declare const wx: any;
+
 import {
     AnalysisProperties,
     AnalysisUserProperties,
@@ -7,22 +10,30 @@ import {
 import { IAnalysisSdk } from '../IAnalysisSdk';
 
 /**
- * 友盟+ 数据分析 SDK 实现（支持微信小游戏 / 抖音小游戏）
+ * 友盟+ 数据分析 SDK 实现（微信小游戏平台）
  *
  * 使用方式：
- * 1. 从友盟开发者中心下载对应平台的 SDK JS 文件
- *    - 微信：libs/umeng/wechat/umeng-wxgame-sdk.js
- *    - 抖音：libs/umeng/douyin/umeng-ttgame-sdk.js
- * 2. 在游戏启动时注入：
+ * 1. 从友盟开发者中心下载微信小游戏 SDK JS 文件，放在项目根目录的 utils/umtrack-wxgame/uma.min.js
+ * 2. 在 game.js 顶部完成初始化，初始化后可通过 wx.uma 引用
+ * 3. 在游戏启动时注入：
  *    ```typescript
- *    sdk.analysis.setSdk(new UmengAnalysisSdk());
- *    sdk.analysis.init({ appId: '你的友盟AppKey', serverUrl: 'xxx' });
+ *    sdk.analysis.setSdk(new WechatAnalysisSdk());
+ *    sdk.analysis.init({
+ *        appId: '你的友盟AppKey',
+ *        serverUrl: '',
+ *        channel: 'wechat',
+ *        debug: true,
+ *        useOpenid: false,
+ *        autoGetOpenid: false,
+ *    });
  *    ```
  *
- * 注意：本实现自动检测当前运行平台（微信/抖音），加载对应的友盟 SDK。
- * 非小游戏环境或 SDK 文件缺失时，方法会退化为空操作。
+ * 注意：
+ * - 本实现优先使用外部已初始化的 wx.uma（即按官方文档在 game.js 中初始化）。
+ * - 若外部未初始化，会尝试按常见路径 require SDK 文件并自行初始化。
+ * - 非微信环境或 SDK 文件缺失时，方法会退化为空操作，不会抛错。
  */
-export class UmengAnalysisSdk implements IAnalysisSdk {
+export class WechatAnalysisSdk implements IAnalysisSdk {
     private _umeng: any = null;
     private _initialized: boolean = false;
     private _accountId?: string;
@@ -39,28 +50,18 @@ export class UmengAnalysisSdk implements IAnalysisSdk {
         this._channel = option.channel;
 
         try {
-            // 自动检测平台并加载对应的友盟 SDK
-            if (typeof wx !== 'undefined') {
-                this._umeng = require('../../../../libs/umeng/wechat/umeng-wxgame-sdk');
-            }
-            else if (typeof tt !== 'undefined') {
-                this._umeng = require('../../../../libs/umeng/douyin/umeng-ttgame-sdk');
-            }
-            else {
-                console.warn('[UmengAnalysisSdk] 非微信/抖音环境，友盟 SDK 未加载');
+            this._umeng = this.resolveSdkInstance(option);
+
+            if (!this._umeng) {
+                console.warn('[WechatAnalysisSdk] 非微信环境或 SDK 未加载，将使用空操作');
                 return;
             }
 
-            this._umeng.init({
-                appKey: option.appId,
-                debug: option.debug,
-                ...option,
-            });
             this._initialized = true;
             this.log('init', option);
         }
         catch (err) {
-            console.error('[UmengAnalysisSdk] 初始化失败:', err);
+            console.error('[WechatAnalysisSdk] 初始化失败:', err);
             throw err;
         }
     }
@@ -84,6 +85,8 @@ export class UmengAnalysisSdk implements IAnalysisSdk {
 
     async login(accountId: string): Promise<void> {
         this._accountId = accountId;
+        // 友盟微信小游戏 SDK 使用 setUserid 设置业务账号 ID
+        this._umeng?.setUserid?.(accountId);
         this._umeng?.setUserAccount?.(accountId);
         this.log('login', accountId);
     }
@@ -109,7 +112,8 @@ export class UmengAnalysisSdk implements IAnalysisSdk {
     async track(option: ITrackOption): Promise<void> {
         if (this._paused) return;
         const params = { ...this._superProperties, ...option.properties };
-        this._umeng?.trackEvent?.({ eventId: option.eventName, params });
+        // 友盟微信小游戏 SDK：uma.trackEvent(eventId, params)
+        this._umeng?.trackEvent?.(option.eventName, params);
         this.log('track', option.eventName, params);
     }
 
@@ -119,19 +123,16 @@ export class UmengAnalysisSdk implements IAnalysisSdk {
 
     async setSuperProperties(properties: AnalysisProperties): Promise<void> {
         this._superProperties = { ...this._superProperties, ...properties };
-        this._umeng?.setPresetProperty?.(this._superProperties);
         this.log('setSuperProperties', properties);
     }
 
     async unsetSuperProperty(propertyName: string): Promise<void> {
         delete this._superProperties[propertyName];
-        this._umeng?.setPresetProperty?.(this._superProperties);
         this.log('unsetSuperProperty', propertyName);
     }
 
     async clearSuperProperties(): Promise<void> {
         this._superProperties = {};
-        this._umeng?.setPresetProperty?.({});
         this.log('clearSuperProperties');
     }
 
@@ -149,12 +150,12 @@ export class UmengAnalysisSdk implements IAnalysisSdk {
     }
 
     async userSetOnce(properties: AnalysisUserProperties): Promise<void> {
-        console.warn('[UmengAnalysisSdk] userSetOnce 退化为 userSet（友盟不支持 setOnce）');
+        console.warn('[WechatAnalysisSdk] userSetOnce 退化为 userSet（友盟不支持 setOnce）');
         return this.userSet(properties);
     }
 
     async userAdd(properties: Record<string, number>): Promise<void> {
-        console.warn('[UmengAnalysisSdk] userAdd 退化为 userSet（友盟不支持累加）');
+        console.warn('[WechatAnalysisSdk] userAdd 退化为 userSet（友盟不支持累加）');
         return this.userSet(properties);
     }
 
@@ -168,7 +169,7 @@ export class UmengAnalysisSdk implements IAnalysisSdk {
     }
 
     async userAppend(properties: Record<string, string | string[]>): Promise<void> {
-        console.warn('[UmengAnalysisSdk] userAppend 退化为 userSet（友盟不支持数组追加）');
+        console.warn('[WechatAnalysisSdk] userAppend 退化为 userSet（友盟不支持数组追加）');
         return this.userSet(properties);
     }
 
@@ -223,9 +224,100 @@ export class UmengAnalysisSdk implements IAnalysisSdk {
 
     //#endregion
 
+    //#region ========== 微信小游戏专有接口 ==========
+
+    /**
+     * 设置微信 OpenID（useOpenid: true 时必须上传，否则数据不会上报）
+     * @param openid 微信用户 OpenID
+     */
+    setOpenid(openid: string): void {
+        this._umeng?.setOpenid?.(openid);
+        this.log('setOpenid', openid);
+    }
+
+    /**
+     * 设置微信 UnionID
+     * @param unionid 微信用户 UnionID
+     */
+    setUnionid(unionid: string): void {
+        this._umeng?.setUnionid?.(unionid);
+        this.log('setUnionid', unionid);
+    }
+
+    /**
+     * 注册分享回调（替代 wx.onShareAppMessage）
+     */
+    onShareAppMessage(): void {
+        this._umeng?.onShareAppMessage?.();
+        this.log('onShareAppMessage');
+    }
+
+    /**
+     * 调用分享（替代 wx.shareAppMessage）
+     * @param options 分享参数
+     */
+    shareAppMessage(options?: any): void {
+        this._umeng?.shareAppMessage?.(options);
+        this.log('shareAppMessage', options);
+    }
+
+    /**
+     * 追踪分享事件，返回带分享追踪参数的分享数据
+     * @param shareData 原始分享参数
+     * @returns 带追踪 query 的分享数据
+     */
+    trackShare(shareData?: any): any {
+        const result = this._umeng?.trackShare?.(shareData);
+        this.log('trackShare', shareData, result);
+        return result ?? shareData;
+    }
+
+    //#endregion
+
+    private resolveSdkInstance(option: IAnalysisInitOption): any {
+        // 1. 优先使用外部已初始化的全局 uma（官方推荐在 game.js 中初始化）
+        if (typeof wx !== 'undefined' && wx.uma) {
+            return wx.uma;
+        }
+
+        // 2. 否则尝试按常见路径加载 SDK 文件并初始化
+        if (typeof wx !== 'undefined') {
+            const sdkModule = this.tryRequire([
+                '../../../../utils/umtrack-wxgame/uma.min.js',
+                '../../../../libs/umeng/wechat/umtrack-wxgame',
+                '../../../../libs/umeng/wechat/uma.min.js',
+                './umtrack-wxgame/uma.min.js',
+            ]);
+            if (sdkModule) {
+                sdkModule.init({
+                    appKey: option.appId,
+                    useOpenid: option.useOpenid ?? false,
+                    autoGetOpenid: option.autoGetOpenid ?? false,
+                    debug: option.debug ?? false,
+                });
+                return wx.uma ?? sdkModule;
+            }
+        }
+
+        return null;
+    }
+
+    private tryRequire(paths: string[]): any {
+        if (typeof require === 'undefined') return null;
+        for (const p of paths) {
+            try {
+                return require(p);
+            }
+            catch (e) {
+                // 路径不存在则继续尝试下一个
+            }
+        }
+        return null;
+    }
+
     private log(method: string, ...args: any[]): void {
         if (this._debug) {
-            console.log(`[UmengAnalysisSdk] ${method}`, ...args);
+            console.log(`[WechatAnalysisSdk] ${method}`, ...args);
         }
     }
 }

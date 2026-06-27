@@ -1,15 +1,17 @@
+import { sys } from 'cc';
+import { AnalysisSdkManager } from './analysis';
+import { ISdk } from './ISdk';
+import { SdkManager } from './SdkManager';
+import type { IUserInfo } from './SdkTypes';
 import {
+    INetworkStatusChangeEvent,
     ISdkEventCallbacks,
     SdkErrorCallback,
     SdkHideCallback,
     SdkNetworkChangeCallback,
     SdkShowCallback,
-    INetworkStatusChangeEvent,
 } from './SdkTypes';
-import { SdkManager } from './SdkManager';
-import { ISdk } from './ISdk';
-import { AnalysisSdkManager } from './analysis';
-import type { IUserInfo } from './SdkTypes';
+
 
 /**
  * 平台 SDK 单例模块
@@ -67,10 +69,26 @@ export class Sdk {
 
     constructor() {
         this.initEvents();
+        this.initAnalysis();
     }
 
+    /**
+     * 初始化数据分析 SDK。
+     * 根据当前平台自动选择对应的数据分析实现。
+     * - 微信小游戏 → 友盟+小游戏 SDK
+     * - 抖音小游戏 → 友盟+小游戏 SDK
+     * - Web/H5 → 友盟+QuickTracking Web SDK
+     * - 其他平台保持空实现，不阻塞流程
+     */
+    private initAnalysis(): void {
+        this.analysis.initByPlatform().catch(err => {
+            console.error('[Sdk] 数据分析 SDK 初始化失败', err);
+        });
+    }
+
+
     private initEvents() {
-        console.log(`[SDK] 平台 = ${this.manager.platform}, 准备就绪 = ${this.platform.isReady()}`);
+        console.log(`[SDK] 平台 = ${sys.platform}, 准备就绪 = ${this.platform.isReady()}`);
 
         // 转发原生事件到注册的回调
         this.onShowCb = (res: any) => {

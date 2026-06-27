@@ -17,8 +17,6 @@ import { DefaultSdk, DouYinMiniGameSdk, WeChatMiniGameSdk } from './minigame';
 export class SdkManager {
     /** 当前平台实现 */
     private _sdk: ISdk | null = null;
-    /** 当前平台类型 */
-    private _platform: sys.Platform = sys.Platform.EDITOR;
 
     /**
      * 初始化 SDK 管理器（探测平台并创建实例）
@@ -26,8 +24,7 @@ export class SdkManager {
      */
     init(): ISdk {
         if (this._sdk) return this._sdk;
-        this._platform = sys.platform;
-        this._sdk = this.createSdk(this._platform);
+        this._sdk = this.createSdk();
         return this._sdk;
     }
 
@@ -36,18 +33,14 @@ export class SdkManager {
      *
      * 未知平台回退到 {@link DefaultSdk}（EDITOR）。
      */
-    private createSdk(platform: sys.Platform): ISdk {
-        switch (platform) {
+    private createSdk(): ISdk {
+        switch (sys.platform) {
             case sys.Platform.WECHAT_GAME:
                 return new WeChatMiniGameSdk();
             case sys.Platform.BYTEDANCE_MINI_GAME:
                 return new DouYinMiniGameSdk();
-            case sys.Platform.MOBILE_BROWSER:
-            case sys.Platform.DESKTOP_BROWSER:
-            case sys.Platform.EDITOR:
-                return new DefaultSdk(platform);
             default:
-                return new DefaultSdk(sys.Platform.EDITOR);
+                return new DefaultSdk();
         }
     }
 
@@ -58,12 +51,6 @@ export class SdkManager {
     getSdk(): ISdk {
         if (!this._sdk) this.init();
         return this._sdk!;
-    }
-
-    /** 当前平台枚举 */
-    get platform(): sys.Platform {
-        if (!this._sdk) this.init();
-        return this._platform;
     }
 
     /** 当前 SDK 是否已就绪 */
@@ -78,6 +65,5 @@ export class SdkManager {
      */
     destroy(): void {
         this._sdk = null;
-        this._platform = sys.Platform.EDITOR;
     }
 }
