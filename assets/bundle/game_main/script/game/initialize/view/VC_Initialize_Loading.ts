@@ -5,6 +5,7 @@ import { LayerType } from 'db://oops-framework/core/gui/layer/LayerEnum';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Initialize } from '../Initialize';
+import { InitializeEventName } from '../InitializeEvent';
 
 const { ccclass, property } = _decorator;
 
@@ -37,9 +38,9 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
     }
 
     /** 开始按钮点击事件 */
-    private btnStart() {
+    private async btnStart() {
         if (this.progress < 1) return;
-        this.enterGame();
+        await this.event.emitAsync(InitializeEventName.LoadComplete);
     }
 
     //#region 资源加载
@@ -86,7 +87,7 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
     //#region 进入游戏
 
     /** 进入游戏主界面 */
-    private async enterGame() {
+    async enterGame() {
         await oops.gui.open({ layer: LayerType.UI, prefab: 'gui/demo/V_Demo_Main' });
         this.remove();
     }

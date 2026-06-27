@@ -1,6 +1,8 @@
 import { oops } from 'db://oops-framework/core/Oops';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
+import { gsm } from '../../../../common/GameSingletonModule';
+import { VC_Initialize_Loading } from '../../../../initialize/view/VC_Initialize_Loading';
 
 /**
  * 进入游戏加载界面
@@ -16,6 +18,7 @@ export class RequestEnterGame extends LoginProcessBase {
         console.time(label);
         try {
             oops.log.trace('【登录流程】进入游戏加载界面成功');
+            gsm.initialize.get(VC_Initialize_Loading)?.enterGame();
             console.timeEnd(label);
             this.success();
         }
