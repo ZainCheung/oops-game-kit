@@ -4,7 +4,7 @@ import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
 import type { ICustomPrivacyDialog, IPrivacyEventInfo, PrivacyResolveCallback } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
-import { VC_Account_Login } from '../../../view/VC_Account_Login';
+import { V_Account_Authorization } from '../../../view/V_Account_Authorization';
 
 /**
  * 登录流程 —— 获取用户名
@@ -85,7 +85,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     }
 
     /**
-     * 弹业务侧自定义隐私弹窗（VC_Account_Login prefab）。
+     * 弹业务侧自定义隐私弹窗（V_Account_Authorization prefab）。
      *
      * 按钮 → resolve 事件映射：
      *   btnRequestSdkUserInfo  → resolve({ event: 'agree' })     同意协议 + 授权拿昵称头像
@@ -93,16 +93,11 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      *   btnRejectSdkUserInfo   → resolve({ event: 'disagree' })  拒绝协议（走 fallback，不阻断游戏）
      */
     private async showPrivacyDialog(resolve: PrivacyResolveCallback): Promise<void> {
-        const uiNode = await gsm.account.B_Account_ViewUI.openLogin();
-        if (!uiNode) {
-            console.error('【登录流程】打开登录界面失败');
-            resolve({ event: 'disagree' });
-            return;
-        }
+        const uiNode = await gsm.account.B_Account_ViewUI.openAuthorization();
 
-        const vc = uiNode.getComponent(VC_Account_Login);
+        const vc = uiNode.getComponent(V_Account_Authorization);
         if (!vc) {
-            console.error('【登录流程】获取 VC_Account_Login 组件失败');
+            console.error('【登录流程】获取 V_Account_Authorization 组件失败');
             resolve({ event: 'disagree' });
             return;
         }

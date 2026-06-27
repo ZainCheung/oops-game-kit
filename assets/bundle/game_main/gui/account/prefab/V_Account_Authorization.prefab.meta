@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "9f9ee95c-92fc-4c4f-9f70-318f55991f76",
+  "uuid": "5e008e08-8b5e-4934-8f84-5992d876db18",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "VC_Account_Login"
+    "syncNodeName": "V_Account_Authorization"
   }
 }
