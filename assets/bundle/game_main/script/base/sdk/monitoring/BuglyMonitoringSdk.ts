@@ -24,6 +24,19 @@ export class BuglyMonitoringSdk {
     private _debug: boolean = false;
 
     /**
+     * 按平台自动初始化 Bugly。
+     * 根据 sys.platform 自动匹配对应配置，无需外部传入参数。
+     */
+    initByPlatform(): void {
+        this.init({
+            appId: '4180d5a92e',
+            appKey: '71d2b689-7734-4b17-a29c-cd0479c83e49',
+            version: '1.0.0',
+            debug: true,
+        });
+    }
+
+    /**
      * 初始化 Bugly
      * @param options 初始化选项（推荐）
      */
@@ -51,15 +64,19 @@ export class BuglyMonitoringSdk {
         this._debug = debug ?? false;
 
         try {
-            if (sys.platform === sys.Platform.WECHAT_GAME || sys.platform === sys.Platform.BYTEDANCE_MINI_GAME) {
-                this._initMiniGame(appId, version);
-            }
-            else if (sys.platform === sys.Platform.ANDROID) {
-                this._initAndroid(appId, appKey, version);
-            }
-            else {
-                console.warn('[BuglyMonitoringSdk] 非支持平台，Bugly SDK 未加载');
-                return;
+            switch (sys.platform) {
+                case sys.Platform.WECHAT_GAME:
+                case sys.Platform.BYTEDANCE_MINI_GAME:
+                    this._initMiniGame(appId, version);
+                    break;
+
+                case sys.Platform.ANDROID:
+                    this._initAndroid(appId, appKey, version);
+                    break;
+
+                default:
+                    console.warn('[BuglyMonitoringSdk] 非支持平台，Bugly SDK 未加载');
+                    return;
             }
         }
         catch (err) {
