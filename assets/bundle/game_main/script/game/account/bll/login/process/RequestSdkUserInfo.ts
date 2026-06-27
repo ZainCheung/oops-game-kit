@@ -94,6 +94,11 @@ export class RequestSdkUserInfo extends LoginProcessBase {
      */
     private async showPrivacyDialog(resolve: PrivacyResolveCallback): Promise<void> {
         const uiNode = await gsm.account.B_Account_ViewUI.openAuthorization();
+        if (!uiNode) {
+            console.error('【登录流程】打开登录界面失败');
+            resolve({ event: 'disagree' });
+            return;
+        }
 
         const vc = uiNode.getComponent(V_Account_Authorization);
         if (!vc) {

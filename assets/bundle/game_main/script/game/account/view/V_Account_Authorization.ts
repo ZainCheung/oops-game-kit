@@ -17,16 +17,20 @@ export class V_Account_Authorization extends GameComponent {
     }
 
     //#region 按钮事件
+
+    /** 允许获取用户信息 */
     private btnRequestSdkUserInfo(): void {
         this.onPrivacyAction?.('agree');
         this.remove();
     }
 
+    /** 拒绝获取用户信息 */
     private btnPrimarily(): void {
         this.onPrivacyAction?.('agree');
         this.remove();
     }
 
+    /** 用户隐私保护指引 */
     private btnRejectSdkUserInfo(): void {
         this.onPrivacyAction?.('disagree');
         this.remove();
