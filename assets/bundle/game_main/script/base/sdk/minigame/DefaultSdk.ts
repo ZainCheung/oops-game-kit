@@ -121,7 +121,7 @@ export class DefaultSdk implements ISdk {
                 language: 'zh_CN',
                 country: '中国',
             },
-            rawData: '',
+            rawData: 'mock',
             signature: '',
         });
     }

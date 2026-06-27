@@ -23,8 +23,14 @@ import { LoginProcessBase } from '../LoginProcessBase';
  *   - 隐私交互流程的整体编排（写 WeChatMiniGameSdk.requirePrivacyAuthorize）
  *
  * 全流程弹窗次数：
- *   - 第一次启动：1 次自定义弹窗（prefab） + 1 次原生弹窗（wx.getUserProfile）
+ *   - 第一次启动：最多 3 轮（自定义弹窗 + wx.getUserProfile），getUserProfile 被取消时会重试
  *   - 第二次启动：0 次（缓存命中）
+ *
+ * 微信环境注意：
+ *   wx.getUserProfile 必须由用户点击事件触发。若用户在原生弹窗中取消，下一轮重试时
+ *   requirePrivacyAuthorize 可能直接 resolve（隐私协议已同意），导致 getUserProfile 因
+ *   缺少点击上下文而再次失败。如遇到此问题，需将 getUserProfile 调用前移到按钮点击
+ *   回调中（V_Account_Authorization.btnRequestSdkUserInfo）。
  */
 const CACHE_KEY = 'RequestSdkUserInfo_Cache';
 
@@ -41,20 +47,37 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             return;
         }
 
-        // 1. 注入自定义隐私弹窗（业务层 prefab 按钮 → SDK resolve）
-        gsm.base.sdk.platform.setCustomPrivacyDialog(this.buildPrivacyDialog());
+        let retries = 0;
+        const MAX_RETRIES = 3;
 
-        // 2. 触发 SDK 内的微信隐私流程
-        // 注意：拒绝按钮不再触发 disagree，Promise 只会 resolve（用户点击同意）
-        //       或永久 pending（用户未操作）。异常仅来自弹窗打开失败/组件获取失败。
-        await gsm.base.sdk.platform.requirePrivacyAuthorize();
+        while (retries < MAX_RETRIES) {
+            // 1. 注入自定义隐私弹窗（业务层 prefab 按钮 → SDK resolve）
+            gsm.base.sdk.platform.setCustomPrivacyDialog(this.buildPrivacyDialog());
 
-        // 3. 协议已同意 → 调 SDK 拿真实昵称头像（**唯一一次原生弹窗**）
-        // 注意：getUserProfile 在各平台 SDK 内部已兜底（失败时返回默认用户信息，不会抛异常），无需 try/catch
-        const realUserInfo = await gsm.base.sdk.platform.getUserProfile({
-            desc: '用于在游戏中展示你的身份信息',
-        });
-        this.finish(realUserInfo.userInfo ?? { nickName: 'Player', avatarUrl: '', gender: 0 }, true);
+            // 2. 触发 SDK 内的微信隐私流程
+            // 注意：拒绝按钮不再触发 disagree，Promise 只会 resolve（用户点击同意）
+            //       或永久 pending（用户未操作）。异常仅来自弹窗打开失败/组件获取失败。
+            await gsm.base.sdk.platform.requirePrivacyAuthorize();
+
+            // 3. 协议已同意 → 调 SDK 拿真实昵称头像（**唯一一次原生弹窗**）
+            // 注意：getUserProfile 在各平台 SDK 内部已兜底（失败时返回默认用户信息，不会抛异常），无需 try/catch
+            const realUserInfo = await gsm.base.sdk.platform.getUserProfile({
+                desc: '用于在游戏中展示你的身份信息',
+            });
+
+            // 检查是否成功获取（微信取消/失败时 rawData 不存在，开发模式有 rawData: 'mock'）
+            if (realUserInfo.rawData) {
+                this.finish(realUserInfo.userInfo ?? { nickName: 'Player', avatarUrl: '', gender: 0 }, true);
+                return;
+            }
+
+            // getUserProfile 被取消或失败 → toast 提示，继续循环重新授权
+            oops.gui.toast('必须同意才可以玩');
+            retries++;
+        }
+
+        // 超过最大重试次数，使用兜底数据结束（避免无限阻塞）
+        this.finish({ nickName: 'Player', avatarUrl: '', gender: 0 }, false);
     }
 
     /**
