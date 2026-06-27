@@ -5,7 +5,6 @@ import { LayerType } from 'db://oops-framework/core/gui/layer/LayerEnum';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Initialize } from '../Initialize';
-import { InitializeEventName } from '../InitializeEvent';
 
 const { ccclass, property } = _decorator;
 
@@ -26,6 +25,8 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
         prompt: '',
         /** 游戏版本号 */
         version: '1.0.0',
+        /** 是否显示开始按钮 */
+        showBtnStart: 0
     };
 
     private progress = 0;
@@ -35,8 +36,10 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
         this.loadRes();
     }
 
+    /** 开始按钮点击事件 */
     private btnStart() {
-        this.event.emitAsync(InitializeEventName.LoadComplete);
+        if (this.progress < 1) return;
+        this.enterGame();
     }
 
     //#region 资源加载
@@ -75,7 +78,8 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
         // 获取用户信息的多语言提示文本
         this.data.prompt = oops.language.getLangByID('loading_load_player');
 
-        this.enterGame();
+        // 显示开始按钮
+        this.data.showBtnStart = 1;
     }
     //#endregion
 
