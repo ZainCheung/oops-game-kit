@@ -141,10 +141,27 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#region ========== 登录与用户 ==========
 
-    login(): Promise<ILoginResult> {
-        return this.promisify<WechatMinigame.LoginSuccessCallbackResult>(wx.login.bind(wx)).then(
-            (res) => ({ code: res.code, raw: res })
-        );
+    async login(): Promise<ILoginResult> {
+        const res = await this.promisify<WechatMinigame.LoginSuccessCallbackResult>(wx.login.bind(wx));
+        const result: ILoginResult = { token: res.code, openid: null, unionid: null, raw: res };
+
+        // 如果已初始化云开发，调用云函数获取 openid（静默降级，不阻塞登录流程）
+        if (typeof wx.cloud === 'object' && wx.cloud?.callFunction) {
+            try {
+                const cloudRes = await wx.cloud.callFunction({
+                    name: 'getOpenid',
+                }) as any;
+                if (cloudRes?.result?.code === 0 && cloudRes?.result?.data) {
+                    result.openid = cloudRes.result.data.openid ?? null;
+                    result.unionid = cloudRes.result.data.unionid ?? null;
+                }
+            }
+            catch (e) {
+                console.warn('[WeChatSdk] 云函数获取 openid 失败，降级处理:', e);
+            }
+        }
+
+        return result;
     }
 
     checkSession(): Promise<boolean> {

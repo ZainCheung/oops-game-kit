@@ -30,9 +30,12 @@ export class RequestSdkLogin extends LoginProcessBase {
             const result = await sdk.login();
 
             // 保存 SDK 登录凭证到 SDK 模块
-            gsm.base.sdk.token = result.code;
+            gsm.base.sdk.token = result.token;
 
-            oops.log.trace(`【登录流程】平台 SDK 登录成功，code: ${result.code}`);
+            // 设置用户唯一编号
+            gsm.account.M_Account_Model.base.userId = result.openid!;
+
+            oops.log.trace(`【登录流程】平台 SDK 登录成功，code: ${result.token}`);
 
             console.timeEnd(label);
             this.success();

@@ -33,7 +33,11 @@ export interface ISystemInfo {
  */
 export interface ILoginResult {
     /** 登录凭证（用于换取 openid/session_key） */
-    code: string;
+    token: string;
+    /** 微信 OpenID（有云函数时通过云函数获取） */
+    openid: string | null;
+    /** 微信 UnionID（有云函数时通过云函数获取，需满足条件才有） */
+    unionid: string | null;
     /** 原始数据 */
     raw?: any;
 }
