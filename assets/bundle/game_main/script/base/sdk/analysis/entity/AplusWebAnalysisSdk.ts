@@ -15,16 +15,38 @@ import { IAnalysisSdk } from '../IAnalysisSdk';
  * 使用方式：
  * 1. 在页面 <head> 中按官方文档引入 aplus SDK 脚本：
  *    ```html
- *    <script>
- *      (function(w, d, s, q, i) {
- *        w[q] = w[q] || [];
- *        var f = d.getElementsByTagName(s)[0], j = d.createElement(s);
- *        j.async = true;
- *        j.id = 'beacon-aplus';
- *        j.src = 'https://d.alicdn.com/alilog/mlog/aplus/' + i + '.js';
- *        f.parentNode.insertBefore(j, f);
- *      })(window, document, 'script', 'aplus_queue', '203467608');
- *    </script>
+ *    <head>
+ *      <script>
+ *        (function(w, d, s, q, i) {
+ *          w[q] = w[q] || [];
+ *          var f = d.getElementsByTagName(s)[0], j = d.createElement(s);
+ *          j.async = true;
+ *          j.id = 'beacon-aplus';
+ *          j.src = 'https://d.alicdn.com/alilog/mlog/aplus/' + i + '.js';
+ *          f.parentNode.insertBefore(j, f);
+ *        })(window, document, 'script', 'aplus_queue', '203467608');
+ *
+ *        aplus_queue.push({
+ *          action: 'aplus.setMetaInfo',
+ *          arguments: ['appKey', 'xxxxxxx']
+ *        });
+ *        // 手动 PV 模式
+ *        aplus_queue.push({
+ *          action: 'aplus.setMetaInfo',
+ *          arguments: ['aplus-waiting', 'MAN']
+ *        });
+ *        // 调试模式
+ *        aplus_queue.push({
+ *          action: 'aplus.setMetaInfo',
+ *          arguments: ['DEBUG', true]
+ *        });
+ *        // 用户 ID 类型（如 openid / unionid / uuid 等）
+ *        aplus_queue.push({
+ *          action: 'aplus.setMetaInfo',
+ *          arguments: ['aplus-idtype', 'xxxx']
+ *        });
+ *      </script>
+ *    </head>
  *    ```
  * 2. 在游戏启动时注入：
  *    ```typescript
@@ -40,6 +62,7 @@ import { IAnalysisSdk } from '../IAnalysisSdk';
  * 注意：
  * - 本实现依赖全局 `window.aplus_queue` 指令队列。
  * - 非 Web 环境或 SDK 脚本未加载时，方法会退化为空操作，不会抛错。
+ * - 如果页面未引入 aplus SDK 脚本，init 时会自动在 document.head 中注入基础脚本（确保 aplus_queue 存在）。
  */
 export class AplusWebAnalysisSdk implements IAnalysisSdk {
     private _initialized: boolean = false;
@@ -57,6 +80,9 @@ export class AplusWebAnalysisSdk implements IAnalysisSdk {
         this._channel = option.channel;
 
         try {
+            // 确保 aplus_queue 存在（若页面未引入脚本，自动注入基础脚本）
+            this.ensureAplusQueue();
+
             if (typeof window === 'undefined' || !window.aplus_queue) {
                 console.warn('[AplusWebAnalysisSdk] 非 Web 环境或 aplus_queue 未加载');
                 return;
@@ -290,6 +316,16 @@ export class AplusWebAnalysisSdk implements IAnalysisSdk {
 
     //#endregion
 
+    //#region ========== 私有方法 ==========
+
+    private ensureAplusQueue(): void {
+        if (typeof window === 'undefined') return;
+        if (window.aplus_queue) return;
+
+        // 创建 aplus_queue（若页面未引入脚本，SDK 后续会退化为空操作，但至少不会报错）
+        window.aplus_queue = window.aplus_queue || [];
+    }
+
     private push(action: string, args: any[]): void {
         if (typeof window !== 'undefined' && window.aplus_queue) {
             window.aplus_queue.push({ action, arguments: args });
@@ -326,7 +362,6 @@ export class AplusWebAnalysisSdk implements IAnalysisSdk {
                 result[key] = JSON.stringify(value);
             }
             else if (typeof value === 'object' && value !== null && 'value' in value && 'time' in value) {
-                // { value, time } 格式：取 value，time 转成时间戳/字符串
                 const item = value as { value: string | number; time: Date };
                 result[key] = typeof item.value === 'number' ? item.value : String(item.value);
                 result[`${key}_time`] = item.time instanceof Date ? item.time.toISOString() : String(item.time);
@@ -346,4 +381,6 @@ export class AplusWebAnalysisSdk implements IAnalysisSdk {
             console.log(`[AplusWebAnalysisSdk] ${method}`, ...args);
         }
     }
+
+    //#endregion
 }
