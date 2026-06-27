@@ -20,6 +20,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
 const SOURCE_DIR = path.join(PROJECT_ROOT, 'core', 'build-templates', 'wechatgame', 'cloudfunctions');
@@ -74,6 +75,22 @@ function setCloudfunctionRoot(configPath, value) {
     fs.writeFileSync(configPath, JSON.stringify(cfg, null, 4) + '\n', 'utf8');
 }
 
+function installDependencies(cloudDir) {
+    for (const entry of fs.readdirSync(cloudDir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const funcDir = path.join(cloudDir, entry.name);
+        const pkgPath = path.join(funcDir, 'package.json');
+        if (!fs.existsSync(pkgPath)) continue;
+        console.log(`正在安装 ${entry.name} 云函数依赖...`);
+        try {
+            execSync('npm install', { cwd: funcDir, stdio: 'inherit' });
+            console.log(`${entry.name} 依赖安装完成`);
+        } catch (e) {
+            console.warn(`${entry.name} 依赖安装失败: ${e.message}`);
+        }
+    }
+}
+
 function deploy() {
     if (!fs.existsSync(SOURCE_DIR)) {
         console.error('未找到云函数源目录: ' + SOURCE_DIR);
@@ -92,6 +109,8 @@ function deploy() {
     } else {
         console.warn('警告: 未找到 project.config.json，请手动配置 cloudfunctionRoot。');
     }
+
+    installDependencies(destCloud);
 
     console.log('\n请在 Cocos Creator 中构建微信小游戏，云函数将自动随 build-templates 进入产物。');
     console.log('然后在微信开发者工具中右键 cloudfunctions 目录，选择"上传并部署：云端安装依赖"。');
