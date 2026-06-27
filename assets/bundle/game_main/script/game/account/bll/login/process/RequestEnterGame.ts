@@ -17,8 +17,6 @@ export class RequestEnterGame extends LoginProcessBase {
         const label = '【登录流程】进入游戏加载界面';
         console.time(label);
         try {
-            oops.log.trace('【登录流程】进入游戏加载界面成功');
-
             // 统计登录成功事件
             const accountModel = gsm.account.M_Account_Model;
             const userId = accountModel.base.userId;

@@ -11,19 +11,24 @@ import { RequestGameTable } from './login/process/RequestGameTable';
 import { RequestSdkLogin } from './login/process/RequestSdkLogin';
 import { RequestSdkUserInfo } from './login/process/RequestSdkUserInfo';
 
+// 行为树节点类型 → 构造器映射
+const nodeFactoryMap: Record<string, new () => any> = {
+    RequestSdkLogin,
+    RequestSdkUserInfo,
+    RequestGameTable,
+    RequestConnectNet,
+    RequestGameData,
+    RequestEnterGame,
+};
+
+// 登录流程节点列表（增删节点只需改这里）
+const loginFlowNodes = ['RequestSdkLogin', 'RequestSdkUserInfo', 'RequestGameTable', 'RequestGameData', 'RequestEnterGame'] as const;
+
 /** 登录流程配置 */
 const LoginProcessConfig: BTNodeJson = {
     type: 'Sequence',
-    children: [
-        { type: 'RequestSdkLogin' },
-        { type: 'RequestSdkUserInfo' },
-        { type: 'RequestGameTable' },
-        // { type: 'RequestConnectNet' },
-        { type: 'RequestGameData' },
-        { type: 'RequestEnterGame' },
-    ],
+    children: loginFlowNodes.map(type => ({ type })),
 };
-console.log('========== B_Account_Login 2026-06-25 版本: 行为树中已启用 RequestSdkUserInfo 节点 ==========');
 
 /** 重连流程配置 */
 const ReconnectProcessConfig: BTNodeJson = {
@@ -40,13 +45,10 @@ export class B_Account_Login extends CCBusiness<Account> {
     private reconnectProcess!: BehaviorTree;
 
     protected init() {
-        // 注册自定义登录流程节点工厂
-        BehaviorTree.registerFactory('RequestSdkLogin', () => new RequestSdkLogin());
-        BehaviorTree.registerFactory('RequestSdkUserInfo', () => new RequestSdkUserInfo());
-        BehaviorTree.registerFactory('RequestGameTable', () => new RequestGameTable());
-        BehaviorTree.registerFactory('RequestConnectNet', () => new RequestConnectNet());
-        BehaviorTree.registerFactory('RequestGameData', () => new RequestGameData());
-        BehaviorTree.registerFactory('RequestEnterGame', () => new RequestEnterGame());
+        // 通过映射统一注册所有节点工厂
+        for (const [type, cls] of Object.entries(nodeFactoryMap)) {
+            BehaviorTree.registerFactory(type, () => new cls());
+        }
 
         // 通过配置创建行为树
         this.loginProcess = new BehaviorTree(BehaviorTree.fromJSON(LoginProcessConfig));
