@@ -52,19 +52,19 @@ export class VC_[Module]_[Name] extends CCView<[Module]> {
     onLoad() {
         super.onLoad();
         this.setWatch();
-        this.setButton();
+        this.button.bind();
         // 初始化逻辑
     }
 
     private setWatch() {
-        // this.watch([Module]EventName.[EventKey], this.on[EventName]UI, this);
+        // this.event.setEvent([Module]EventName.[EventKey]);
     }
 
     //#region 事件处理
     //#endregion
 
     //#region 按钮事件
-    // private onBtn[ButtonName](): void {
+    // private [BtnName](): void {
     //     // 按钮点击逻辑
     // }
     //#endregion
@@ -117,9 +117,9 @@ export class V_[Module]_[Name] extends GameComponent {
 | ECS 装饰器 | `@ecs.register('VC_[Module]_[Name]', false)`，第二个参数必须是 `false` |
 | GUI 装饰器 | `@gui.register('VC_[Module]_[Name]', { layer: LayerType.UI, prefab: 'gui/[module]/prefab/VC_[Module]_[Name]' })` |
 | **layer 值** | 根据界面类型选择（详见下方 LayerType 选择指南） |
-| onLoad() | 必须调用 `super.onLoad()`、`this.setWatch()`、`this.setButton()` |
-| setWatch() | 所有 `watch()` 统一在此 |
-| 按钮事件 | 方法名格式 `onBtn[按钮节点名]`，由 `setButton()` 自动绑定 |
+| onLoad() | 必须调用 `super.onLoad()`、`this.setWatch()`、`this.button.bind()` |
+| setWatch() | 使用 `this.event.setEvent()` 注册全局事件 |
+| 按钮事件 | 方法名格式 `btn[按钮节点名]`，由 `this.button.bind()` 自动绑定 |
 | reset() | **必须实现**，只清理自定义内存 |
 | 关闭视图 | 使用 `this.remove()`，❌ 禁止 `oops.gui.remove()` |
 | @property | 必须使用 `= null!` 初始化 |
@@ -164,15 +164,15 @@ onLoad() {
 // ❌ 错误 - 未调用 setButton()
 onLoad() {
     super.onLoad();
-    this.setWatch();  // 错误！缺少 this.setButton()
+    this.setWatch();  // 错误！缺少 this.button.bind()
 }
 
 // ❌ 错误 - 按钮事件名不规范
-private onCloseButtonClick() { }  // 错误！应为 onBtnClose()
+private onCloseButtonClick() { }  // 错误！应为 btnClose()
 
-// ❌ 错误 - 手动绑定按钮事件
+// ❌ 错误 - 未调用 this.button.bind()
 private bindEvents() {
-    this.btnClose.node.on(Node.EventType.TOUCH_END, this.onBtnClose, this);  // 禁止！
+    this.btnClose.node.on(Node.EventType.TOUCH_END, this.btnClose, this);  // 禁止！应使用 this.button.bind()
 }
 
 // ❌ 错误 - 直接调用 oops.gui.remove()

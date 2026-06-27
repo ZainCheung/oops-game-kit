@@ -1,5 +1,3 @@
-import { oops } from 'db://oops-framework/core/Oops';
-import { AccountEventName } from '../../../AccountEvent';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
 
@@ -14,7 +12,6 @@ export class RequestGameData extends LoginProcessBase {
     }
 
     protected async execute() {
-        oops.message.dispatchEvent(AccountEventName.LoginSuccessGame);
         this.success();
     }
 }

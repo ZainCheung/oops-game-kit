@@ -6,8 +6,9 @@ import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Initialize } from '../Initialize';
 import { InitializeEventName } from '../InitializeEvent';
+import { AccountEventName } from '../../account/AccountEvent';
 
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 /** 游戏初始化加载界面 */
 @ccclass('VC_Initialize_Loading')
@@ -32,16 +33,32 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
 
     private progress = 0;
 
-    start() {
+    onLoad() {
+        super.onLoad();
+        this.setWatch();
         this.button.bind();
         this.loadRes();
     }
 
+    //#region 按钮事件
     /** 开始按钮点击事件 */
     private async btnStart() {
         if (this.progress < 1) return;
         await this.event.emitAsync(InitializeEventName.LoadComplete);
     }
+    //#endregion
+
+    //#region 全局事件
+    private setWatch() {
+        this.event.setEvent(AccountEventName.LoginSuccessGame);
+    }
+
+    /** 进入游戏主界面 */
+    private async onLoginSuccessGame() {
+        await oops.gui.open({ layer: LayerType.UI, prefab: 'gui/demo/V_Demo_Main' });
+        this.remove();
+    }
+    //#endregion
 
     //#region 资源加载
     /** 加载资源 */
@@ -82,16 +99,6 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
         // 显示开始按钮
         this.data.showBtnStart = 1;
     }
-    //#endregion
-
-    //#region 进入游戏
-
-    /** 进入游戏主界面 */
-    async enterGame() {
-        await oops.gui.open({ layer: LayerType.UI, prefab: 'gui/demo/V_Demo_Main' });
-        this.remove();
-    }
-    //#endregion
 
     reset(): void { }
 }
