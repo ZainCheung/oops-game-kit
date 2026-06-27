@@ -5,6 +5,7 @@ import { LayerType } from 'db://oops-framework/core/gui/layer/LayerEnum';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
 import type { Initialize } from '../Initialize';
+import { InitializeEventName } from '../InitializeEvent';
 
 const { ccclass, property } = _decorator;
 
@@ -30,7 +31,12 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
     private progress = 0;
 
     start() {
+        this.button.bind();
         this.loadRes();
+    }
+
+    private btnStart() {
+        this.event.emitAsync(InitializeEventName.LoadComplete);
     }
 
     //#region 资源加载

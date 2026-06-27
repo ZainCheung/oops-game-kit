@@ -2,19 +2,17 @@ import { _decorator } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
+import { gsm } from '../../common/GameSingletonModule';
 import { ConfigCommonStorage } from '../../common/config/ConfigGameStorage';
 import type { Initialize } from '../Initialize';
-import { InitializeEventName } from '../InitializeEvent';
+import { VC_Initialize_Loading } from './VC_Initialize_Loading';
 
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 /** 游戏初始画面 - 避免加载框架通用资源与自定义游戏资源过长时的过度画面 */
 @ccclass('VC_Initialize_Initial')
 @ecs.register('VC_Initialize_Initial', false)
 export class VC_Initialize_Initial extends CCView<Initialize> {
-    /** 资源加载完成 */
-    private loadComplete = false;
-
     start() {
         this.loadRes();
     }
@@ -29,15 +27,7 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
         // 窗口打开失败事件
         oops.gui.setOpenFailure(this.onOpenFailure);
 
-        this.loadComplete = true;
-        this.tryEnter();
-    }
-
-    /** 尝试进入加载界面（资源加载完成后直接进入） */
-    private tryEnter() {
-        if (this.loadComplete) {
-            this.event.emitAsync(InitializeEventName.LoadComplete);
-        }
+        await gsm.initialize.addUi(VC_Initialize_Loading);
     }
 
     /** 窗口打开失败事件 */
