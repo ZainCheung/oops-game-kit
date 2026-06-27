@@ -57,6 +57,15 @@ import { DefaultSdk } from './DefaultSdk';
 export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     constructor() {
         super(sys.Platform.WECHAT_GAME);
+        // 初始化微信云开发（供后续云函数调用）
+        if (typeof wx.cloud === 'object' && wx.cloud.init) {
+            try {
+                wx.cloud.init({ env: (wx.cloud as any).DYNAMIC_CURRENT_ENV });
+            }
+            catch (e) {
+                console.warn('[WeChatSdk] wx.cloud.init 初始化失败:', e);
+            }
+        }
     }
 
     //#region ========== 内部辅助 ==========
