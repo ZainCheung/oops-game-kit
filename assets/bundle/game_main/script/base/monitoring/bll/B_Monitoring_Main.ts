@@ -1,7 +1,16 @@
-import { director } from 'cc';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
 import { Monitoring } from '../Monitoring';
+
+/** 上报数据结构 */
+interface ReportData {
+    type: string;
+    time: string;
+    timestamp: number;
+    message: string;
+    stack: string;
+    [key: string]: unknown;
+}
 
 /** 错误监控主业务逻辑 */
 @classname('B_Monitoring_Main')
@@ -12,100 +21,122 @@ export class B_Monitoring_Main extends CCBusiness<Monitoring> {
         this.initRuntimeError();
         this.initUnhandledRejection();
         this.initConsoleError();
-        this.initResourceLoadError();
-        this.initEngineError();
-        this.test();
     }
 
-    /** 获取上报上下文信息 */
-    private getContext(): Record<string, unknown> {
+    /** 通用上报入口，接入第三方 SDK 后替换 console.log 为 SDK API */
+    private reportToThirdParty(data: ReportData): void {
+        console.log(
+            '%c[ThirdParty] %c上报异常',
+            'color:#f60;font-weight:bold',
+            'color:#f60',
+            `\n${JSON.stringify(data, null, 2)}`
+        );
+    }
+
+    private buildReport(
+        type: string,
+        message: string,
+        stack?: string,
+        extra?: Record<string, unknown>,
+    ): ReportData {
         return {
-            time: Date.now(),
-            // 后续可补充: userId, scene, platform, version 等
+            type,
+            time: new Date().toISOString(),
+            timestamp: Date.now(),
+            message,
+            stack: stack || '',
+            ...extra,
         };
     }
 
-    /**
-     * 模拟上报第三方平台
-     * 后续接入 SDK 后替换此方法中的 console.warn 为 SDK API 调用
-     */
-    private report(type: string, data: Record<string, unknown>): void {
-        const payload = {
-            type,
-            ...this.getContext(),
-            ...data,
-        };
-        console.warn('[Monitoring]', JSON.stringify(payload, null, 2));
-    }
+    // ==================== 自动捕获 ====================
 
     /** 1. 监听未捕获的 JS 运行时错误 */
     private initRuntimeError(): void {
         window.addEventListener('error', (event: ErrorEvent) => {
             if (!(event instanceof ErrorEvent)) return;
-
-            const detail = {
-                message: event.message,
+            event.preventDefault();
+            this.reportToThirdParty(this.buildReport('runtime_error', event.message, event.error?.stack, {
                 filename: event.filename,
                 lineno: event.lineno,
                 colno: event.colno,
-                stack: event.error?.stack || '',
-            };
-            console.error(`[Monitoring] 运行时错误: ${event.message}\n  at ${event.filename}:${event.lineno}:${event.colno}\n  stack: ${event.error?.stack || 'N/A'}`);
-            this.report('runtime_error', detail);
+            }));
         });
     }
 
     /** 2. 监听未处理的 Promise 异常 */
     private initUnhandledRejection(): void {
         window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+            event.preventDefault();
             const reason = event.reason;
-            const detail: Record<string, unknown> = {};
             if (reason instanceof Error) {
-                detail.message = reason.message;
-                detail.stack = reason.stack;
-                console.error(`[Monitoring] 未处理的 Promise 异常: ${reason.message}\n  stack: ${reason.stack}`);
+                this.reportToThirdParty(this.buildReport('unhandled_rejection', reason.message, reason.stack));
             }
             else {
-                detail.message = String(reason);
-                detail.raw = reason;
-                console.error('[Monitoring] 未处理的 Promise 异常:', reason);
+                this.reportToThirdParty(this.buildReport('unhandled_rejection', String(reason), '', { raw: reason }));
             }
-            this.report('unhandled_rejection', detail);
         });
     }
 
-    /** 3. 重写 console.error，捕获主动调用的错误日志 */
+    /** 3. 重写 console.error 捕获主动调用的错误日志 */
     private initConsoleError(): void {
         const origError = console.error;
         console.error = (...args: unknown[]) => {
-            this.report('console_error', { args: args.map(a => String(a)) });
+            const parseArg = (a: unknown): string => {
+                if (a instanceof ErrorEvent) {
+                    return `ErrorEvent: ${a.message} (${a.filename}:${a.lineno}:${a.colno})`;
+                }
+                if (a instanceof Error) {
+                    return `${a.message}\n${a.stack}`;
+                }
+                if (typeof a === 'object' && a !== null) {
+                    try {
+                        return JSON.stringify(a);
+                    }
+                    catch {
+                        return String(a);
+                    }
+                }
+                return String(a);
+            };
+            const msg = args.map(parseArg).join(' ');
+            const err = args.find(a => a instanceof Error) as Error | undefined;
+            const errEvent = args.find(a => a instanceof ErrorEvent) as ErrorEvent | undefined;
+            const stack = err?.stack || errEvent?.error?.stack || '';
+            this.reportToThirdParty(this.buildReport('console_error', msg, stack, {
+                args: args.map(a => (a instanceof ErrorEvent ? `ErrorEvent: ${a.message}` : String(a))),
+            }));
             origError.apply(console, args);
         };
     }
 
-    /** 4. 监听资源加载失败（捕获阶段） */
-    private initResourceLoadError(): void {
-        window.addEventListener('error', (event: Event) => {
-            const target = event.target;
-            if (target instanceof HTMLScriptElement || target instanceof HTMLLinkElement ||
-                target instanceof HTMLImageElement) {
-                const tag = (target as HTMLElement).tagName;
-                const src = (target as any).src || (target as any).href || 'unknown';
-                console.error(`[Monitoring] 资源加载失败: <${tag}> ${src}`);
-                this.report('resource_load', { tag, src });
-            }
-        }, true);
+    // ==================== 手动上报接口 ====================
+
+    /**
+     * 手动上报业务异常
+     * 在 try-catch 中调用，替代那些自动捕获不到的场景
+     *
+     * @example
+     * ```ts
+     * try {
+     *     // ...
+     * } catch (e) {
+     *     this.reportError(e, { action: 'login' });
+     * }
+     * ```
+     */
+    reportError(error: unknown, extra?: Record<string, unknown>): void {
+        if (error instanceof Error) {
+            this.reportToThirdParty(this.buildReport('manual', error.message, error.stack, extra));
+        }
+        else {
+            this.reportToThirdParty(this.buildReport('manual', String(error), '', extra));
+        }
     }
 
-    /** 5. 监听 Cocos Creator 引擎错误 */
-    private initEngineError(): void {
-        (director as unknown as { on: Function }).on('error', (error: unknown) => {
-            console.error('[Monitoring] Cocos 引擎错误:', error);
-            this.report('engine_error', { message: String(error) });
-        });
-    }
+    // ==================== 测试 ====================
 
-    /** 测试全局错误监控（仅触发一次） */
+    /** 测试自动捕获 + 手动上报 */
     test(): void {
         if (this.tested) {
             console.warn('[Monitoring] 测试已执行过，请刷新页面重新测试');
@@ -113,32 +144,31 @@ export class B_Monitoring_Main extends CCBusiness<Monitoring> {
         }
         this.tested = true;
 
-        console.log('[Monitoring] === 开始测试全局错误监控 ===');
+        console.log('[Monitoring] === 开始测试 ===');
 
+        // 1. 自动 - 未捕获异常
         setTimeout(() => {
-            console.log('[Monitoring] 测试 1/5: JS 运行时错误...');
-            throw new Error('模拟的运行时错误！');
+            console.log('[Monitoring] 测试 1/4: 未捕获异常...');
+            throw new Error('模拟未捕获异常！');
         }, 100);
 
+        // 2. 自动 - Promise 异常
         setTimeout(() => {
-            console.log('[Monitoring] 测试 2/5: Promise 异常...');
-            Promise.reject(new Error('模拟的 Promise 异常！'));
+            console.log('[Monitoring] 测试 2/4: Promise 异常...');
+            Promise.reject(new Error('模拟 Promise 异常！'));
         }, 500);
 
+        // 3. 自动 - console.error
         setTimeout(() => {
-            console.log('[Monitoring] 测试 3/5: console.error 主动上报...');
-            console.error('模拟的主动错误日志');
+            console.log('[Monitoring] 测试 3/4: console.error...');
+            console.error('模拟主动错误日志');
         }, 900);
 
+        // 4. 手动 - reportError
         setTimeout(() => {
-            console.log('[Monitoring] 测试 4/5: Cocos 引擎错误...');
-            director.emit('error', '模拟的 Cocos 资源加载失败！');
+            console.log('[Monitoring] 测试 4/4: 手动上报...');
+            // 模拟业务层 catch 中调用
+            this.reportError(new Error('模拟手动上报的业务异常'), { action: 'test', module: 'login' });
         }, 1300);
-
-        setTimeout(() => {
-            console.log('[Monitoring] 测试 5/5: 资源加载错误...');
-            const img = new Image();
-            img.src = 'https://invalid.example.com/nonexistent.png';
-        }, 1700);
     }
 }
