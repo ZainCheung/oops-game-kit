@@ -85,7 +85,8 @@ export class B_Share_Main extends CCBusiness<Share> {
                 withShareTicket: data.withShareTicket,
                 screenshotData: data.screenshotData,
             });
-        } catch (err) {
+        }
+        catch (err) {
             console.error('[Share] 截图分享失败', err);
         }
     }
@@ -96,7 +97,7 @@ export class B_Share_Main extends CCBusiness<Share> {
      * 截取当前画面并返回 base64 格式
      * @returns 截图的 base64 字符串，失败返回空字符串
      */
-    public static async captureScreen(): Promise<string> {
+    static async captureScreen(): Promise<string> {
         return new Promise((resolve) => {
             try {
                 const g = globalThis as any;
@@ -137,7 +138,8 @@ export class B_Share_Main extends CCBusiness<Share> {
 
                 // 读取临时文件为 base64
                 resolve(B_Share_Main.readFileAsBase64(wx, tempPath));
-            } catch (err) {
+            }
+            catch (err) {
                 console.error('[Share] 截图异常', err);
                 resolve('');
             }
@@ -156,7 +158,8 @@ export class B_Share_Main extends CCBusiness<Share> {
 
         try {
             return fs.readFileSync(filePath, 'base64') as string;
-        } catch (e) {
+        }
+        catch (e) {
             console.error('[Share] 读取文件失败', e);
             return '';
         }

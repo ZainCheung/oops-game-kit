@@ -18,8 +18,8 @@ export class Account extends CCEntity {
     protected init() {
         this.addComponents(M_Account_Model);
         this.addBusinesss(
-            B_Account_Module, 
-            B_Account_Event, 
+            B_Account_Module,
+            B_Account_Event,
             B_Account_Login, B_Account_ViewUI);
     }
 }

@@ -6,10 +6,12 @@
         "postcss": true,
         "minified": true,
         "newFeature": false,
-        "enhance": true,
-        "useIsolateContext": true
-    },
-    "compileType": "game",
+    "enhance": true,
+    "useIsolateContext": true,
+    "cloudfunctionRoot": "cloudfunctions/"
+  },
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate",
+  "compileType": "game",
     "libVersion": "widelyUsed",
     "appid": "",
     "projectname": "",
