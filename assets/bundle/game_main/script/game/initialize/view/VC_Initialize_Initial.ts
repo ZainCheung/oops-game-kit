@@ -1,5 +1,4 @@
-import type { Color } from 'cc';
-import { _decorator, color, tween } from 'cc';
+import { _decorator } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
@@ -13,50 +12,10 @@ const { ccclass, property } = _decorator;
 @ccclass('VC_Initialize_Initial')
 @ecs.register('VC_Initialize_Initial', false)
 export class VC_Initialize_Initial extends CCView<Initialize> {
-    /** 等待动画播放完成 */
-    private waitComplete = false;
     /** 资源加载完成 */
     private loadComplete = false;
 
-    //#region 体验动画相关自定义逻辑
-    private startColor = color(255, 0, 0, 0);
-    private endColor = color(255, 0, 0, 255);
-    private duration = 0.5;
-
-    // TODO: 这里实现的效果为动画播放完，初始化完成则进入第一个界面；如果动画未播放完，初始化完成时，会等动画播放完进入第一个界面（注：动画逻辑可自定义，注意资源要尽可能小，让玩家更快看到提示画面）
-    private waitAnim(startColor: Color, endColor: Color, callback: Function) {
-        const title = this.node.getChildByName('title')!.uiLabel;
-        tween(title)
-            .to(
-                this.duration,
-                { color: endColor },
-                {
-                    onUpdate: (target, ratio) => {
-                        const r = startColor.r + (endColor.r - startColor.r) * ratio!;
-                        const g = startColor.g + (endColor.g - startColor.g) * ratio!;
-                        const b = startColor.b + (endColor.b - startColor.b) * ratio!;
-                        const a = startColor.a + (endColor.a - startColor.a) * ratio!;
-                        title.color.set(r, g, b, a);
-                    },
-                }
-            )
-            .call(() => {
-                callback();
-            })
-            .start();
-    }
-
-    /** 等待资源加载动画 - 预防弱网情况初始化时间过长，导致的黑屏较差体验 */
-    private wait() {
-        this.waitAnim(this.startColor, this.endColor, () => {
-            this.waitComplete = true;
-            this.tryEnter();
-        });
-    }
-    //#endregion
-
     start() {
-        this.wait();
         this.loadRes();
     }
 
@@ -74,12 +33,10 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
         this.tryEnter();
     }
 
-    /** 尝试进入加载界面（需要资源加载、动画都完成） */
+    /** 尝试进入加载界面（资源加载完成后直接进入） */
     private tryEnter() {
-        if (this.loadComplete && this.waitComplete) {
-            this.waitAnim(this.endColor, this.startColor, async () => {
-                await this.event.emitAsync(InitializeEventName.LoadComplete);
-            });
+        if (this.loadComplete) {
+            this.event.emitAsync(InitializeEventName.LoadComplete);
         }
     }
 
