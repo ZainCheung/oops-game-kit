@@ -32,22 +32,26 @@ triggers:
 ## ECS View 元模板（来自 oops-rule-coding.md 第 6 节）
 
 ```typescript
-import { Node, _decorator } from 'cc';
+import { _decorator } from 'cc';
+import { oops } from 'db://oops-framework/core/Oops';
 import { gui } from 'db://oops-framework/core/gui/Gui';
 import { LayerType } from 'db://oops-framework/core/gui/layer/LayerEnum';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { CCView } from 'db://oops-framework/module/common/CCView';
-import { [Module] } from '../[Module]';
+import type { [Module] } from '../[Module]';
 import { [Module]EventName } from '../[Module]Event';
+import { AccountEventName } from '../../account/AccountEvent';
 
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 @ccclass('VC_[Module]_[Name]')
 @ecs.register('VC_[Module]_[Name]', false)
 @gui.register('VC_[Module]_[Name]', { layer: LayerType.UI, prefab: 'gui/[module]/prefab/VC_[Module]_[Name]' })
 export class VC_[Module]_[Name] extends CCView<[Module]> {
-    // @property(SomeComponent)
-    // private someComponent: SomeComponent = null!;
+    protected mvvm = true;
+    protected data: any = {
+        // 界面绑定的数据字段
+    };
 
     onLoad() {
         super.onLoad();
@@ -56,22 +60,27 @@ export class VC_[Module]_[Name] extends CCView<[Module]> {
         // 初始化逻辑
     }
 
-    private setWatch() {
-        // this.event.setEvent([Module]EventName.[EventKey]);
-    }
-
-    //#region 事件处理
-    //#endregion
-
     //#region 按钮事件
     // private [BtnName](): void {
     //     // 按钮点击逻辑
     // }
     //#endregion
 
-    reset(): void {
-        // 清理自定义内存
+    //#region 全局事件
+    private setWatch() {
+        // this.event.setEvent([Module]EventName.[EventKey]);
     }
+
+    // private on[EventName](): void {
+    //     // 全局事件回调
+    // }
+    //#endregion
+
+    //#region 资源加载
+    // 资源加载相关方法
+    //#endregion
+
+    reset(): void { }
 }
 ```
 
@@ -118,12 +127,12 @@ export class V_[Module]_[Name] extends GameComponent {
 | GUI 装饰器 | `@gui.register('VC_[Module]_[Name]', { layer: LayerType.UI, prefab: 'gui/[module]/prefab/VC_[Module]_[Name]' })` |
 | **layer 值** | 根据界面类型选择（详见下方 LayerType 选择指南） |
 | onLoad() | 必须调用 `super.onLoad()`、`this.setWatch()`、`this.button.bind()` |
-| setWatch() | 使用 `this.event.setEvent()` 注册全局事件 |
-| 按钮事件 | 方法名格式 `btn[按钮节点名]`，由 `this.button.bind()` 自动绑定 |
-| reset() | **必须实现**，只清理自定义内存 |
+| 区域划分 | 方法按 `//#region` 分组：`按钮事件` → `全局事件` → `资源加载` |
+| setWatch() | 放在 `//#region 全局事件` 内，使用 `this.event.setEvent()` 注册 |
+| 全局事件回调 | 放在 `//#region 全局事件` 内，方法名与事件枚举值同名 |
+| 按钮事件 | 放在 `//#region 按钮事件` 内，格式 `btn[按钮节点名]`，由 `this.button.bind()` 自动绑定 |
+| reset() | 可空实现 `reset(): void { }`，框架自动清理事件监听 |
 | 关闭视图 | 使用 `this.remove()`，❌ 禁止 `oops.gui.remove()` |
-| @property | 必须使用 `= null!` 初始化 |
-| 日志 | 使用 `oops.log.logView()` |
 
 ### LayerType 选择指南
 
@@ -161,19 +170,32 @@ onLoad() {
     this.setWatch();  // 错误！缺少 super.onLoad()
 }
 
-// ❌ 错误 - 未调用 setButton()
+// ❌ 错误 - 未调用 this.button.bind()
 onLoad() {
     super.onLoad();
     this.setWatch();  // 错误！缺少 this.button.bind()
 }
 
+// ❌ 错误 - 使用 this.setButton() 而非 this.button.bind()
+this.setButton();  // 错误！应使用 this.button.bind()
+
 // ❌ 错误 - 按钮事件名不规范
 private onCloseButtonClick() { }  // 错误！应为 btnClose()
 
-// ❌ 错误 - 未调用 this.button.bind()
+// ❌ 错误 - 手动绑定按钮事件
 private bindEvents() {
     this.btnClose.node.on(Node.EventType.TOUCH_END, this.btnClose, this);  // 禁止！应使用 this.button.bind()
 }
+
+// ❌ 错误 - 使用 oops.message.watch() 而非 this.event.setEvent()
+oops.message.watch(AccountEventName.LoginSuccessGame, this.onLoginSuccessGame, this);  // 错误！应使用 this.event.setEvent()
+
+// ❌ 错误 - setWatch() 不放在 //#region 全局事件 内
+//#region 按钮事件
+private setWatch() {  // 错误！setWatch() 应放在 全局事件 区域
+    this.event.setEvent(AccountEventName.LoginSuccessGame);
+}
+//#endregion
 
 // ❌ 错误 - 直接调用 oops.gui.remove()
 oops.gui.remove('VC_Friend_Main');  // 错误！View 层应使用 this.remove()
