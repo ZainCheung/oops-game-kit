@@ -13,6 +13,9 @@ const { ccclass } = _decorator;
 @ccclass('VC_Initialize_Initial')
 @ecs.register('VC_Initialize_Initial', false)
 export class VC_Initialize_Initial extends CCView<Initialize> {
+    /** 是否加载多语言包（不需要多语言的游戏可关掉） */
+    private useLanguage = false;
+
     start() {
         this.loadRes();
     }
@@ -21,7 +24,9 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     private async loadRes() {
         // 并行加载必备资源
         const promises: Promise<void>[] = [];
-        promises.push(this.loadLanguage());
+        if (this.useLanguage) {
+            promises.push(this.loadLanguage());
+        }
         await Promise.all(promises);
 
         // 窗口打开失败事件
