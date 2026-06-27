@@ -29,7 +29,6 @@ export class Main extends Root {
         gsm.base = new Base();
         gsm.account = ecs.getEntity(Account);
         gsm.initialize = ecs.getEntity(Initialize);
-
         gsm.initialize.load(this.initial);
     }
 }

@@ -1,7 +1,6 @@
 import { sys } from 'cc';
 import { AnalysisSdkManager } from './analysis';
 import { ISdk } from './ISdk';
-import { BuglyMonitoringSdk } from './monitoring';
 import { SdkManager } from './SdkManager';
 import type { IUserInfo } from './SdkTypes';
 import {
@@ -40,8 +39,6 @@ export class Sdk {
     readonly platform: ISdk = this.manager.init();
     /** 数据分析 SDK 管理器 */
     readonly analysis: AnalysisSdkManager = new AnalysisSdkManager();
-    /** Bugly 监控 SDK */
-    readonly monitoring: BuglyMonitoringSdk = new BuglyMonitoringSdk();
 
     // ==================== 数据模型（扁平） ====================
 
@@ -74,18 +71,6 @@ export class Sdk {
     constructor() {
         this.initEvents();
         this.initAnalysis();
-        this.initMonitoring();
-    }
-
-    /**
-     * 初始化 Bugly 监控 SDK。
-     * 根据当前平台自动选择对应实现。
-     * - Android 原生 → 通过 JSB 调用原生 Bugly
-     * - 微信/抖音小游戏 → 使用 bugly-mp-sdk
-     * - 其他平台保持空实现，不阻塞流程
-     */
-    private initMonitoring(): void {
-        this.monitoring.initByPlatform();
     }
 
     /**

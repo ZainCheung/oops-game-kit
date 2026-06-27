@@ -8,9 +8,7 @@
   "uuid": "00d7d957-a3e8-4ad6-80f4-2fcfb235bca4",
   "version": "3.6.3",
   "type": "module",
-  "dependencies": {
-    "bugly-mp-sdk": "^1.0.5-beta.4"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@typescript-eslint/eslint-plugin": "^8.49.0",

@@ -31,6 +31,8 @@ export class RequestEnterGame extends LoginProcessBase {
                 channel: gsm.base.sdk.analysis.getChannel() ?? 'unknown',
             });
 
+
+            gsm.base.sdk.monitoring.test();
             oops.message.emit(AccountEventName.LoginSuccessGame);
             console.timeEnd(label);
             this.success();
