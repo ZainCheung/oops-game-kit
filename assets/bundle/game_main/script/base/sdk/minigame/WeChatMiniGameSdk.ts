@@ -150,6 +150,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
             try {
                 const cloudRes = await wx.cloud.callFunction({
                     name: 'getOpenid',
+                    data: { code: res.code },
                 }) as any;
                 if (cloudRes?.result?.code === 0 && cloudRes?.result?.data) {
                     result.openid = cloudRes.result.data.openid ?? null;
