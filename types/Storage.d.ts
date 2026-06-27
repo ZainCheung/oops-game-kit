@@ -1,12 +1,12 @@
 declare global {
     type GameStorageKey =
         /** 框架内置 */
-        'Language' |
-        'Audio' |
-        'PromptSkip' |
+        'OopsFrameworkLanguage' |
+        'OopsFrameworkAudio' |
+        'OopsFrameworkPromptSkip' |
         /** 业务层 */
-        'RedDot' |
-        'UserInfoCache';
+        'GameRedDot' |
+        'GameUserInfoCache';
 }
 
-export {};
+export { };
