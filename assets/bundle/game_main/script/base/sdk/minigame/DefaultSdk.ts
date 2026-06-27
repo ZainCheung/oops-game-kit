@@ -268,21 +268,44 @@ export class DefaultSdk implements ISdk {
         return Promise.resolve({ needAuthorization: false });
     }
 
+    private _customPrivacyDialog: ICustomPrivacyDialog | null = null;
+
     /**
-     * 开发/编辑器/浏览器平台无需走微信隐私流程。
-     * 默认直接 resolve，让上层业务继续往下走。
+     * 开发/编辑器/浏览器平台：
+     * - 已注入自定义弹窗 → 通过 dialog.onTrigger 弹出（与真机行为一致）
+     * - 未注入 → 直接 resolve（向后兼容）
      */
     requirePrivacyAuthorize(_option?: { demandList?: string[]; [k: string]: any }): Promise<void> {
+        if (this._customPrivacyDialog) {
+            console.log('[SDK][开发模式] requirePrivacyAuthorize → 弹出自定义隐私弹窗');
+            return new Promise<void>((resolve, reject) => {
+                const dialog = this._customPrivacyDialog!;
+                dialog.onTrigger(
+                    (result) => {
+                        if (result.event === 'agree') {
+                            console.log('[SDK][开发模式] 用户同意隐私协议');
+                            resolve();
+                        }
+                        else if (result.event === 'disagree') {
+                            console.log('[SDK][开发模式] 用户拒绝隐私协议');
+                            reject(new Error('用户拒绝隐私协议'));
+                        }
+                        // 'exposureAuthorization' 仅通知曝光，不做处理
+                    },
+                    { contractName: '' },
+                );
+            });
+        }
         console.log('[SDK][开发模式] requirePrivacyAuthorize → 直接通过');
         return Promise.resolve();
     }
 
     /**
-     * 开发模式：保存 dialog 引用但不实际触发。
-     * （真平台在 WeChatMiniGameSdk 里实现真弹窗）
+     * 开发模式：保存自定义弹窗引用，供 requirePrivacyAuthorize 触发。
      */
-    setCustomPrivacyDialog(_dialog: ICustomPrivacyDialog): void {
-        console.log('[SDK][开发模式] setCustomPrivacyDialog → 已忽略（开发模式无隐私弹窗）');
+    setCustomPrivacyDialog(dialog: ICustomPrivacyDialog): void {
+        this._customPrivacyDialog = dialog;
+        console.log('[SDK][开发模式] setCustomPrivacyDialog → 已保存自定义弹窗');
     }
 
     /** 开发模式：模拟打开隐私协议 */
