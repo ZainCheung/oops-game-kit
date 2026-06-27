@@ -76,8 +76,9 @@ export class RequestSdkUserInfo extends LoginProcessBase {
             retries++;
         }
 
-        // 超过最大重试次数，使用兜底数据结束（避免无限阻塞）
-        this.finish({ nickName: 'Player', avatarUrl: '', gender: 0 }, false);
+        // 超过最大重试次数，用户始终拒绝授权，退出小游戏
+        oops.gui.toast('必须同意授权才能继续游戏');
+        await gsm.base.sdk.platform.exitMiniProgram();
     }
 
     /**

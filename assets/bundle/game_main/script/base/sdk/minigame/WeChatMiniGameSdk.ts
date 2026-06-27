@@ -1,3 +1,5 @@
+import { sys } from 'cc';
+import { ISdk } from '../ISdk';
 import { SdkNetworkType, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
@@ -30,7 +32,6 @@ import type {
     IUserCloudStorageResult,
     IUserInfoResult,
 } from '../SdkTypes';
-import { ISdk } from '../ISdk';
 import { DefaultSdk } from './DefaultSdk';
 
 /**
@@ -55,9 +56,7 @@ import { DefaultSdk } from './DefaultSdk';
  */
 export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     constructor() {
-        super('WeChatMiniGame' as any);
-        // 延迟注册隐私监听器，确保在游戏层之后执行
-        this._initPrivacyListener();
+        super(sys.Platform.WECHAT_GAME);
     }
 
     //#region ========== 内部辅助 ==========
@@ -675,10 +674,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#endregion
 
-//#region ========== 隐私合规 ==========
-
-    /** 游戏层通过 setCustomPrivacyDialog 注入的自定义弹窗实现 */
-    private _customPrivacyDialog: ICustomPrivacyDialog | null = null;
+    //#region ========== 隐私合规 ==========
 
     /**
      * 当前 wx.onNeedPrivacyAuthorization 是否已注册"用 dialog 触发"的监听器
@@ -800,42 +796,6 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
         this._customListenerRegistered = true;
         console.log('[WeChatSdk] 隐私授权监听器已注册（自定义 dialog 版）');
-    }
-
-    /**
-     * 初始化占位监听器（在 SDK 创建时调用）。
-     *
-     * 占位监听器：dialog 未注入时使用 wx.showModal 原生兜底，
-     * 触发后只弹 1 次 wx.showModal，结束后不再触发。
-     */
-    private _initPrivacyListener(): void {
-        if (typeof (wx as any)?.onNeedPrivacyAuthorization !== 'function') return;
-
-        // 占位监听器（dialog 未注入前生效）
-        (wx as any).onNeedPrivacyAuthorization(
-            (resolveFn: (res: { event: string }) => void, _eventInfo: any) => {
-                console.log('[WeChatSdk] 隐私授权触发（占位监听器，dialog 未注入）');
-
-                const wxAny = wx as any;
-                if (typeof wxAny.showModal === 'function') {
-                    wxAny.showModal({
-                        title: '隐私保护提示',
-                        content: '为了向您提供游戏服务，我们需要获取您的昵称和头像信息。是否同意？',
-                        confirmText: '同意',
-                        cancelText: '拒绝',
-                        success: (modalRes: any) => {
-                            resolveFn({ event: modalRes.confirm ? 'agree' : 'disagree' });
-                        },
-                        fail: () => resolveFn({ event: 'agree' }),
-                    });
-                }
-                else {
-                    resolveFn({ event: 'agree' });
-                }
-            }
-        );
-
-        console.log('[WeChatSdk] 隐私授权占位监听器已注册');
     }
 
     //#endregion
