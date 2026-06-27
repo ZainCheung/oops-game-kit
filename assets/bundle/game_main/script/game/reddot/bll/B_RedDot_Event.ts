@@ -1,7 +1,7 @@
 import { oops } from 'db://oops-framework/core/Oops';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
-import { EM_RedDotStorage, EM_RedDotType } from '../model/enum/EM_RedDot';
+import { EM_RedDotType } from '../model/enum/EM_RedDot';
 import type { RedDot } from '../RedDot';
 import { RedDotEventName, type IRedDotEventDataMap } from '../RedDotEvent';
 import { B_RedDot_Main } from './B_RedDot_Main';
@@ -19,7 +19,7 @@ export class B_RedDot_Event extends CCBusiness<RedDot> {
             RedDotEventName.Confirm);
 
         // 恢复红点存储状态
-        this.ent.M_RedDot_Model.confirm = oops.storage.getJson(EM_RedDotStorage.RedDot, {});
+        this.ent.M_RedDot_Model.confirm = oops.storage.getJson('RedDot', {});
     }
 
     //#region 全局事件处理
@@ -94,7 +94,7 @@ export class B_RedDot_Event extends CCBusiness<RedDot> {
         if (save) {
             this.ent.M_RedDot_Model.confirm[key] = 1;
             const confirm = JSON.stringify(this.ent.M_RedDot_Model.confirm);
-            oops.storage.set(EM_RedDotStorage.RedDot, confirm);
+            oops.storage.set('RedDot', confirm);
         }
     }
     //#endregion

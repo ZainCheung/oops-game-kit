@@ -8,8 +8,4 @@ export enum EM_RedDotType {
     Note = 2
 }
 
-/** 本地存储名配置 */
-export enum EM_RedDotStorage {
-    /** 红点本地状态数据 */
-    RedDot = 'RedDot'
-}
+

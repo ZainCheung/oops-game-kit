@@ -32,7 +32,7 @@ import { LoginProcessBase } from '../LoginProcessBase';
  *   缺少点击上下文而再次失败。如遇到此问题，需将 getUserProfile 调用前移到按钮点击
  *   回调中（V_Account_Authorization.btnRequestSdkUserInfo）。
  */
-const CACHE_KEY = 'RequestSdkUserInfo_Cache';
+
 
 export class RequestSdkUserInfo extends LoginProcessBase {
     constructor() {
@@ -41,7 +41,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
 
     protected async execute() {
         // 0. 命中缓存直接 finish
-        const raw = oops.storage.getJson<IUserInfo | null>(CACHE_KEY, null);
+        const raw = oops.storage.getJson<IUserInfo | null>('RequestSdkUserInfo_Cache', null);
         if (raw?.nickName) {
             this.finish(raw);
             return;
@@ -139,7 +139,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     private finish(userInfo: IUserInfo, writeCache = false): void {
         gsm.base.sdk.userInfo = userInfo;
         if (writeCache) {
-            oops.storage.set(CACHE_KEY, userInfo);
+            oops.storage.set('RequestSdkUserInfo_Cache', userInfo);
         }
         console.log('【登录流程】用户信息:', userInfo);
         this.success();
