@@ -48,7 +48,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         }
 
         let retries = 0;
-        const MAX_RETRIES = 3;
+        const MAX_RETRIES = 1;
 
         while (retries < MAX_RETRIES) {
             // 1. 注入自定义隐私弹窗（业务层 prefab 按钮 → SDK resolve）
@@ -77,7 +77,6 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         }
 
         // 超过最大重试次数，用户始终拒绝授权，退出小游戏
-        oops.gui.toast('必须同意授权才能继续游戏');
         await gsm.base.sdk.platform.exitMiniProgram();
     }
 
