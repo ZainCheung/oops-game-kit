@@ -3,28 +3,19 @@
  * 微信云函数部署工具（oops-game-kit）
  *
  * 背景：
- *   Cocos Creator 构建微信小游戏时，build-templates 中的内容会被全量复制到产物根目录。
- *   若产物同时存在 cloudfunctions/ 目录与 project.config.json 的 cloudfunctionRoot 配置，
- *   微信开发者工具会报错：
- *     "文件 cloudfunctions/xxx/index.js 在 project.config.json 'cloudfunctionRoot' 指定的目录，
- *      如果不希望在小程序/小游戏的运行环境中执行该文件，请使用 project.config.json
- *      'miniprogramRoot' 组织项目目录结构"
- *
- *   原因：miniprogramRoot 为 "./"，整个产物根目录被视为小游戏运行环境，而 cloudfunctions/
- *   又落在该环境内，工具担心云函数代码被前端误执行。
+ *   云函数源码统一放在 core/build-templates/wechatgame/cloudfunctions（框架资产）。
+ *   默认 build-templates/wechatgame 不含 cloudfunctions 目录，project.config.json 也不含
+ *   cloudfunctionRoot 配置 —— 因此 Cocos 构建产物中不含云函数，微信开发者工具无报错。
  *
  * 解决思路：
- *   1. 云函数源码统一放在 core/build-templates/wechatgame/cloudfunctions（框架资产）。
- *   2. 默认构建产物不含云函数、不配置 cloudfunctionRoot —— 报错消失。
- *   3. 需要上传云函数时，运行本脚本把云函数同步到构建产物并写入 cloudfunctionRoot，
- *      随后在微信开发者工具中右键上传；上传完可用 --clean 还原产物。
+ *   1. deploy：将 core 中的云函数拷贝到 build-templates/wechatgame，并写入 cloudfunctionRoot
+ *   2. 在 Cocos Creator 中构建微信小游戏 → 云函数自动随 build-templates 进入产物
+ *   3. 在微信开发者工具中右键上传云函数
+ *   4. clean：删除 build-templates/wechatgame/cloudfunctions，移除 cloudfunctionRoot
  *
  * 用法：
- *   部署：  node core/build-templates/wechatgame/tools/deploy-cloudfunctions.cjs [构建产物目录]
- *   清理：  node core/build-templates/wechatgame/tools/deploy-cloudfunctions.cjs --clean [构建产物目录]
- *   帮助：  node core/build-templates/wechatgame/tools/deploy-cloudfunctions.cjs -h
- *
- *   构建产物目录默认为 build/wechatgame
+ *   部署：  npm run wechatgame_deploy:cloudfunctions
+ *   清理：  npm run wechatgame_clean:cloudfunctions
  */
 
 const fs = require('fs');
@@ -32,34 +23,20 @@ const path = require('path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
 const SOURCE_DIR = path.join(PROJECT_ROOT, 'core', 'build-templates', 'wechatgame', 'cloudfunctions');
-const DEFAULT_BUILD_DIR = path.join(PROJECT_ROOT, 'build', 'wechatgame');
+const TARGET_DIR = path.join(PROJECT_ROOT, 'build-templates', 'wechatgame');
 
 function printHelp() {
     console.log([
-        '用法: node core/build-templates/wechatgame/tools/deploy-cloudfunctions.cjs [--clean] [构建产物目录]',
+        '用法:',
+        '  npm run wechatgame_deploy:cloudfunctions  部署云函数到 build-templates',
+        '  npm run wechatgame_clean:cloudfunctions    清理 build-templates 中的云函数',
         '',
-        '  部署  将 core 中的云函数同步到构建产物并写入 cloudfunctionRoot',
-        '  清理  移除构建产物中的云函数目录与 cloudfunctionRoot 配置',
-        '',
-        '  构建产物目录默认为 build/wechatgame',
+        '流程:',
+        '  1. deploy → 将云函数拷贝到 build-templates/wechatgame/cloudfunctions',
+        '  2. 在 Cocos Creator 中构建微信小游戏',
+        '  3. 在微信开发者工具中右键 cloudfunctions → 上传并部署',
+        '  4. clean → 移除云函数目录与 cloudfunctionRoot',
     ].join('\n'));
-}
-
-function parseArgs(argv) {
-    const args = argv.slice(2);
-    let clean = false;
-    let buildDir = DEFAULT_BUILD_DIR;
-    for (const a of args) {
-        if (a === '--clean') {
-            clean = true;
-        } else if (a === '-h' || a === '--help') {
-            printHelp();
-            process.exit(0);
-        } else {
-            buildDir = path.resolve(PROJECT_ROOT, a);
-        }
-    }
-    return { clean, buildDir };
 }
 
 function copyDir(src, dest) {
@@ -97,37 +74,33 @@ function setCloudfunctionRoot(configPath, value) {
     fs.writeFileSync(configPath, JSON.stringify(cfg, null, 4) + '\n', 'utf8');
 }
 
-function deploy(buildDir) {
+function deploy() {
     if (!fs.existsSync(SOURCE_DIR)) {
         console.error('未找到云函数源目录: ' + SOURCE_DIR);
         process.exit(1);
     }
-    if (!fs.existsSync(buildDir)) {
-        console.error('未找到构建产物目录: ' + buildDir);
-        console.error('请先在 Cocos Creator 中构建微信小游戏。');
-        process.exit(1);
-    }
 
-    const destCloud = path.join(buildDir, 'cloudfunctions');
-    const configPath = path.join(buildDir, 'project.config.json');
+    const destCloud = path.join(TARGET_DIR, 'cloudfunctions');
+    const configPath = path.join(TARGET_DIR, 'project.config.json');
 
     copyDir(SOURCE_DIR, destCloud);
     console.log('已复制云函数到: ' + destCloud);
 
     if (fs.existsSync(configPath)) {
         setCloudfunctionRoot(configPath, 'cloudfunctions/');
-        console.log('已在 project.config.json 设置 cloudfunctionRoot: "cloudfunctions/"');
+        console.log('已在 build-templates 的 project.config.json 设置 cloudfunctionRoot: "cloudfunctions/"');
     } else {
-        console.warn('警告: 构建产物中未找到 project.config.json，请手动配置 cloudfunctionRoot。');
+        console.warn('警告: 未找到 project.config.json，请手动配置 cloudfunctionRoot。');
     }
 
-    console.log('\n部署完成。请在微信开发者工具中右键云函数目录，选择"上传并部署：云端安装依赖"。');
-    console.log('上传完成后可运行 --clean 还原产物。');
+    console.log('\n请在 Cocos Creator 中构建微信小游戏，云函数将自动随 build-templates 进入产物。');
+    console.log('然后在微信开发者工具中右键 cloudfunctions 目录，选择"上传并部署：云端安装依赖"。');
+    console.log('上传完成后运行 npm run wechatgame_clean:cloudfunctions 还原。');
 }
 
-function clean(buildDir) {
-    const destCloud = path.join(buildDir, 'cloudfunctions');
-    const configPath = path.join(buildDir, 'project.config.json');
+function clean() {
+    const destCloud = path.join(TARGET_DIR, 'cloudfunctions');
+    const configPath = path.join(TARGET_DIR, 'project.config.json');
 
     rmrf(destCloud);
     console.log('已移除云函数目录: ' + destCloud);
@@ -137,12 +110,14 @@ function clean(buildDir) {
         console.log('已从 project.config.json 移除 cloudfunctionRoot');
     }
 
-    console.log('\n清理完成。');
+    console.log('\n清理完成，下次构建产物将不再包含云函数。');
 }
 
-const { clean: doClean, buildDir } = parseArgs(process.argv);
-if (doClean) {
-    clean(buildDir);
+const args = process.argv.slice(2);
+if (args.includes('--clean') || args.includes('clean')) {
+    clean();
+} else if (args.includes('-h') || args.includes('--help')) {
+    printHelp();
 } else {
-    deploy(buildDir);
+    deploy();
 }

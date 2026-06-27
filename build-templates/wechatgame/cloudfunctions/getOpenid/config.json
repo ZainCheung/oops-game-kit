@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "openapi": [
+      "auth.code2Session",
+      "security.msgSecCheck",
+      "security.mediaSecCheck"
+    ]
+  }
+}
