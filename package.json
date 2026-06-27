@@ -8,6 +8,10 @@
   "uuid": "00d7d957-a3e8-4ad6-80f4-2fcfb235bca4",
   "version": "3.6.3",
   "type": "module",
+  "scripts": {
+    "wechatgame_deploy:cloudfunctions": "node core/build-templates/wechatgame/tools/deploy-cloudfunctions.cjs",
+    "wechatgame_clean:cloudfunctions": "node core/build-templates/wechatgame/tools/deploy-cloudfunctions.cjs --clean"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@typescript-eslint/eslint-plugin": "^8.49.0",
