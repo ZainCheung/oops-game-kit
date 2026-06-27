@@ -1,20 +1,18 @@
 /**
  * 第三方 SDK 库统一入口
  *
- * 该目录用于存放外部第三方 SDK 源码及类型声明（如友盟、数数等）。
+ * 该目录用于存放外部第三方 SDK 源码及类型声明。
  *
  * 当前包含：
- * - umeng/wechat/  : 友盟+ 微信小游戏 SDK
- * - umeng/douyin/  : 友盟+ 抖音小游戏 SDK
+ * - umeng/wechat/  : 友盟+ 微信小游戏 SDK（类型声明，需手动下载 .js）
+ * - umeng/douyin/  : 友盟+ 抖音小游戏 SDK（类型声明，需手动下载 .js）
+ * - bugly/wechat/  : Bugly 微信小游戏 SDK
+ * - bugly/douyin/  : Bugly 抖音小游戏 SDK
  *
- * 使用方式：
- * ```typescript
- * import { UmengWechatSDK } from './libs';
- * ```
+ * 注意：
+ * SDK 通过各业务模块在运行时按平台动态 require 加载，无需在此静态导出。
+ * 详见：
+ * - base/sdk/analysis/entity/UmengAnalysisSdk.ts
+ * - base/sdk/monitoring/BuglyMonitoringSdk.ts
  */
-
-// 友盟微信小游戏 SDK（需要手动下载 umeng-wxgame-sdk.js 到 umeng/wechat/ 目录）
-export { default as UmengWechatSDK } from './umeng/wechat/umeng-wxgame-sdk';
-
-// 友盟抖音小游戏 SDK（需要手动下载 umeng-ttgame-sdk.js 到 umeng/douyin/ 目录）
-export { default as UmengDouyinSDK } from './umeng/douyin/umeng-ttgame-sdk';
+export {};
