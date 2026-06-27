@@ -32,7 +32,6 @@ export class RequestEnterGame extends LoginProcessBase {
             });
 
 
-            gsm.base.sdk.monitoring.test();
             oops.message.emit(AccountEventName.LoginSuccessGame);
             console.timeEnd(label);
             this.success();
