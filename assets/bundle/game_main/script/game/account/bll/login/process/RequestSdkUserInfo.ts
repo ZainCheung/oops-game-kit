@@ -1,10 +1,10 @@
 import { oops } from 'db://oops-framework/core/Oops';
+import type { ICustomPrivacyDialog, IPrivacyEventInfo, PrivacyResolveCallback } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
 import { IUserInfo } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
 import { gsm } from '../../../../common/GameSingletonModule';
+import { V_Account_Authorization } from '../../../view/V_Account_Authorization';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
-import type { ICustomPrivacyDialog, IPrivacyEventInfo, PrivacyResolveCallback } from '../../../../../../../../bundle/game_main/script/base/sdk/SdkTypes';
-import { V_Account_Authorization } from '../../../view/V_Account_Authorization';
 
 /**
  * 登录流程 —— 获取用户名
@@ -14,7 +14,7 @@ import { V_Account_Authorization } from '../../../view/V_Account_Authorization';
  *   2. 注入自定义隐私弹窗（prefab 按钮 → SDK resolve）
  *   3. 调 sdk.requirePrivacyAuthorize() 触发 SDK 内的微信隐私流程
  *   4. 协议同意 → 调 sdk.getUserProfile() 拿昵称头像（**原生弹窗就这一次**）
- *   5. 协议拒绝 / 异常 → 走 fallback Player（保证游戏主流程不被阻断）
+ *   5. 弹窗打开异常 → resolve({event:'disagree'}) → Promise reject（框架自动处理）
  *   6. 写本地缓存 + finish
  *
  * 不在本脚本写：
@@ -45,14 +45,9 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         gsm.base.sdk.platform.setCustomPrivacyDialog(this.buildPrivacyDialog());
 
         // 2. 触发 SDK 内的微信隐私流程
-        try {
-            await gsm.base.sdk.platform.requirePrivacyAuthorize();
-        }
-        catch (err) {
-            oops.gui.toast('必须同意才可以玩');
-            this.fail();
-            return;
-        }
+        // 注意：拒绝按钮不再触发 disagree，Promise 只会 resolve（用户点击同意）
+        //       或永久 pending（用户未操作）。异常仅来自弹窗打开失败/组件获取失败。
+        await gsm.base.sdk.platform.requirePrivacyAuthorize();
 
         // 3. 协议已同意 → 调 SDK 拿真实昵称头像（**唯一一次原生弹窗**）
         // 注意：getUserProfile 在各平台 SDK 内部已兜底（失败时返回默认用户信息，不会抛异常），无需 try/catch
@@ -87,10 +82,12 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     /**
      * 弹业务侧自定义隐私弹窗（V_Account_Authorization prefab）。
      *
-     * 按钮 → resolve 事件映射：
-     *   btnRequestSdkUserInfo  → resolve({ event: 'agree' })     同意协议 + 授权拿昵称头像
-     *   btnPrimarily           → resolve({ event: 'agree' })     同意协议但不授权拿昵称头像（走 fallback）
-     *   btnRejectSdkUserInfo   → resolve({ event: 'disagree' })  拒绝协议（走 fallback，不阻断游戏）
+     * 按钮行为：
+     *   btnRequestSdkUserInfo  → onPrivacyAction('agree') + this.remove()  同意并关闭弹窗
+     *   btnPrimarily           → onPrivacyAction('agree')（不关闭弹窗）    同意，弹窗保持打开
+     *   btnRejectSdkUserInfo   → oops.gui.toast('必须同意才可以玩')         拒绝，仅提示，不触发 resolve
+     *
+     * 说明：拒绝按钮不触发 disagree，目的是强制用户必须点击同意才能继续，弹窗不可跳过。
      */
     private async showPrivacyDialog(resolve: PrivacyResolveCallback): Promise<void> {
         const uiNode = await gsm.account.B_Account_ViewUI.openAuthorization();
