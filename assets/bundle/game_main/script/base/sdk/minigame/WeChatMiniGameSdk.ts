@@ -395,60 +395,60 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     }
 
     createInterstitialAd(option: IInterstitialAdOption): IInterstitialAd | null {
+        if (!option.adUnitId) {
+            console.warn('[WeChatSdk] createInterstitialAd 跳过: adUnitId 为空');
+            return null;
+        }
         try {
             const ad = wx.createInterstitialAd({ adUnitId: option.adUnitId });
+            // 创建后自动预加载
+            ad.load();
             return {
                 load: () => ad.load(),
                 show: () => ad.show(),
                 destroy: () => ad.destroy(),
                 onError: (cb) => ad.onError((err) => cb(this.mapAdError(err))),
-                offError: (cb?) => {
-                    if (cb) ad.offError(cb as any);
-                },
+                offError: (cb?) => ad.offError(cb),
                 onLoad: (cb) => ad.onLoad(cb),
-                offLoad: (cb?) => {
-                    if (cb) ad.offLoad(cb);
-                },
+                offLoad: (cb?) => ad.offLoad(cb),
                 onClose: (cb) => ad.onClose(cb),
-                offClose: (cb?) => {
-                    if (cb) ad.offClose(cb);
-                },
+                offClose: (cb?) => ad.offClose(cb),
             };
         }
         catch (e) {
-            console.error('[WeChatSdk] createInterstitialAd 失败', e);
+            console.error(`[WeChatSdk] createInterstitialAd 失败 [adUnitId=${option.adUnitId}]`, e);
             return null;
         }
     }
 
     createCustomAd(option: ICustomAdOption): ICustomAd | null {
+        if (!option.adUnitId) {
+            console.warn('[WeChatSdk] createCustomAd 跳过: adUnitId 为空');
+            return null;
+        }
         try {
-            const ad = (wx as any).createCustomAd({
+            const ad = wx.createCustomAd({
                 adUnitId: option.adUnitId,
+                adIntervals: 30,
                 style: {
                     left: option.left ?? 0,
                     top: option.top ?? 0,
-                    width: option.width,
-                    height: option.height,
+                    width: option.width ?? 300,
+                    fixed: false,
                 },
             });
-            if (!ad) return null;
             return {
                 show: () => ad.show(),
                 hide: () => ad.hide(),
                 destroy: () => ad.destroy(),
-                onError: (cb) => ad.onError((err: any) => cb(this.mapAdError(err))),
-                offError: (cb?) => {
-                    if (cb) ad.offError(cb);
-                },
+                onError: (cb) => ad.onError((err) => cb(this.mapAdError(err))),
+                offError: (cb?) => ad.offError(cb),
                 onLoad: (cb) => ad.onLoad(cb),
-                offLoad: (cb?) => {
-                    if (cb) ad.offLoad(cb);
-                },
+                offLoad: (cb?) => ad.offLoad(cb),
             };
         }
         catch (e) {
-            console.error('[WeChatSdk] createCustomAd 失败', e);
+            console.error(`[WeChatSdk] createCustomAd 失败 [adUnitId=${option.adUnitId}]`, e);
             return null;
         }
     }
