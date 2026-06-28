@@ -98,7 +98,7 @@ export class DefaultSdk implements ISdk {
 
     login(): Promise<ILoginResult> {
         // 默认平台用于测试环境（H5/编辑器），返回测试登录凭证
-        return Promise.resolve({ token: 'test_login_code', openid: null, unionid: null });
+        return Promise.resolve({ token: 'test_login_code', openid: 'test_openid', unionid: null });
     }
 
     checkSession(): Promise<boolean> {
