@@ -33,7 +33,7 @@ export function assignWindowSafe<T extends object>(obj: T): void {
 
 /** 友盟上报自定义事件（失败不卡主流程） */
 function AUTE(eventName: string, properties?: AnalysisProperties): void {
-    gsm.base.sdk.analysis.trackEvent(eventName, properties);
+    gsm.base.sdk.analysis?.trackEvent(eventName, properties);
 }
 
 // 挂载到全局

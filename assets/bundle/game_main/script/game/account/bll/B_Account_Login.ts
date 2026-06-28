@@ -67,7 +67,7 @@ export class B_Account_Login extends CCBusiness<Account> {
     /** 退出登录流程 */
     async logout() {
         // 清除统计 SDK 用户标识
-        await gsm.base.sdk.analysis.logout();
+        await gsm.base.sdk.analysis?.logout();
     }
 
 

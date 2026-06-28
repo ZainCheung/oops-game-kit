@@ -8,7 +8,8 @@
       "frameRate": 60,
       "loadingTimeoutGui": 1000,
       "mobileSafeArea": true,
-      "stats": false
+      "stats": false,
+      "sdkAnalysis": false
     },
     "test": {
       "version": "1.0.0",
@@ -17,7 +18,8 @@
       "frameRate": 60,
       "loadingTimeoutGui": 1000,
       "mobileSafeArea": false,
-      "stats": false
+      "stats": false,
+      "sdkAnalysis": false
     },
     "prod": {
       "version": "1.0.0",
@@ -26,7 +28,8 @@
       "frameRate": 60,
       "loadingTimeoutGui": 1000,
       "mobileSafeArea": false,
-      "stats": false
+      "stats": false,
+      "sdkAnalysis": false
     }
   },
   "gui": [

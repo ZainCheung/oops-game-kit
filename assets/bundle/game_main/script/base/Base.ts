@@ -1,7 +1,7 @@
+import { oops } from 'db://oops-framework/core/Oops';
 import { ecs } from 'db://oops-framework/libs/ecs/ECS';
 import { Advertising } from './advertising/Advertising';
 import { Button } from './button/Button';
-import { Monitoring } from './monitoring/Monitoring';
 import { Network } from './network/Network';
 import { Prompt } from './prompt/Prompt';
 import { Sdk } from './sdk/Sdk';
@@ -15,7 +15,7 @@ export class Base {
     readonly sdk: Sdk;
 
     constructor() {
-        ecs.getEntity(Monitoring);
+        // ecs.getEntity(Monitoring);
         ecs.getEntity(Button);
         ecs.getEntity(Prompt);
         ecs.getEntity(Share);
@@ -23,5 +23,6 @@ export class Base {
 
         this.network = ecs.getEntity(Network);
         this.sdk = new Sdk();
+        this.sdk.analysisEnabled = oops.config.game.data.sdkAnalysis;
     }
 }

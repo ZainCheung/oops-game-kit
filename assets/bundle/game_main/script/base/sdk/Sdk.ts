@@ -1,6 +1,7 @@
 import { sys } from 'cc';
 import { AnalysisSdkManager } from './analysis';
 import { ISdk } from './ISdk';
+import { DouYinSdkCfg } from './SdkConfig';
 import { SdkManager } from './SdkManager';
 import type { IUserInfo } from './SdkTypes';
 import {
@@ -11,7 +12,6 @@ import {
     SdkNetworkChangeCallback,
     SdkShowCallback,
 } from './SdkTypes';
-import { DouYinSdkCfg } from './SdkConfig';
 
 
 
@@ -38,8 +38,21 @@ export class Sdk {
     private readonly manager: SdkManager = new SdkManager();
     /** 当前平台的 SDK 实现接口 */
     readonly platform: ISdk = this.manager.init();
-    /** 数据分析 SDK 管理器 */
-    readonly analysis: AnalysisSdkManager = new AnalysisSdkManager();
+
+    /** 数据分析开关（通过 config.json 文件中设置是否开启，如果不开启，把对应的SDK给删掉） */
+    analysisEnabled: boolean = false;
+    private _analysis?: AnalysisSdkManager;
+    /** 数据分析 SDK 管理器（analysisEnabled 为 true 时有效） */
+    get analysis(): AnalysisSdkManager | null {
+        if (!this._analysis && this.analysisEnabled) {
+            this._analysis = new AnalysisSdkManager();
+            this._analysis.initByPlatform().catch(err => {
+                console.error('[Sdk] 数据分析 SDK 初始化失败', err);
+            });
+            return this._analysis;
+        }
+        return null;
+    }
 
     // ==================== 数据模型（扁平） ====================
 
@@ -71,23 +84,7 @@ export class Sdk {
 
     constructor() {
         this.initEvents();
-        this.initAnalysis();
     }
-
-    /**
-     * 初始化数据分析 SDK。
-     * 根据当前平台自动选择对应的数据分析实现。
-     * - 微信小游戏 → 友盟+小游戏 SDK
-     * - 抖音小游戏 → 友盟+小游戏 SDK
-     * - Web/H5 → 友盟+QuickTracking Web SDK
-     * - 其他平台保持空实现，不阻塞流程
-     */
-    private initAnalysis(): void {
-        this.analysis.initByPlatform().catch(err => {
-            console.error('[Sdk] 数据分析 SDK 初始化失败', err);
-        });
-    }
-
 
     private initEvents() {
         console.log(`[SDK] 平台 = ${sys.platform}, 准备就绪 = ${this.platform.isReady()}`);
