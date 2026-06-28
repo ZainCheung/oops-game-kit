@@ -11,34 +11,12 @@
 
 import type { IAnalysisInitOption } from './analysis/AnalysisSdkTypes';
 
-//#region ========== 数据分析（友盟）配置 ==========
 
-/** 微信小游戏 → 友盟+ 初始化参数 */
-export const WeChatAnalysisCfg: IAnalysisInitOption = {
-    /** 友盟 AppKey（由友盟平台分配） */
-    appId: '6a3fce7f6f259537c7bf87e2',
-    /** 渠道标识 */
-    channel: 'wechat',
-    /** 调试模式（上线改为 false） */
-    debug: false,
-    /** 是否使用 openid 作为友盟用户标识 */
-    useOpenid: false,
-    /** 是否自动调用 wx.login() 获取 openid（仅友盟使用） */
-    autoGetOpenid: false,
-};
+//#region ========== 通用 SDK 配置 ==========
 
-/** 抖音小游戏 → 友盟+ 初始化参数 */
-export const DouYinAnalysisCfg: IAnalysisInitOption = {
-    /** 友盟 AppKey（TODO: 请填写抖音小游戏的友盟 AppKey） */
-    appId: '',
-    /** 渠道标识 */
-    channel: 'douyin',
-    /** 调试模式（上线改为 false） */
-    debug: true,
-    /** 是否使用 openid 作为友盟用户标识 */
-    useOpenid: false,
-    /** 是否自动调用 tt.login() 获取 openid（仅友盟使用） */
-    autoGetOpenid: false,
+export const CommonSdkCfg = {
+    /** 数据分析开关（默认关闭，关闭时不会创建 AnalysisSdkManager 对象） */
+    analysisEnabled: false
 };
 
 //#endregion
@@ -107,11 +85,34 @@ export const DouYinSdkCfg = {
 
 //#endregion
 
-//#region ========== 通用 SDK 配置 ==========
+//#region ========== 数据分析（友盟）配置 ==========
 
-export const CommonSdkCfg = {
-    /** 数据分析开关（默认关闭，关闭时不会创建 AnalysisSdkManager 对象） */
-    analysisEnabled: false
+/** 微信小游戏 → 友盟+ 初始化参数 */
+export const WeChatAnalysisCfg: IAnalysisInitOption = {
+    /** 友盟 AppKey（由友盟平台分配） */
+    appId: '6a3fce7f6f259537c7bf87e2',
+    /** 渠道标识 */
+    channel: 'wechat',
+    /** 调试模式（上线改为 false） */
+    debug: false,
+    /** 是否使用 openid 作为友盟用户标识 */
+    useOpenid: false,
+    /** 是否自动调用 wx.login() 获取 openid（仅友盟使用） */
+    autoGetOpenid: false,
+};
+
+/** 抖音小游戏 → 友盟+ 初始化参数 */
+export const DouYinAnalysisCfg: IAnalysisInitOption = {
+    /** 友盟 AppKey（TODO: 请填写抖音小游戏的友盟 AppKey） */
+    appId: '',
+    /** 渠道标识 */
+    channel: 'douyin',
+    /** 调试模式（上线改为 false） */
+    debug: true,
+    /** 是否使用 openid 作为友盟用户标识 */
+    useOpenid: false,
+    /** 是否自动调用 tt.login() 获取 openid（仅友盟使用） */
+    autoGetOpenid: false,
 };
 
 //#endregion

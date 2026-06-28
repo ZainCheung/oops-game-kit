@@ -15,11 +15,9 @@ export class DouyinAnalysisSdk implements IAnalysisSdk {
     private _umeng: any = null;
     private _initialized: boolean = false;
     private _accountId?: string;
-    private _debug: boolean = false;
     private _channel?: string;
 
     async init(option: IAnalysisInitOption): Promise<void> {
-        this._debug = option.debug ?? false;
         this._channel = option.channel;
 
         this._umeng = typeof tt !== 'undefined' ? (tt.uma ?? null) : null;
@@ -30,7 +28,6 @@ export class DouyinAnalysisSdk implements IAnalysisSdk {
         }
 
         this._initialized = true;
-        this.log('init', option);
     }
 
     isInitialized(): boolean {
@@ -41,18 +38,15 @@ export class DouyinAnalysisSdk implements IAnalysisSdk {
         this._initialized = false;
         this._accountId = undefined;
         this._umeng = null;
-        this.log('destroy');
     }
 
     async login(accountId: string): Promise<void> {
         this._accountId = accountId;
         this._umeng?.setUserid?.(accountId);
-        this.log('login', accountId);
     }
 
     async logout(): Promise<void> {
         this._accountId = undefined;
-        this.log('logout');
     }
 
     getAccountId(): string | undefined {
@@ -61,12 +55,10 @@ export class DouyinAnalysisSdk implements IAnalysisSdk {
 
     async trackEvent(eventName: string, properties?: AnalysisProperties): Promise<void> {
         this._umeng?.trackEvent?.(eventName, properties ?? {});
-        this.log('trackEvent', eventName, properties);
     }
 
     setChannel(channel: string): void {
         this._channel = channel;
-        this.log('setChannel', channel);
     }
 
     getChannel(): string | undefined {
@@ -78,27 +70,18 @@ export class DouyinAnalysisSdk implements IAnalysisSdk {
     /** 设置用户 OpenID */
     setOpenid(openid: string): void {
         this._umeng?.setOpenid?.(openid);
-        this.log('setOpenid', openid);
     }
 
     /** 设置用户 UnionID */
     setUnionid(unionid: string): void {
         this._umeng?.setUnionid?.(unionid);
-        this.log('setUnionid', unionid);
     }
 
     /** 追踪分享事件，返回带分享追踪参数的分享数据 */
     trackShare(shareData?: any): any {
         const result = this._umeng?.trackShare?.(shareData);
-        this.log('trackShare', shareData, result);
         return result ?? shareData;
     }
 
     //#endregion
-
-    private log(method: string, ...args: any[]): void {
-        if (this._debug) {
-            console.log(`[友盟] ${method}`, ...args);
-        }
-    }
 }
