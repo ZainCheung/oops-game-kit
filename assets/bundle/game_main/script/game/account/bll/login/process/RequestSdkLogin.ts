@@ -14,37 +14,35 @@ export class RequestSdkLogin extends LoginProcessBase {
     }
 
     protected async execute() {
-        const label = '【登录流程】平台 SDK 登录';
+        const label = '【登录流程】平台 SDK 登录耗时';
         console.time(label);
-        try {
-            const sdk = gsm.base.sdk.platform;
+        const sdk = gsm.base.sdk.platform;
 
-            // SDK 未就绪，提示并中止登录流程
-            if (!sdk.isReady()) {
-                console.timeEnd(label);
-                oops.gui.toast('SDK 未就绪，请稍后重试');
-                this.fail();
-                return;
-            }
-
-            const result = await sdk.login();
-
-            // 保存 SDK 登录凭证到 SDK 模块
-            gsm.base.sdk.token = result.token;
-
-            // 设置用户唯一编号
-            gsm.account.M_Account_Model.base.userId = result.openid!;
-            await gsm.base.sdk.analysis.login(result.openid!);
-
-            oops.log.trace(`【登录流程】平台 SDK 登录成功，openid: ${result.openid}`);
-
+        // SDK 未就绪，提示并中止登录流程
+        if (!sdk.isReady()) {
             console.timeEnd(label);
-            this.success();
-        }
-        catch (err) {
-            console.timeEnd(label);
-            console.error('【登录流程】平台 SDK 登录失败', err);
+            oops.gui.toast('SDK 未就绪，请稍后重试');
             this.fail();
+            return;
         }
+
+        const result = await sdk.login();
+
+        // 保存 SDK 登录凭证到 SDK 模块
+        gsm.base.sdk.token = result.token;
+
+        // 设置用户唯一编号
+        gsm.account.M_Account_Model.base.userId = result.openid!;
+
+        oops.log.trace('【登录流程】平台 SDK 登录成功');
+        oops.log.trace(`【登录流程】openid: ${result.openid}`);
+
+        // 统计登录成功
+        await gsm.base.sdk.analysis.login(result.openid!);
+
+        oops.log.trace('【登录流程】友盟登录上报成功');
+
+        console.timeEnd(label);
+        this.success();
     }
 }

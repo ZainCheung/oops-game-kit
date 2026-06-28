@@ -19,13 +19,10 @@ export class RequestEnterGame extends LoginProcessBase {
         try {
             // 统计登录成功事件
             const accountModel = gsm.account.M_Account_Model;
-            const userId = accountModel.base.userId;
             await gsm.base.sdk.analysis.trackEvent('LoginSuccess', {
-                userId: userId ?? '',
                 username: accountModel.base.username ?? '',
                 channel: gsm.base.sdk.analysis.getChannel() ?? 'unknown',
             });
-
 
             oops.message.emit(AccountEventName.LoginSuccessGame);
             console.timeEnd(label);
