@@ -14,24 +14,17 @@ export class RequestEnterGame extends LoginProcessBase {
     }
 
     protected async execute() {
-        const label = '【登录流程】进入游戏加载界面';
+        const label = '【登录流程】进入游戏加载界面耗时';
         console.time(label);
-        try {
-            // 统计登录成功事件
-            const accountModel = gsm.account.M_Account_Model;
-            await gsm.base.sdk.analysis.trackEvent('LoginSuccess', {
-                username: accountModel.base.username ?? '',
-                channel: gsm.base.sdk.analysis.getChannel() ?? 'unknown',
-            });
+        // 统计登录成功事件
+        const accountModel = gsm.account.M_Account_Model;
+        await gsm.base.sdk.analysis.trackEvent('LoginSuccess', {
+            username: accountModel.base.username ?? '',
+            channel: gsm.base.sdk.analysis.getChannel() ?? 'unknown',
+        });
 
-            oops.message.emit(AccountEventName.LoginSuccessGame);
-            console.timeEnd(label);
-            this.success();
-        }
-        catch (err) {
-            console.timeEnd(label);
-            console.error('【登录流程】进入游戏加载界面失败', err);
-            this.fail();
-        }
+        oops.message.emit(AccountEventName.LoginSuccessGame);
+        console.timeEnd(label);
+        this.success();
     }
 }
