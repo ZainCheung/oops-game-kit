@@ -1,7 +1,9 @@
+import { ILoginResult } from 'db://game-main/base/sdk/SdkTypes';
 import { oops } from 'db://oops-framework/core/Oops';
+import { StringUtil } from 'db://oops-framework/core/utils/StringUtil';
 import { gsm } from '../../../../common/GameSingletonModule';
-import { LoginProcessBase } from '../LoginProcessBase';
 import { LoginProcessType } from '../LoginEnum';
+import { LoginProcessBase } from '../LoginProcessBase';
 
 /**
  * 平台 SDK 账号登录
@@ -29,23 +31,26 @@ export class RequestSdkLogin extends LoginProcessBase {
         }
 
         const sdk = gsm.base.sdk.platform;
-
-        const result = await sdk.login();
+        let openid: string = null!;
+        let result: ILoginResult;
         if (oops.config.game.data.sdkOpenid) {
+            result = await sdk.login();
 
+            // 保存 SDK 登录凭证到 SDK 模块
+            gsm.base.sdk.token = result.token;
+            openid = result.openid!;
+
+            oops.log.trace('【登录流程】平台 SDK 登录成功');
         }
-        const openid = result.openid!;
-
-        // 保存 SDK 登录凭证到 SDK 模块
-        gsm.base.sdk.token = result.token;
+        else {
+            openid = StringUtil.guid();
+        }
 
         // 设置用户唯一编号
         gsm.account.M_Account_Model.base.userId = openid;
 
         // 缓存 openid 到本地，下次启动跳过 SDK 登录
         oops.storage.set('GameCacheOpenId', openid);
-
-        oops.log.trace('【登录流程】平台 SDK 登录成功');
         oops.log.trace(`【登录流程】openid: ${openid}`);
 
         // 统计登录成功

@@ -19,6 +19,9 @@
     "paths": {
       "db://oops-framework/*": [
         "./extensions/oops-plugin-framework/assets/*"
+      ],
+      "db://game-main/*": [
+        "./assets/bundle/game_main/script/*"
       ]
     }
   },
