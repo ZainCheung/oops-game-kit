@@ -20,7 +20,7 @@ export const WeChatAnalysisCfg: IAnalysisInitOption = {
     /** 渠道标识 */
     channel: 'wechat',
     /** 调试模式（上线改为 false） */
-    debug: true,
+    debug: false,
     /** 是否使用 openid 作为友盟用户标识 */
     useOpenid: false,
     /** 是否自动调用 wx.login() 获取 openid（仅友盟使用） */
