@@ -1,8 +1,8 @@
-import { oops } from 'db://oops-framework/core/Oops';
 import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
 import { AccountEventName } from '../../../AccountEvent';
+import { oops } from 'db://oops-framework/core/Oops';
 
 /**
  * 进入游戏加载界面
@@ -16,10 +16,10 @@ export class RequestEnterGame extends LoginProcessBase {
     protected async execute() {
         const label = '【登录流程】进入游戏加载界面耗时';
         console.time(label);
+
         // 统计登录成功事件
-        const accountModel = gsm.account.M_Account_Model;
-        await gsm.base.sdk.analysis.trackEvent('LoginSuccess', {
-            username: accountModel.base.username ?? '',
+        AUTE('LoginSuccess', {
+            username: gsm.account.M_Account_Model.base.username ?? '',
             channel: gsm.base.sdk.analysis.getChannel() ?? 'unknown',
         });
 
