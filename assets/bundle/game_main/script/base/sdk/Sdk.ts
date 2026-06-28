@@ -1,7 +1,7 @@
 import { sys } from 'cc';
 import { AnalysisSdkManager } from './analysis';
 import { ISdk } from './ISdk';
-import { DouYinSdkCfg } from './SdkConfig';
+import { DouYinSdkCfg, CommonSdkCfg } from './SdkConfig';
 import { SdkManager } from './SdkManager';
 import type { IUserInfo } from './SdkTypes';
 import {
@@ -21,13 +21,13 @@ import {
  * 不再依赖 ECS，改为普通单例类。通过 {@link Sdk.instance} 获取全局唯一实例。
  *
  * 外部访问方式：
- * - `gsm.base.sdk.platformSdk`    当前平台 SDK 实现接口
- * - `gsm.base.sdk.token`          SDK 登录凭证
- * - `gsm.base.sdk.userInfo`       用户信息
+ * - `gsm.base.sdk.platformSdk`     当前平台 SDK 实现接口
+ * - `gsm.base.sdk.token`           SDK 登录凭证
+ * - `gsm.base.sdk.userInfo`        用户信息
  *
  * 事件回调注册：
  * - `gsm.base.sdk.onShow(cb)`      注册切到前台回调
- * - `gsm.base.sdk.onHide(cb)`     注册切到后台回调
+ * - `gsm.base.sdk.onHide(cb)`      注册切到后台回调
  * - `gsm.base.sdk.onError(cb)`     注册全局错误回调
  * - `gsm.base.sdk.onNetworkChange(cb)` 注册网络状态变化回调
  */
@@ -39,12 +39,10 @@ export class Sdk {
     /** 当前平台的 SDK 实现接口 */
     readonly platform: ISdk = this.manager.init();
 
-    /** 数据分析开关（通过 config.json 文件中设置是否开启，如果不开启，把对应的SDK给删掉） */
-    analysisEnabled: boolean = false;
+    /** 数据分析 SDK 管理器（CommonSdkCfg.analysisEnabled 为 true 时有效） */
     private _analysis?: AnalysisSdkManager;
-    /** 数据分析 SDK 管理器（analysisEnabled 为 true 时有效） */
     get analysis(): AnalysisSdkManager | null {
-        if (!this._analysis && this.analysisEnabled) {
+        if (!this._analysis && CommonSdkCfg.analysisEnabled) {
             this._analysis = new AnalysisSdkManager();
             this._analysis.initByPlatform().catch(err => {
                 console.error('[Sdk] 数据分析 SDK 初始化失败', err);

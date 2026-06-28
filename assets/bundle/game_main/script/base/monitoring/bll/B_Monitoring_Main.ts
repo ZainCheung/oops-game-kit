@@ -20,7 +20,6 @@ export class B_Monitoring_Main extends CCBusiness<Monitoring> {
     protected init() {
         this.initRuntimeError();
         this.initUnhandledRejection();
-        this.initConsoleError();
     }
 
     /** 通用上报入口，接入第三方 SDK 后替换 console.log 为 SDK API */
@@ -78,38 +77,6 @@ export class B_Monitoring_Main extends CCBusiness<Monitoring> {
         });
     }
 
-    /** 3. 重写 console.error 捕获主动调用的错误日志 */
-    private initConsoleError(): void {
-        const origError = console.error;
-        console.error = (...args: unknown[]) => {
-            const parseArg = (a: unknown): string => {
-                if (a instanceof ErrorEvent) {
-                    return `ErrorEvent: ${a.message} (${a.filename}:${a.lineno}:${a.colno})`;
-                }
-                if (a instanceof Error) {
-                    return `${a.message}\n${a.stack}`;
-                }
-                if (typeof a === 'object' && a !== null) {
-                    try {
-                        return JSON.stringify(a);
-                    }
-                    catch {
-                        return String(a);
-                    }
-                }
-                return String(a);
-            };
-            const msg = args.map(parseArg).join(' ');
-            const err = args.find(a => a instanceof Error) as Error | undefined;
-            const errEvent = args.find(a => a instanceof ErrorEvent) as ErrorEvent | undefined;
-            const stack = err?.stack || errEvent?.error?.stack || '';
-            this.reportToThirdParty(this.buildReport('console_error', msg, stack, {
-                args: args.map(a => (a instanceof ErrorEvent ? `ErrorEvent: ${a.message}` : String(a))),
-            }));
-            origError.apply(console, args);
-        };
-    }
-
     // ==================== 手动上报接口 ====================
 
     /**
@@ -132,43 +99,5 @@ export class B_Monitoring_Main extends CCBusiness<Monitoring> {
         else {
             this.reportToThirdParty(this.buildReport('manual', String(error), '', extra));
         }
-    }
-
-    // ==================== 测试 ====================
-
-    /** 测试自动捕获 + 手动上报 */
-    test(): void {
-        if (this.tested) {
-            console.warn('[Monitoring] 测试已执行过，请刷新页面重新测试');
-            return;
-        }
-        this.tested = true;
-
-        console.log('[Monitoring] === 开始测试 ===');
-
-        // 1. 自动 - 未捕获异常
-        setTimeout(() => {
-            console.log('[Monitoring] 测试 1/4: 未捕获异常...');
-            throw new Error('模拟未捕获异常！');
-        }, 100);
-
-        // 2. 自动 - Promise 异常
-        setTimeout(() => {
-            console.log('[Monitoring] 测试 2/4: Promise 异常...');
-            Promise.reject(new Error('模拟 Promise 异常！'));
-        }, 500);
-
-        // 3. 自动 - console.error
-        setTimeout(() => {
-            console.log('[Monitoring] 测试 3/4: console.error...');
-            console.error('模拟主动错误日志');
-        }, 900);
-
-        // 4. 手动 - reportError
-        setTimeout(() => {
-            console.log('[Monitoring] 测试 4/4: 手动上报...');
-            // 模拟业务层 catch 中调用
-            this.reportError(new Error('模拟手动上报的业务异常'), { action: 'test', module: 'login' });
-        }, 1300);
     }
 }
