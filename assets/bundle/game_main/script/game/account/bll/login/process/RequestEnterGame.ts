@@ -20,9 +20,6 @@ export class RequestEnterGame extends LoginProcessBase {
             // 统计登录成功事件
             const accountModel = gsm.account.M_Account_Model;
             const userId = accountModel.base.userId;
-            if (userId) {
-                await gsm.base.sdk.analysis.login(userId);
-            }
             await gsm.base.sdk.analysis.trackEvent('LoginSuccess', {
                 userId: userId ?? '',
                 username: accountModel.base.username ?? '',

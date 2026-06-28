@@ -4,6 +4,7 @@ import { EmptyAnalysisSdk } from './EmptyAnalysisSdk';
 import { DouyinAnalysisSdk } from './platform/DouyinAnalysisSdk';
 import { WechatAnalysisSdk } from './platform/WechatAnalysisSdk';
 import { IAnalysisSdk } from './IAnalysisSdk';
+import { DouYinAnalysisCfg, WeChatAnalysisCfg } from '../SdkConfig';
 
 /**
  * 数据分析 SDK 管理器
@@ -47,25 +48,13 @@ export class AnalysisSdkManager implements IAnalysisSdk {
         switch (sys.platform) {
             case sys.Platform.WECHAT_GAME:
                 this.setSdk(new WechatAnalysisSdk());
-                await this.init({
-                    appId: '6a3fce7f6f259537c7bf87e2',
-                    channel: 'wechat',
-                    debug: true,
-                    useOpenid: false,
-                    autoGetOpenid: false,
-                });
+                await this.init(WeChatAnalysisCfg);
                 console.log('[友盟] 微信小游戏数据分析 SDK 初始化成功');
                 break;
 
             case sys.Platform.BYTEDANCE_MINI_GAME:
                 this.setSdk(new DouyinAnalysisSdk());
-                await this.init({
-                    appId: '', // TODO: 请填写抖音小游戏的友盟 AppKey
-                    channel: 'douyin',
-                    debug: true,
-                    useOpenid: false,
-                    autoGetOpenid: false,
-                });
+                await this.init(DouYinAnalysisCfg);
                 console.log('[友盟] 抖音小游戏数据分析 SDK 初始化成功');
                 break;
 

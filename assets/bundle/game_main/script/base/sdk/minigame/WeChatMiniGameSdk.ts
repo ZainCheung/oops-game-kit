@@ -31,6 +31,7 @@ import type {
     IUserInfoResult,
 } from '../SdkTypes';
 import { DefaultSdk } from './DefaultSdk';
+import { WeChatSdkCfg } from '../SdkConfig';
 
 /**
  * 微信小游戏 SDK 实现
@@ -103,7 +104,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
             screenWidth: windowInfo.screenWidth,
             screenHeight: windowInfo.screenHeight,
             pixelRatio: windowInfo.pixelRatio,
-            language: 'zh', // 新 API 不包含 language 字段，使用默认值
+            language: WeChatSdkCfg.defaultSystemLanguage,
             SDKVersion: appBaseInfo.SDKVersion,
             raw: { deviceInfo, windowInfo, appBaseInfo },
         };
@@ -156,7 +157,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         if (typeof wx.cloud === 'object' && wx.cloud?.callFunction) {
             try {
                 const cloudRes = await wx.cloud.callFunction({
-                    name: 'getOpenid',
+                    name: WeChatSdkCfg.cloud.getOpenidFunctionName,
                     data: { code: res.code },
                 }) as any;
                 if (cloudRes?.result?.code === 0 && cloudRes?.result?.data) {
@@ -186,12 +187,12 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         const fn = (wx as any).getUserProfile;
         if (typeof fn !== 'function') {
             console.warn('[WeChatSdk] getUserProfile 不可用，返回默认用户信息');
-            return Promise.resolve({ userInfo: { nickName: 'Player', avatarUrl: '', gender: 0 } });
+            return Promise.resolve({ userInfo: { ...WeChatSdkCfg.defaultUserInfo } });
         }
         return new Promise<IUserInfoResult>((resolve) => {
             fn({
                 desc: option.desc,
-                lang: option.lang ?? 'zh_CN',
+                lang: option.lang ?? WeChatSdkCfg.defaultLang,
                 success: (res: any) => {
                     const info = res?.userInfo;
                     resolve({
@@ -206,7 +207,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                                     city: info.city,
                                     raw: info,
                                 }
-                            : { nickName: 'Player', avatarUrl: '', gender: 0 },
+                            : { ...WeChatSdkCfg.defaultUserInfo },
                         rawData: res.rawData,
                         signature: res.signature,
                         encryptedData: res.encryptedData,
@@ -216,7 +217,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 },
                 fail: (err: any) => {
                     console.warn('[WeChatSdk] getUserProfile 失败/取消:', err);
-                    resolve({ userInfo: { nickName: 'Player', avatarUrl: '', gender: 0 } });
+                    resolve({ userInfo: { ...WeChatSdkCfg.defaultUserInfo } });
                 },
             });
         });
@@ -290,13 +291,13 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 return;
             }
 
-            const filePath = `${envPath}/share_${Date.now()}.png`;
+            const filePath = `${envPath}/${WeChatSdkCfg.capture.shareFilePrefix}${Date.now()}${WeChatSdkCfg.capture.shareFileExt}`;
 
             // 保存 base64 数据为临时文件
             fs.writeFile({
                 filePath,
                 data: option.screenshotData,
-                encoding: 'base64',
+                encoding: WeChatSdkCfg.capture.encoding,
                 success: () => {
                     console.log('[WeChatSdk] shareWithScreenshot: 截图保存成功', filePath);
                     // 分享
@@ -344,7 +345,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
      * 走 canvas.toTempFilePathSync 截屏 → fs.readFileSync 转 base64。
      */
     async captureScreen(option?: { scale?: number }): Promise<string> {
-        const scale = option?.scale ?? 0.5;
+        const scale = option?.scale ?? WeChatSdkCfg.capture.scale;
         return new Promise<string>((resolve) => {
             try {
                 const canvas = (GameGlobal as any)?.canvas || (globalThis as any).canvas;
@@ -372,8 +373,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                     height: srcH,
                     destWidth: destW,
                     destHeight: destH,
-                    fileType: 'png',
-                    quality: 1,
+                    fileType: WeChatSdkCfg.capture.fileType,
+                    quality: WeChatSdkCfg.capture.quality,
                 });
 
                 console.log(`[WeChatSdk] 截图完成: ${srcW}x${srcH} -> ${destW}x${destH}`);
@@ -386,7 +387,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 }
 
                 try {
-                    const base64 = fs.readFileSync(tempPath, 'base64') as string;
+                    const base64 = fs.readFileSync(tempPath, WeChatSdkCfg.capture.encoding) as string;
                     resolve(base64);
                 }
                 catch (e) {
@@ -440,7 +441,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 style: {
                     left: option.left ?? 0,
                     top: option.top ?? 0,
-                    width: option.width ?? 300,
+                    width: option.width ?? WeChatSdkCfg.ad.defaultWidth,
                 } as any,
             });
             return this.wrapBannerAd(ad, option);
@@ -558,7 +559,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 style: {
                     left: option.left ?? 0,
                     top: option.top ?? 0,
-                    width: option.width ?? 300,
+                    width: option.width ?? WeChatSdkCfg.ad.defaultWidth,
                 },
                 gridCount: option.gridCount,
             });
@@ -631,7 +632,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     //#region ========== 设备能力 ==========
 
     vibrateShort(type?: SdkVibrateType): Promise<void> {
-        return this.promisify<void>(wx.vibrateShort.bind(wx), { type: type ?? 'medium' }).then(
+        return this.promisify<void>(wx.vibrateShort.bind(wx), { type: type ?? WeChatSdkCfg.defaultVibrateType }).then(
             () => undefined
         );
     }

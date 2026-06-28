@@ -11,6 +11,7 @@ import {
     SdkNetworkChangeCallback,
     SdkShowCallback,
 } from './SdkTypes';
+import { DouYinSdkCfg } from './SdkConfig';
 
 
 
@@ -93,8 +94,8 @@ export class Sdk {
 
         // 转发原生事件到注册的回调
         this.onShowCb = (res: any) => {
-            // 抖音侧边栏进入检测：launch_from == 'homepage' && location == 'sidebar_card'
-            if (res && res.launch_from === 'homepage' && res.location === 'sidebar_card') {
+            // 抖音侧边栏进入检测
+            if (res && res.launch_from === DouYinSdkCfg.sideBar.launchFrom && res.location === DouYinSdkCfg.sideBar.location) {
                 this.isFromBytedanceSideBar = true;
             }
             this.showCallbacks.forEach(cb => cb(res));
