@@ -60,6 +60,7 @@ export class B_Account_Login extends CCBusiness<Account> {
     login() {
         if (this.loginProcess.started) return;
         oops.log.logBusiness('启动登录流程');
+        AUTE('LoginStart');
         this.loginProcess.run();
     }
 

@@ -1,4 +1,3 @@
-import { gsm } from '../../../../common/GameSingletonModule';
 import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
 import { AccountEventName } from '../../../AccountEvent';
@@ -18,10 +17,7 @@ export class RequestEnterGame extends LoginProcessBase {
         console.time(label);
 
         // 统计登录成功事件
-        AUTE('LoginSuccess', {
-            username: gsm.account.M_Account_Model.base.username ?? '',
-            channel: gsm.base.sdk.analysis.getChannel() ?? 'unknown',
-        });
+        AUTE('LoginSuccess');
 
         oops.message.emit(AccountEventName.LoginSuccessGame);
         console.timeEnd(label);
