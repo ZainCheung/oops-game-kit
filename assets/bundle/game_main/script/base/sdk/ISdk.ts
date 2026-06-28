@@ -106,6 +106,17 @@ export interface ISdk {
         screenshotData: string;
     }): Promise<void>;
 
+    /**
+     * 截取当前画面，返回 base64 格式的图片数据。
+     * 业务层通过该接口获取截图数据，配合 {@link shareWithScreenshot} 完成截图分享。
+     *
+     * - 微信小游戏：底层走 canvas.toTempFilePathSync + fs.readFileSync
+     * - 默认实现：返回空串（开发模式不支持截图）
+     * @param option.scale 截图缩放比例（0~1，默认 0.5 体积约 1/4）
+     * @returns 截图 base64 字符串，失败返回空串
+     */
+    captureScreen(option?: { scale?: number }): Promise<string>;
+
     /** 被动监听用户点击右上角转发 */
     onShareAppMessage(callback: (option?: IShareOption) => IShareOption | void): void;
 

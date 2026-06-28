@@ -149,6 +149,14 @@ export class DefaultSdk implements ISdk {
         return Promise.resolve();
     }
 
+    /**
+     * 默认平台（H5/编辑器）不支持截图。
+     */
+    captureScreen(_option?: { scale?: number }): Promise<string> {
+        console.warn(`[SDK] 当前平台(${this._platform})不支持 captureScreen，仅在微信/抖音小游戏有效`);
+        return Promise.resolve('');
+    }
+
     onShareAppMessage(_callback: (option?: IShareOption) => IShareOption | void): void {
         console.warn(`[SDK] 当前平台(${this._platform})不支持 onShareAppMessage`);
     }
