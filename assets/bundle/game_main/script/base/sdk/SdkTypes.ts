@@ -334,35 +334,6 @@ export interface ICustomAd {
 }
 
 /**
- * 虚拟支付参数（微信 midas 支付）
- */
-export interface IPayOption {
-    /** 支付模式：'game' 游戏币 / 'item' 道具直购 */
-    mode: 'game' | 'item';
-    /** 道具 id（mode='item' 时必填） */
-    itemId?: string;
-    /** 游戏币数量（mode='game' 时必填） */
-    quantity?: number;
-    /** 应用内购商品 id */
-    offerId?: string;
-    /** 货币类型（默认 CNY） */
-    currencyType?: string;
-    /** 平台（android/ios） */
-    env?: number;
-    /** 业务自定义透传参数 */
-    extraInfo?: string;
-    [key: string]: any;
-}
-
-/**
- * 支付返回结果
- */
-export interface IPayResult {
-    errMsg: string;
-    raw?: any;
-}
-
-/**
  * 网络状态返回结果
  */
 export interface INetworkTypeResult {

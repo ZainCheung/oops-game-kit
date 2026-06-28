@@ -20,8 +20,6 @@ import type {
     ILoginResult,
     INetworkStatusChangeEvent,
     INetworkTypeResult,
-    IPayOption,
-    IPayResult,
     IPrivacySetting,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
@@ -567,40 +565,6 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     }
 
     //#endregion
-
-    //#region ========== 虚拟支付 ==========
-
-    pay(option: IPayOption): Promise<IPayResult> {
-        // 道具直购
-        if (option.mode === 'item') {
-            const fn = (wx as any).requestMidasPaymentGameItem;
-            if (typeof fn !== 'function') {
-                return Promise.reject(new Error('[WeChatSdk] 不支持道具直购'));
-            }
-            return this.promisify<any>(fn.bind(wx), {
-                offerId: option.offerId,
-                buyQuantity: option.quantity,
-                outTradeNo: option.extraInfo || '',
-                env: option.env,
-            }).then((res) => ({ errMsg: res?.errMsg ?? 'ok', raw: res }));
-        }
-        // 游戏币
-        return this.promisify<WechatMinigame.RequestMidasPaymentSuccessCallbackResult>(
-            (wx.requestMidasPayment as any).bind(wx),
-            {
-                mode: 'game',
-                offerId: option.offerId,
-                buyQuantity: option.quantity,
-                outTradeNo: option.extraInfo || '',
-                currencyType: option.currencyType ?? 'CNY',
-                env: option.env,
-                zoneId: (option as any).zoneId,
-            }
-        ).then((res) => ({ errMsg: res?.errMsg ?? 'ok', raw: res }));
-    }
-
-    //#endregion
-
 
     //#region ========== 设备能力 ==========
 

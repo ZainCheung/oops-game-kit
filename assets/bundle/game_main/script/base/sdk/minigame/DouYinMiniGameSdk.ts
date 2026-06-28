@@ -19,8 +19,6 @@ import type {
     ILoginResult,
     INetworkStatusChangeEvent,
     INetworkTypeResult,
-    IPayOption,
-    IPayResult,
     IPrivacySetting,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
@@ -422,26 +420,6 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
             errCode: err?.errCode ?? -1,
             errMsg: err?.errMsg ?? String(err),
         };
-    }
-
-    //#endregion
-
-    //#region ========== 虚拟支付 ==========
-
-    pay(option: IPayOption): Promise<IPayResult> {
-        const fn = this.tt.requestGamePayment;
-        if (typeof fn !== 'function') {
-            return this.reject<IPayResult>('pay');
-        }
-        return this.promisify<any>(fn.bind(this.tt), {
-            mode: option.mode,
-            offerId: option.offerId,
-            buyQuantity: option.quantity,
-            currencyType: option.currencyType ?? 'CNY',
-            env: option.env,
-            outTradeNo: option.extraInfo || '',
-            ...(option.itemId ? { itemId: option.itemId } : {}),
-        }).then((res) => ({ errMsg: res?.errMsg ?? 'ok', raw: res }));
     }
 
     //#endregion

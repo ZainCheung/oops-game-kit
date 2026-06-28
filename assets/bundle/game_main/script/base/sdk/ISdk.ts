@@ -15,8 +15,6 @@ import type {
     ILoginResult,
     INetworkStatusChangeEvent,
     INetworkTypeResult,
-    IPayOption,
-    IPayResult,
     IPrivacySetting,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
@@ -141,16 +139,6 @@ export interface ISdk {
 
     /** 创建原生/自定义广告 */
     createCustomAd(option: ICustomAdOption): ICustomAd | null;
-
-    //#endregion
-
-    //#region ========== 虚拟支付 ==========
-
-    /**
-     * 拉起虚拟支付（微信 midas）。
-     * mode='game' 时 quantity 必填，mode='item' 时 itemId 必填。
-     */
-    pay(option: IPayOption): Promise<IPayResult>;
 
     //#endregion
 

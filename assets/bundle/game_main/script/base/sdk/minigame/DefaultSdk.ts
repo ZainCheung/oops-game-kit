@@ -18,8 +18,6 @@ import type {
     ILoginResult,
     INetworkStatusChangeEvent,
     INetworkTypeResult,
-    IPayOption,
-    IPayResult,
     IPrivacySetting,
     IRewardedVideoAd,
     IRewardedVideoAdOption,
@@ -190,15 +188,6 @@ export class DefaultSdk implements ISdk {
     createCustomAd(_option: ICustomAdOption): ICustomAd | null {
         this.notSupported('createCustomAd');
         return null;
-    }
-
-    //#endregion
-
-    //#region ========== 虚拟支付 ==========
-
-    pay(option: IPayOption): Promise<IPayResult> {
-        console.log('[SDK] 开发模式: pay', option);
-        return Promise.resolve({ errMsg: 'ok', raw: { transactionId: 'test_tx_' + Date.now() } });
     }
 
     //#endregion
