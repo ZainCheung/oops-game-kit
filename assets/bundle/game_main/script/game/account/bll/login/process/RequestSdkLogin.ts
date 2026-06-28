@@ -18,14 +18,6 @@ export class RequestSdkLogin extends LoginProcessBase {
         console.time(label);
         const sdk = gsm.base.sdk.platform;
 
-        // SDK 未就绪，提示并中止登录流程
-        if (!sdk.isReady()) {
-            console.timeEnd(label);
-            oops.gui.toast('SDK 未就绪，请稍后重试');
-            this.fail();
-            return;
-        }
-
         const result = await sdk.login();
 
         // 保存 SDK 登录凭证到 SDK 模块
