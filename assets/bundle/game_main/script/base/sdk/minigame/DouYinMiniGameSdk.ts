@@ -173,8 +173,9 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
 
     login(): Promise<ILoginResult> {
         return this.promisify<any>(this.tt.login.bind(this.tt)).then((res) => ({
-            code: res.code,
-            anonymousCode: res.anonymousCode,
+            token: res.code,
+            openid: null,
+            unionid: null,
             raw: res,
         }));
     }
