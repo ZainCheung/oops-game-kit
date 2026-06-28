@@ -3,6 +3,8 @@ declare const wx: any;
 
 import { AnalysisProperties, IAnalysisInitOption } from '../AnalysisSdkTypes';
 import { IAnalysisSdk } from '../IAnalysisSdk';
+import { WeChatAnalysisCfg } from '../../SdkConfig';
+export { WeChatAnalysisCfg };
 
 /**
  * 友盟+ 数据分析 SDK 实现（微信小游戏平台）

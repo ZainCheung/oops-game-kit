@@ -21,9 +21,9 @@ export const WeChatAnalysisCfg: IAnalysisInitOption = {
     channel: 'wechat',
     /** 调试模式（上线改为 false） */
     debug: true,
-    /** 是否使用 openid 作为用户标识 */
+    /** 是否使用 openid 作为友盟用户标识 */
     useOpenid: false,
-    /** 是否自动获取 openid */
+    /** 是否自动调用 wx.login() 获取 openid（仅友盟使用） */
     autoGetOpenid: false,
 };
 
@@ -35,9 +35,9 @@ export const DouYinAnalysisCfg: IAnalysisInitOption = {
     channel: 'douyin',
     /** 调试模式（上线改为 false） */
     debug: true,
-    /** 是否使用 openid 作为用户标识 */
+    /** 是否使用 openid 作为友盟用户标识 */
     useOpenid: false,
-    /** 是否自动获取 openid */
+    /** 是否自动调用 tt.login() 获取 openid（仅友盟使用） */
     autoGetOpenid: false,
 };
 
