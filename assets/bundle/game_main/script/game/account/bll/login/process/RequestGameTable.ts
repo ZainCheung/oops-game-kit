@@ -13,22 +13,10 @@ export class RequestGameTable extends LoginProcessBase {
     }
 
     protected async execute() {
-        const label = '【登录流程】请求游戏远程配置表数据';
+        const label = '【登录流程】请求游戏远程配置表数据耗时';
         console.time(label);
-        try {
-            await this.loadTable();
-            console.timeEnd(label);
-            this.success();
-        }
-        catch (err) {
-            console.timeEnd(label);
-            console.error('【登录流程】加载配置表失败', err);
-            this.fail();
-        }
-    }
-
-    /** 加载 Zip 配置表 */
-    private loadTable(): Promise<void> {
-        return JsonUtil.loadDir();
+        await JsonUtil.loadDir();
+        console.timeEnd(label);
+        this.success();
     }
 }

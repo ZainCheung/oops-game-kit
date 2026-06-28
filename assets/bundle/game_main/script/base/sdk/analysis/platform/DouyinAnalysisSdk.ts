@@ -3,6 +3,8 @@ declare const tt: any;
 
 import { AnalysisProperties, IAnalysisInitOption } from '../AnalysisSdkTypes';
 import { IAnalysisSdk } from '../IAnalysisSdk';
+import { DouYinAnalysisCfg } from '../../SdkConfig';
+export { DouYinAnalysisCfg };
 
 /**
  * 友盟+ 数据分析 SDK 实现（抖音小游戏平台）

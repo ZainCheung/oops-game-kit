@@ -1,12 +1,12 @@
-import { AnalysisProperties, IAnalysisInitOption } from './AnalysisSdkTypes';
-import { IAnalysisSdk } from './IAnalysisSdk';
+import { AnalysisProperties, IAnalysisInitOption } from '../AnalysisSdkTypes';
+import { IAnalysisSdk } from '../IAnalysisSdk';
 
 /**
- * 空数据分析 SDK 实现（默认回退）
+ * 默认数据分析 SDK 实现（平台不支持时的回退）
  *
- * 未接入任何平台时使用，所有方法均为空操作，不会崩溃。
+ * 当前平台未接入数据分析 SDK 时使用，所有方法均为空操作，不会崩溃。
  */
-export class EmptyAnalysisSdk implements IAnalysisSdk {
+export class DefaultAnalysisSdk implements IAnalysisSdk {
     private _initialized: boolean = false;
     private _accountId?: string;
     private _debug: boolean = false;

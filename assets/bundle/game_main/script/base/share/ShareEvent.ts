@@ -1,4 +1,4 @@
-import type { IShareOption } from '../../libs/sdk.js';
+import { IShareOption } from '../sdk/SdkTypes';
 
 /** Share模块事件枚举 */
 export enum ShareEventName {
@@ -109,6 +109,6 @@ export interface IShareEventDataMap {
 // 扩展全局事件类型
 declare global {
     namespace OopsFramework {
-        interface TypedEventMap extends IShareEventDataMap {}
+        interface TypedEventMap extends IShareEventDataMap { }
     }
 }

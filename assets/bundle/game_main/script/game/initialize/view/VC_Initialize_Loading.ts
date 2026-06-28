@@ -32,6 +32,8 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
     };
 
     private progress = 0;
+    /** 是否已点击开始按钮（防止连点重复触发） */
+    private started = false;
 
     onLoad() {
         super.onLoad();
@@ -43,7 +45,8 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
     //#region 按钮事件
     /** 开始按钮点击事件 */
     private async btnStart() {
-        if (this.progress < 1) return;
+        if (this.progress < 1 || this.started) return;
+        this.started = true;
         await this.event.emitAsync(InitializeEventName.LoadComplete);
     }
     //#endregion
@@ -55,6 +58,7 @@ export class VC_Initialize_Loading extends CCView<Initialize> {
 
     /** 进入游戏主界面 */
     private async onLoginSuccessGame() {
+        this.started = false;
         await oops.gui.open({ layer: LayerType.UI, prefab: 'gui/demo/V_Demo_Main' });
         this.remove();
     }
