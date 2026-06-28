@@ -229,15 +229,6 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
         });
     }
 
-    /**
-     * 抖音小游戏暂未实现 base64 写文件；返回空串让业务层降级到无图分享。
-     * 如后续支持，可参考微信实现走 tt.getFileSystemManager + tt.env.USER_DATA_PATH。
-     */
-    async saveBase64ToFile(_option: { data: string; ext?: string }): Promise<string> {
-        console.warn('[DouYinSdk] saveBase64ToFile: 抖音暂未实现，调用方应降级到无图分享');
-        return Promise.resolve('');
-    }
-
     onShareAppMessage(callback: (option?: IShareOption) => IShareOption | void): void {
         this.tt.onShareAppMessage(() => {
             const result = callback() || {};

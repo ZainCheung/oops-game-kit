@@ -139,22 +139,6 @@ export class DefaultSdk implements ISdk {
         console.warn(`[SDK] 当前平台(${this._platform})不支持 shareAppMessage，仅在微信/抖音小游戏有效`);
     }
 
-    /**
-     * 默认平台（H5/编辑器）不支持截图。
-     */
-    captureScreen(_option?: { scale?: number }): Promise<string> {
-        console.warn(`[SDK] 当前平台(${this._platform})不支持 captureScreen，仅在微信/抖音小游戏有效`);
-        return Promise.resolve('');
-    }
-
-    /**
-     * 默认平台（H5/编辑器）不支持写文件。
-     */
-    saveBase64ToFile(_option: { data: string; ext?: string }): Promise<string> {
-        console.warn(`[SDK] 当前平台(${this._platform})不支持 saveBase64ToFile，仅在微信/抖音小游戏有效`);
-        return Promise.resolve('');
-    }
-
     onShareAppMessage(_callback: (option?: IShareOption) => IShareOption | void): void {
         console.warn(`[SDK] 当前平台(${this._platform})不支持 onShareAppMessage`);
     }

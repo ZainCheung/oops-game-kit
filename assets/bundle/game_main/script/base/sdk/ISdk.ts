@@ -96,28 +96,32 @@ export interface ISdk {
     shareAppMessage(option?: IShareOption): void;
 
     /**
-     * 截取当前画面，返回 base64 格式的图片数据。
-     * 业务层通过该接口获取截图数据后，再调用 {@link saveBase64ToFile} 存为临时文件，配合 {@link shareAppMessage} 完成截图分享。
+     * 将当前画面截取为临时文件，返回临时文件路径。
+     * 截图编排逻辑由业务层（B_Share_Main）完成，本方法只做平台相关的 canvas 截取。
      *
-     * - 微信小游戏：底层走 canvas.toTempFilePathSync + fs.readFileSync
+     * - 微信小游戏：canvas.toTempFilePathSync
      * - 默认实现：返回空串（开发模式不支持截图）
-     * @param option.scale 截图缩放比例（0~1，默认 0.5 体积约 1/4）
-     * @returns 截图 base64 字符串，失败返回空串
-     */
-    captureScreen(option?: { scale?: number }): Promise<string>;
-
-    /**
-     * 将 base64 数据保存为临时文件，返回本地文件路径。
-     * 用于截图分享流程：截图(base64) → 本接口(路径) → shareAppMessage(imageUrl=路径)。
-     *
-     * 设计原因：保存文件 + 分享文件 = 跨平台固定流程，但"写文件 API"在不同小游戏平台（wx/tt）完全不同。
-     * 故只下沉到"原子能力"，流程编排由 B_Share_Main 完成，避免每个平台 SDK 重复实现。
-     *
-     * @param option.data base64 字符串（不带 data:image/png;base64, 前缀）
-     * @param option.ext  文件扩展名（默认 png）
+     * @param option.x 截取起始 x（默认 0）
+     * @param option.y 截取起始 y（默认 0）
+     * @param option.width 截取源宽度
+     * @param option.height 截取源高度
+     * @param option.destWidth 目标宽度
+     * @param option.destHeight 目标高度
+     * @param option.fileType 文件类型（如 'png'/'jpg'）
+     * @param option.quality 图片质量（0~1）
      * @returns 临时文件路径，失败返回空串
      */
-    saveBase64ToFile(option: { data: string; ext?: string }): Promise<string>;
+    /**
+     * 【可选】读取本地文件并返回 base64 字符串。
+     * 仅微信/抖音等小游戏平台支持，H5/编辑器不存在此方法。
+     */
+    readFileAsBase64?(option: { path: string }): Promise<string>;
+
+    /**
+     * 【可选】将 base64 数据保存为临时文件。
+     * 仅微信/抖音等小游戏平台支持，H5/编辑器不存在此方法。
+     */
+    saveBase64ToFile?(option: { data: string; ext?: string }): Promise<string>;
 
     /** 被动监听用户点击右上角转发 */
     onShareAppMessage(callback: (option?: IShareOption) => IShareOption | void): void;

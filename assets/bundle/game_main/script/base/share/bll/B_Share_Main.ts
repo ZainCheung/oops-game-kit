@@ -6,6 +6,7 @@ import {
     ShareEventName,
     type IShareEventDataMap
 } from '../ShareEvent';
+import { WeChatSdkCfg } from '../../sdk/SdkConfig';
 
 /** Share模块主业务逻辑 */
 @classname('B_Share_Main')
@@ -58,9 +59,88 @@ export class B_Share_Main extends CCBusiness<Share> {
         });
     }
 
+    /** 获取当前画布尺寸（不依赖微信 API） */
+    private getCanvasSize(): { width: number; height: number } {
+        const canvas = (globalThis as any).canvas || (GameGlobal as any)?.canvas;
+        return { width: canvas?.width || 0, height: canvas?.height || 0 };
+    }
+
+    /** 将当前画面截取为临时文件，返回临时文件路径 */
+    private async captureCanvasToTempFile(option?: {
+        x?: number; y?: number;
+        width?: number; height?: number;
+        destWidth?: number; destHeight?: number;
+        fileType?: string; quality?: number;
+    }): Promise<string> {
+        const canvas = (globalThis as any).canvas || (GameGlobal as any)?.canvas;
+        if (!canvas) {
+            console.warn('[Share] captureCanvasToTempFile: 找不到 canvas');
+            return '';
+        }
+        try {
+            const tempPath = canvas.toTempFilePathSync({
+                x: option?.x ?? 0,
+                y: option?.y ?? 0,
+                width: option?.width,
+                height: option?.height,
+                destWidth: option?.destWidth,
+                destHeight: option?.destHeight,
+                fileType: option?.fileType ?? WeChatSdkCfg.capture.fileType,
+                quality: option?.quality ?? WeChatSdkCfg.capture.quality,
+            });
+            return tempPath || '';
+        }
+        catch (err) {
+            console.error('[Share] captureCanvasToTempFile 异常', err);
+            return '';
+        }
+    }
+
+    /**
+     * 截取当前画面并返回 base64 字符串。
+     * 编排流程：getCanvasSize → 计算 scale → captureCanvasToTempFile → readFileAsBase64
+     */
+    private async captureScreen(option?: { scale?: number }): Promise<string> {
+        const scale = option?.scale ?? WeChatSdkCfg.capture.scale;
+        const { width: srcW, height: srcH } = this.getCanvasSize();
+
+        if (!srcW || !srcH) {
+            console.warn('[Share] captureScreen: canvas 尺寸异常:', srcW, srcH);
+            return '';
+        }
+
+        const destW = Math.max(1, Math.round(srcW * scale));
+        const destH = Math.max(1, Math.round(srcH * scale));
+
+        const tempPath = await this.captureCanvasToTempFile({
+            x: 0,
+            y: 0,
+            width: srcW,
+            height: srcH,
+            destWidth: destW,
+            destHeight: destH,
+            fileType: WeChatSdkCfg.capture.fileType,
+            quality: WeChatSdkCfg.capture.quality,
+        });
+
+        if (!tempPath) {
+            console.warn('[Share] captureScreen: 截图失败');
+            return '';
+        }
+
+        console.log(`[Share] 截图完成: ${srcW}x${srcH} -> ${destW}x${destH}`);
+
+        if (!this.sdk.readFileAsBase64) {
+            console.warn('[Share] captureScreen: 当前平台不支持读取截图文件');
+            return '';
+        }
+
+        return this.sdk.readFileAsBase64({ path: tempPath });
+    }
+
     /**
      * 截图分享 - 跨平台统一流程：
-     *  1. screenshotData 为空 → 调 sdk.captureScreen() 截图
+     *  1. screenshotData 为空 → 调 captureScreen() 截图
      *  2. 调 sdk.saveBase64ToFile() 存为本地文件
      *  3. 拿到文件路径 → 调 sdk.shareAppMessage(imageUrl=路径) 完成分享
      *  4. 任意环节失败 → 降级为无图分享（调 shareAppMessage 不带图）
@@ -73,13 +153,13 @@ export class B_Share_Main extends CCBusiness<Share> {
         data: IShareEventDataMap[K]
     ): Promise<void> {
         try {
-            // 1. 没有现成截图 → 走 SDK 截图
+            // 1. 没有现成截图 → 走截图
             if (!data.screenshotData) {
-                data.screenshotData = await this.sdk.captureScreen();
+                data.screenshotData = await this.captureScreen();
             }
 
             // 2. 有 base64 → 尝试存为本地文件再分享
-            if (data.screenshotData) {
+            if (data.screenshotData && this.sdk.saveBase64ToFile) {
                 const filePath = await this.sdk.saveBase64ToFile({
                     data: data.screenshotData,
                     ext: 'png',
@@ -95,6 +175,9 @@ export class B_Share_Main extends CCBusiness<Share> {
                     return;
                 }
                 console.warn('[Share] 写文件失败，降级为无图分享');
+            }
+            else if (data.screenshotData) {
+                console.warn('[Share] 当前平台不支持 saveBase64ToFile，降级为无图分享');
             }
             else {
                 console.warn('[Share] 截图数据为空，降级为无图分享');

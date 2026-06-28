@@ -31,6 +31,7 @@ import type {
     IUserInfoResult,
 } from '../SdkTypes';
 import { DefaultSdk } from './DefaultSdk';
+import { WeChatSdkCfg } from '../SdkConfig';
 
 /**
  * 微信小游戏 SDK 实现
@@ -313,66 +314,20 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         });
     }
 
-    /**
-     * 截取当前画面并返回 base64 字符串。
-     * 走 canvas.toTempFilePathSync 截屏 → fs.readFileSync 转 base64。
-     */
-    async captureScreen(option?: { scale?: number }): Promise<string> {
-        const scale = option?.scale ?? 0.5;
-        return new Promise<string>((resolve) => {
-            try {
-                const canvas = (GameGlobal as any)?.canvas || (globalThis as any).canvas;
-                if (!canvas) {
-                    console.warn('[WeChatSdk] captureScreen: 找不到 canvas');
-                    resolve('');
-                    return;
-                }
-
-                const srcW = canvas.width || 0;
-                const srcH = canvas.height || 0;
-                if (!srcW || !srcH) {
-                    console.warn('[WeChatSdk] captureScreen: canvas 尺寸异常:', srcW, srcH);
-                    resolve('');
-                    return;
-                }
-
-                const destW = Math.max(1, Math.round(srcW * scale));
-                const destH = Math.max(1, Math.round(srcH * scale));
-
-                const tempPath = canvas.toTempFilePathSync({
-                    x: 0,
-                    y: 0,
-                    width: srcW,
-                    height: srcH,
-                    destWidth: destW,
-                    destHeight: destH,
-                    fileType: 'png',
-                    quality: 1,
-                });
-
-                console.log(`[WeChatSdk] 截图完成: ${srcW}x${srcH} -> ${destW}x${destH}`);
-
-                const fs = wx.getFileSystemManager?.();
-                if (!fs?.readFileSync) {
-                    console.warn('[WeChatSdk] captureScreen: 文件系统不可用');
-                    resolve('');
-                    return;
-                }
-
-                try {
-                    const base64 = fs.readFileSync(tempPath, 'base64') as string;
-                    resolve(base64);
-                }
-                catch (e) {
-                    console.error('[WeChatSdk] captureScreen: 读取文件失败', e);
-                    resolve('');
-                }
-            }
-            catch (err) {
-                console.error('[WeChatSdk] captureScreen 异常', err);
-                resolve('');
-            }
-        });
+    /** 读取本地文件并返回 base64 字符串 */
+    async readFileAsBase64(option: { path: string }): Promise<string> {
+        const fs = wx.getFileSystemManager?.();
+        if (!fs?.readFileSync) {
+            console.warn('[WeChatSdk] readFileAsBase64: 文件系统不可用');
+            return '';
+        }
+        try {
+            return fs.readFileSync(option.path, WeChatSdkCfg.capture.encoding) as string;
+        }
+        catch (e) {
+            console.error('[WeChatSdk] readFileAsBase64: 读取文件失败', e);
+            return '';
+        }
     }
 
     shareToTimeline(option?: IShareToTimelineOption): void {
