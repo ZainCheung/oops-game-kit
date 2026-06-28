@@ -1,5 +1,6 @@
 import { sys } from 'cc';
 import { ISdk } from '../ISdk';
+import { WeChatSdkCfg } from '../SdkConfig';
 import { SdkNetworkType, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
@@ -27,7 +28,6 @@ import type {
     IUserInfoResult,
 } from '../SdkTypes';
 import { DefaultSdk } from './DefaultSdk';
-import { WeChatSdkCfg } from '../SdkConfig';
 
 /**
  * 微信小游戏 SDK 实现
@@ -359,31 +359,37 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     //#region ========== 广告 ==========
 
     createRewardedVideoAd(option: IRewardedVideoAdOption): IRewardedVideoAd | null {
+        if (!option.adUnitId) {
+            console.warn('[WeChatSdk] createRewardedVideoAd 跳过: adUnitId 为空');
+            return null;
+        }
         try {
             const ad = wx.createRewardedVideoAd({ adUnitId: option.adUnitId });
             if (option.muted !== undefined && (ad as any).setMuted) {
                 (ad as any).setMuted(option.muted);
             }
+            // 创建后自动预加载一次
+            ad.load();
             return {
                 load: () => ad.load(),
                 show: () => ad.show(),
                 onClose: (cb) =>
                     ad.onClose((res: any) => cb({ isEnded: !!(res && res.isEnded) })),
                 offClose: (cb?) => {
-                    if (cb) (ad as any).offClose(cb as any);
+                    if (cb) ad.offClose(cb);
                 },
                 onError: (cb) => ad.onError((err) => cb(this.mapAdError(err))),
                 offError: (cb?) => {
-                    if (cb) (ad as any).offError(cb as any);
+                    if (cb) ad.offError(cb);
                 },
-                onLoad: (cb) => (ad as any).onLoad(cb),
+                onLoad: (cb) => ad.onLoad(cb),
                 offLoad: (cb?) => {
-                    if (cb) (ad as any).offLoad(cb);
+                    if (cb) ad.offLoad(cb);
                 },
             };
         }
         catch (e) {
-            console.error('[WeChatSdk] createRewardedVideoAd 失败', e);
+            console.error(`[WeChatSdk] createRewardedVideoAd 失败 [adUnitId=${option.adUnitId}]`, e);
             return null;
         }
     }
@@ -397,15 +403,15 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 destroy: () => ad.destroy(),
                 onError: (cb) => ad.onError((err) => cb(this.mapAdError(err))),
                 offError: (cb?) => {
-                    if (cb) (ad as any).offError(cb as any);
+                    if (cb) ad.offError(cb as any);
                 },
-                onLoad: (cb) => (ad as any).onLoad(cb),
+                onLoad: (cb) => ad.onLoad(cb),
                 offLoad: (cb?) => {
-                    if (cb) (ad as any).offLoad(cb);
+                    if (cb) ad.offLoad(cb);
                 },
-                onClose: (cb) => (ad as any).onClose(cb),
+                onClose: (cb) => ad.onClose(cb),
                 offClose: (cb?) => {
-                    if (cb) (ad as any).offClose(cb);
+                    if (cb) ad.offClose(cb);
                 },
             };
         }
