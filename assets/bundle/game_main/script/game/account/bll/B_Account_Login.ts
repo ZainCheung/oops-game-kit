@@ -3,6 +3,7 @@ import type { BTNodeJson } from 'db://oops-framework/libs/behavior-tree';
 import { BehaviorTree } from 'db://oops-framework/libs/behavior-tree';
 import { CCBusiness } from 'db://oops-framework/module/common/CCBusiness';
 import { classname } from 'db://oops-framework/module/decorator/ClassNameDecorator';
+import { gsm } from '../../common/GameSingletonModule';
 import type { Account } from '../Account';
 import { RequestConnectNet } from './login/process/RequestConnectNet';
 import { RequestEnterGame } from './login/process/RequestEnterGame';
@@ -61,6 +62,13 @@ export class B_Account_Login extends CCBusiness<Account> {
         oops.log.logBusiness('启动登录流程');
         this.loginProcess.run();
     }
+
+    /** 退出登录流程 */
+    async logout() {
+        // 清除统计 SDK 用户标识
+        await gsm.base.sdk.analysis.logout();
+    }
+
 
     /** 游戏网络重连接流程 */
     reconnect() {
