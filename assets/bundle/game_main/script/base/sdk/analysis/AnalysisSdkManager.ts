@@ -18,7 +18,7 @@ export class AnalysisSdkManager implements IAnalysisSdk {
     private _sdk: IAnalysisSdk = null!;
     private _initialized: boolean = false;
 
-    /** 初始化当前 SDK */
+    /** 使用传入参数初始化当前 SDK */
     async init(option: IAnalysisInitOption): Promise<void> {
         await this._sdk.init(option);
         this._initialized = true;
@@ -26,9 +26,9 @@ export class AnalysisSdkManager implements IAnalysisSdk {
 
     /**
      * 按平台自动创建并初始化对应的数据分析 SDK。
-     * - 微信小游戏 → WechatAnalysisSdk
-     * - 抖音小游戏 → DouyinAnalysisSdk
-     * - 其他平台 → DefaultAnalysisSdk
+     * - 微信小游戏 → WechatAnalysisSdk（友盟）
+     * - 抖音小游戏 → DouyinAnalysisSdk（友盟）
+     * - 其他平台 → DefaultAnalysisSdk（空操作兜底）
      */
     async initByPlatform(): Promise<void> {
         switch (sys.platform) {
@@ -52,36 +52,44 @@ export class AnalysisSdkManager implements IAnalysisSdk {
         this._initialized = true;
     }
 
+    /** SDK 是否已初始化 */
     isInitialized(): boolean {
         return this._initialized;
     }
 
+    /** 销毁当前 SDK，恢复为默认空实现 */
     destroy(): void {
         this._sdk.destroy();
         this._sdk = new DefaultAnalysisSdk();
         this._initialized = false;
     }
 
+    /** 设置用户标识（accountId 传入 openid/uid） */
     async login(accountId: string): Promise<void> {
         return this._sdk.login(accountId);
     }
 
+    /** 清除用户标识 */
     async logout(): Promise<void> {
         return this._sdk.logout();
     }
 
+    /** 获取当前用户标识 */
     getAccountId(): string | undefined {
         return this._sdk.getAccountId();
     }
 
+    /** 上报自定义事件 */
     async trackEvent(eventName: string, properties?: AnalysisProperties): Promise<void> {
         return this._sdk.trackEvent(eventName, properties);
     }
 
+    /** 设置渠道标识（初始化后也可修改） */
     setChannel(channel: string): void {
         this._sdk.setChannel(channel);
     }
 
+    /** 获取当前渠道标识 */
     getChannel(): string | undefined {
         return this._sdk.getChannel();
     }
