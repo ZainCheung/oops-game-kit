@@ -48,7 +48,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
         }
 
         // 0. 命中缓存直接 finish
-        const raw = oops.storage.getJson<IUserInfo | null>('GameUserInfoCache', null);
+        const raw = oops.storage.getJson<IUserInfo | null>('GameCacheUserInfo', null);
         if (raw?.nickName) {
             this.finish(raw);
             return;
@@ -146,7 +146,7 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     private finish(userInfo: IUserInfo, writeCache = false): void {
         gsm.base.sdk.userInfo = userInfo;
         if (writeCache) {
-            oops.storage.set('GameUserInfoCache', userInfo);
+            oops.storage.set('GameCacheUserInfo', userInfo);
         }
         console.log('【登录流程】用户信息:', userInfo);
         this.success();

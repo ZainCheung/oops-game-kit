@@ -18,7 +18,7 @@ export class RequestSdkLogin extends LoginProcessBase {
         console.time(label);
 
         // 尝试从本地缓存读取 openid，命中则跳过 SDK 登录
-        const cachedOpenid = oops.storage.get('GameOpenIdCache');
+        const cachedOpenid = oops.storage.get('GameCacheOpenId');
         if (cachedOpenid) {
             gsm.account.M_Account_Model.base.userId = cachedOpenid;
             oops.log.trace('【登录流程】命中本地 openid 缓存，跳过 SDK 登录');
@@ -40,7 +40,7 @@ export class RequestSdkLogin extends LoginProcessBase {
         gsm.account.M_Account_Model.base.userId = openid;
 
         // 缓存 openid 到本地，下次启动跳过 SDK 登录
-        oops.storage.set('GameOpenIdCache', openid);
+        oops.storage.set('GameCacheOpenId', openid);
 
         oops.log.trace('【登录流程】平台 SDK 登录成功');
         oops.log.trace(`【登录流程】openid: ${openid}`);
