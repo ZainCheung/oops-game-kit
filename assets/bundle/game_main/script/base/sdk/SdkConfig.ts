@@ -48,13 +48,13 @@ export const WeChatSdkCfg = {
         /** 默认缩放比例 */
         scale: 0.5,
         /** 导出图片格式（不含点号，如 'png'/'jpg'） */
-        fileType: 'png' as const,
+        fileType: 'jpg' as const,
         /** 导出图片质量 */
-        quality: 1,
+        quality: 0.8,
         /** 分享截图文件名前缀 */
         shareFilePrefix: 'share_',
         /** 分享截图文件扩展名（含点号） */
-        shareFileExt: '.png',
+        shareFileExt: '.jpg',
         /** 文件写入编码 */
         encoding: 'base64' as const,
     },
