@@ -30,9 +30,10 @@ export class RequestSdkLogin extends LoginProcessBase {
         oops.log.trace(`【登录流程】openid: ${result.openid}`);
 
         // 统计登录成功
-        await gsm.base.sdk.analysis?.login(result.openid!);
-
-        oops.log.trace('【登录流程】友盟登录上报成功');
+        if (gsm.base.sdk.analysis) {
+            await gsm.base.sdk.analysis.login(result.openid!);
+            oops.log.trace('【登录流程】友盟登录上报成功');
+        }
 
         console.timeEnd(label);
         this.success();

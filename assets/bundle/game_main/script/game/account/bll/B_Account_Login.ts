@@ -23,7 +23,7 @@ const nodeFactoryMap: Record<string, new () => any> = {
 };
 
 // 登录流程节点列表（增删节点只需改这里）
-const loginFlowNodes = ['RequestSdkLogin', 'RequestSdkUserInfo', 'RequestGameTable', 'RequestGameData', 'RequestEnterGame'] as const;
+const loginFlowNodes = ['RequestSdkLogin', 'RequestSdkUserInfo', 'RequestGameTable', 'RequestEnterGame'] as const;
 
 /** 登录流程配置 */
 const LoginProcessConfig: BTNodeJson = {

@@ -40,6 +40,13 @@ export class RequestSdkUserInfo extends LoginProcessBase {
     }
 
     protected async execute() {
+        // 获取平台隐私信息没开通时直接跳过这个流程
+        if (!oops.config.game.data.sdkPrivacy) {
+            oops.log.logBusiness('【登录流程】跳过获取用户隐私信息');
+            this.success();
+            return;
+        }
+
         // 0. 命中缓存直接 finish
         const raw = oops.storage.getJson<IUserInfo | null>('GameUserInfoCache', null);
         if (raw?.nickName) {

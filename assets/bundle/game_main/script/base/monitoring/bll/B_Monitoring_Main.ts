@@ -15,8 +15,6 @@ interface ReportData {
 /** 错误监控主业务逻辑 */
 @classname('B_Monitoring_Main')
 export class B_Monitoring_Main extends CCBusiness<Monitoring> {
-    private tested = false;
-
     protected init() {
         this.initRuntimeError();
         this.initUnhandledRejection();

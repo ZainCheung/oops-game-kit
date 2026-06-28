@@ -2,7 +2,7 @@ import { LoginProcessType } from '../LoginEnum';
 import { LoginProcessBase } from '../LoginProcessBase';
 
 /**
- * 请求游戏账号数据
+ * 请求游戏账号数据（没有游戏服务器时不需要）
  * 1. 如果成功进入下个流程
  * 2. 如果失败，提示游戏服务器登录失败
  */
