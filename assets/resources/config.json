@@ -9,7 +9,8 @@
       "loadingTimeoutGui": 1000,
       "mobileSafeArea": true,
       "stats": false,
-      "sdkAnalysis": false
+      "sdkAnalysis": false,
+      "sdkPrivacy": false
     },
     "test": {
       "version": "1.0.0",
@@ -19,7 +20,8 @@
       "loadingTimeoutGui": 1000,
       "mobileSafeArea": false,
       "stats": false,
-      "sdkAnalysis": false
+      "sdkAnalysis": false,
+      "sdkPrivacy": false
     },
     "prod": {
       "version": "1.0.0",
@@ -29,7 +31,8 @@
       "loadingTimeoutGui": 1000,
       "mobileSafeArea": false,
       "stats": false,
-      "sdkAnalysis": false
+      "sdkAnalysis": false,
+      "sdkPrivacy": false
     }
   },
   "gui": [

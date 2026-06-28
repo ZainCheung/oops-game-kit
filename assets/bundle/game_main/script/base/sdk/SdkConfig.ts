@@ -111,7 +111,7 @@ export const DouYinSdkCfg = {
 
 export const CommonSdkCfg = {
     /** 数据分析开关（默认关闭，关闭时不会创建 AnalysisSdkManager 对象） */
-    analysisEnabled: false,
+    analysisEnabled: false
 };
 
 //#endregion

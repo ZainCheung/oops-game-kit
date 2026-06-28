@@ -9,5 +9,7 @@ declare module 'db://oops-framework/module/config/GameConfig' {
     interface IConfigEnvironment {
         /** 是否开启收集与分析功能 */
         sdkAnalysis: boolean;
+        /** 是否开启获取平台隐私信息开关 */
+        sdkPrivacy: false
     }
 }
