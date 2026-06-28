@@ -10,7 +10,8 @@
       "mobileSafeArea": true,
       "stats": false,
       "sdkAnalysis": false,
-      "sdkPrivacy": false
+      "sdkPrivacy": false,
+      "sdkOpenid": false
     },
     "test": {
       "version": "1.0.0",
@@ -21,7 +22,8 @@
       "mobileSafeArea": false,
       "stats": false,
       "sdkAnalysis": false,
-      "sdkPrivacy": false
+      "sdkPrivacy": false,
+      "sdkOpenid": false
     },
     "prod": {
       "version": "1.0.0",
@@ -32,7 +34,8 @@
       "mobileSafeArea": false,
       "stats": false,
       "sdkAnalysis": false,
-      "sdkPrivacy": false
+      "sdkPrivacy": false,
+      "sdkOpenid": false
     }
   },
   "gui": [

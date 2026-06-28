@@ -10,6 +10,8 @@ declare module 'db://oops-framework/module/config/GameConfig' {
         /** 是否开启收集与分析功能 */
         sdkAnalysis: boolean;
         /** 是否开启获取平台隐私信息开关 */
-        sdkPrivacy: false
+        sdkPrivacy: boolean
+        /** 是否开启获取平台 openid 开关 */
+        sdkOpenid: boolean;
     }
 }

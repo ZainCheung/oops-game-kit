@@ -3,16 +3,12 @@ import { ISdk } from '../ISdk';
 import { SdkNetworkType, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
-    IBannerAd,
-    IBannerAdOption,
     ICustomAd,
     ICustomAdOption,
     ICustomPrivacyDialog,
     ICustomerServiceConversationOption,
     ICustomerServiceOption,
     IGameRecorderManager,
-    IGridAd,
-    IGridAdOption,
     IInterstitialAd,
     IInterstitialAdOption,
     IKVData,
@@ -48,7 +44,7 @@ import { WeChatSdkCfg } from '../SdkConfig';
  *
  * 注意事项：
  * - 所有异步方法返回 Promise，原生回调已被包装。
- * - 广告/按钮对象返回平台无关接口（{@link IBannerAd} 等），
+ * - 广告/按钮对象返回平台无关接口（{@link IRewardedVideoAd} 等），
  *   内部仍持有原生 wx 对象。
  * - 部分接口（如分享到朋友圈、视频号、虚拟支付）仅微信支持，
  *   其它平台会回退到 {@link DefaultSdk}。
@@ -362,67 +358,6 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#region ========== 广告 ==========
 
-    createBannerAd(option: IBannerAdOption): IBannerAd | null {
-        try {
-            const ad = wx.createBannerAd({
-                adUnitId: option.adUnitId,
-                style: {
-                    left: option.left ?? 0,
-                    top: option.top ?? 0,
-                    width: option.width ?? 300,
-                } as any,
-            });
-            return this.wrapBannerAd(ad, option);
-        }
-        catch (e) {
-            console.error('[WeChatSdk] createBannerAd 失败', e);
-            return null;
-        }
-    }
-
-    private wrapBannerAd(ad: WechatMinigame.BannerAd, option: IBannerAdOption): IBannerAd {
-        return {
-            style: {
-                get top() {
-                    return (ad.style as any).top;
-                },
-                set top(v: number) {
-                    (ad.style as any).top = v;
-                },
-                get left() {
-                    return (ad.style as any).left;
-                },
-                set left(v: number) {
-                    (ad.style as any).left = v;
-                },
-                get width() {
-                    return (ad.style as any).width;
-                },
-                set width(v: number) {
-                    (ad.style as any).width = v;
-                },
-                get height() {
-                    return (ad.style as any).height;
-                },
-            },
-            show: () => ad.show(),
-            hide: () => ad.hide(),
-            destroy: () => ad.destroy(),
-            onError: (cb) => ad.onError((err) => cb(this.mapAdError(err))),
-            offError: (cb?) => {
-                if (cb) (ad as any).offError(cb as any);
-            },
-            onLoad: (cb) => (ad as any).onLoad(cb),
-            offLoad: (cb?) => {
-                if (cb) (ad as any).offLoad(cb);
-            },
-            onResize: (cb) => (ad as any).onResize(cb),
-            offResize: (cb?) => {
-                if (cb) (ad as any).offResize(cb);
-            },
-        };
-    }
-
     createRewardedVideoAd(option: IRewardedVideoAdOption): IRewardedVideoAd | null {
         try {
             const ad = wx.createRewardedVideoAd({ adUnitId: option.adUnitId });
@@ -476,42 +411,6 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         }
         catch (e) {
             console.error('[WeChatSdk] createInterstitialAd 失败', e);
-            return null;
-        }
-    }
-
-    createGridAd(option: IGridAdOption): IGridAd | null {
-        try {
-            const ad = (wx as any).createGridAd({
-                adUnitId: option.adUnitId,
-                style: {
-                    left: option.left ?? 0,
-                    top: option.top ?? 0,
-                    width: option.width ?? 300,
-                },
-                gridCount: option.gridCount,
-            });
-            if (!ad) return null;
-            return {
-                show: () => ad.show(),
-                hide: () => ad.hide(),
-                destroy: () => ad.destroy(),
-                onError: (cb) => ad.onError((err: any) => cb(this.mapAdError(err))),
-                offError: (cb?) => {
-                    if (cb) ad.offError(cb);
-                },
-                onLoad: (cb) => ad.onLoad(cb),
-                offLoad: (cb?) => {
-                    if (cb) ad.offLoad(cb);
-                },
-                onResize: (cb) => ad.onResize(cb),
-                offResize: (cb?) => {
-                    if (cb) ad.offResize(cb);
-                },
-            };
-        }
-        catch (e) {
-            console.error('[WeChatSdk] createGridAd 失败', e);
             return null;
         }
     }

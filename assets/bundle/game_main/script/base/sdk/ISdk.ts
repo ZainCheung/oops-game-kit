@@ -6,8 +6,6 @@ import type {
     ICustomerServiceConversationOption,
     ICustomerServiceOption,
     IGameRecorderManager,
-    IGridAd,
-    IGridAdOption,
     IInterstitialAd,
     IInterstitialAdOption,
     IKVData,
@@ -26,8 +24,6 @@ import type {
     IUpdateManager,
     IUserCloudStorageResult,
     IUserInfoResult,
-    IBannerAd,
-    IBannerAdOption,
 } from './SdkTypes';
 
 /**
@@ -126,17 +122,11 @@ export interface ISdk {
 
     //#region ========== 广告 ==========
 
-    /** 创建 Banner 广告 */
-    createBannerAd(option: IBannerAdOption): IBannerAd | null;
-
     /** 创建激励视频广告 */
     createRewardedVideoAd(option: IRewardedVideoAdOption): IRewardedVideoAd | null;
 
     /** 创建插屏广告 */
     createInterstitialAd(option: IInterstitialAdOption): IInterstitialAd | null;
-
-    /** 创建格子广告 */
-    createGridAd(option: IGridAdOption): IGridAd | null;
 
     /** 创建原生/自定义广告 */
     createCustomAd(option: ICustomAdOption): ICustomAd | null;

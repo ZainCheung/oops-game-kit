@@ -3,15 +3,11 @@ import { ISdk } from '../ISdk';
 import { SdkNetworkType, SdkVibrateType } from '../SdkEnum';
 import type {
     IAdError,
-    IBannerAd,
-    IBannerAdOption,
     ICustomAd,
     ICustomAdOption,
     ICustomerServiceConversationOption,
     ICustomerServiceOption,
     IGameRecorderManager,
-    IGridAd,
-    IGridAdOption,
     IInterstitialAd,
     IInterstitialAdOption,
     IKVData,
@@ -39,8 +35,7 @@ import { DefaultSdk } from './DefaultSdk';
  * 基于 `tt` 全局 API，实现 {@link ISdk} 接口。
  * 抖音 API 与微信小游戏高度相似，但有以下差异：
  * 1. 全局对象为 `tt`（而非 `wx`）。
- * 2. 不支持 `createBannerAd`（抖音 banner 没有兜底广告，审核无法通过）。
- * 3. 不支持 `createCustomAd` / `createGridAd`（抖音平台 bug，一般不加自定义广告）。
+ * 2. 不支持 `createCustomAd`（抖音平台 bug，一般不加自定义广告）。
  * 4. 额外支持抖音侧边栏场景相关 API（{@link checkScene} / {@link navigateToScene}）。
  * 5. 分享使用 `tt.shareAppMessage`。
  *
@@ -260,76 +255,6 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
 
     //#region ========== 广告 ==========
 
-    /**
-     * 抖音 banner 广告没有兜底广告，审核无法通过，一般不加。
-     * 如确需使用，可在此实现 `tt.createBannerAd`。
-     */
-    createBannerAd(_option: IBannerAdOption): IBannerAd | null {
-        try {
-            const fn = this.tt.createBannerAd;
-            if (typeof fn !== 'function') {
-                this.notSupported('createBannerAd');
-                return null;
-            }
-            const ad = fn({
-                adUnitId: _option.adUnitId,
-                style: {
-                    left: _option.left ?? 0,
-                    top: _option.top ?? 0,
-                    width: _option.width ?? 300,
-                },
-            });
-            return this.wrapBannerAd(ad);
-        }
-        catch (e) {
-            console.error('[DouYinSdk] createBannerAd 失败', e);
-            return null;
-        }
-    }
-
-    private wrapBannerAd(ad: any): IBannerAd {
-        return {
-            style: {
-                get top() {
-                    return ad.style.top;
-                },
-                set top(v: number) {
-                    ad.style.top = v;
-                },
-                get left() {
-                    return ad.style.left;
-                },
-                set left(v: number) {
-                    ad.style.left = v;
-                },
-                get width() {
-                    return ad.style.width;
-                },
-                set width(v: number) {
-                    ad.style.width = v;
-                },
-                get height() {
-                    return ad.style.height;
-                },
-            },
-            show: () => ad.show(),
-            hide: () => ad.hide(),
-            destroy: () => ad.destroy(),
-            onError: (cb) => ad.onError((err: any) => cb(this.mapAdError(err))),
-            offError: (cb?) => {
-                if (cb) ad.offError(cb);
-            },
-            onLoad: (cb) => ad.onLoad?.(cb),
-            offLoad: (cb?) => {
-                if (cb) ad.offLoad?.(cb);
-            },
-            onResize: (cb) => ad.onResize?.(cb),
-            offResize: (cb?) => {
-                if (cb) ad.offResize?.(cb);
-            },
-        };
-    }
-
     createRewardedVideoAd(option: IRewardedVideoAdOption): IRewardedVideoAd | null {
         try {
             const ad = this.tt.createRewardedVideoAd({ adUnitId: option.adUnitId });
@@ -385,14 +310,6 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
             console.error('[DouYinSdk] createInterstitialAd 失败', e);
             return null;
         }
-    }
-
-    /**
-     * 抖音无格子广告 API，返回 null。
-     */
-    createGridAd(_option: IGridAdOption): IGridAd | null {
-        this.notSupported('createGridAd');
-        return null;
     }
 
     /**

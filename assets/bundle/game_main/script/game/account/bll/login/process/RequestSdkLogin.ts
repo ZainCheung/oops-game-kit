@@ -31,6 +31,9 @@ export class RequestSdkLogin extends LoginProcessBase {
         const sdk = gsm.base.sdk.platform;
 
         const result = await sdk.login();
+        if (oops.config.game.data.sdkOpenid) {
+
+        }
         const openid = result.openid!;
 
         // 保存 SDK 登录凭证到 SDK 模块

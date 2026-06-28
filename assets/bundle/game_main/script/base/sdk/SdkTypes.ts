@@ -141,24 +141,6 @@ export interface IShareToTimelineOption {
 }
 
 /**
- * Banner 广告参数
- */
-export interface IBannerAdOption {
-    /** 广告单元 id */
-    adUnitId: string;
-    /** 顶部坐标 */
-    top?: number;
-    /** 左侧坐标 */
-    left?: number;
-    /** 宽度 */
-    width?: number;
-    /** 高度 */
-    height?: number;
-    /** 风格 */
-    style?: Record<string, any>;
-}
-
-/**
  * 激励视频广告参数
  */
 export interface IRewardedVideoAdOption {
@@ -174,22 +156,6 @@ export interface IRewardedVideoAdOption {
 export interface IInterstitialAdOption {
     /** 广告单元 id */
     adUnitId: string;
-}
-
-/**
- * 格子广告参数
- */
-export interface IGridAdOption {
-    /** 广告单元 id */
-    adUnitId: string;
-    /** 左侧坐标 */
-    left?: number;
-    /** 顶部坐标 */
-    top?: number;
-    /** 宽度 */
-    width?: number;
-    /** 格子个数 */
-    gridCount?: number;
 }
 
 /**
@@ -215,32 +181,6 @@ export interface ICustomAdOption {
 export interface IAdError {
     errCode: number;
     errMsg: string;
-}
-
-/**
- * Banner 广告实例接口（平台无关）
- */
-export interface IBannerAd {
-    /** 显示广告 */
-    show(): Promise<void>;
-    /** 隐藏广告 */
-    hide(): void;
-    /** 销毁广告实例 */
-    destroy(): void;
-    /** 监听广告错误事件 */
-    onError(callback: (err: IAdError) => void): void;
-    /** 取消监听广告错误事件 */
-    offError(callback?: (err: IAdError) => void): void;
-    /** 监听广告加载成功事件 */
-    onLoad?(callback: () => void): void;
-    /** 取消监听广告加载成功事件 */
-    offLoad?(callback?: () => void): void;
-    /** 监听广告尺寸变化事件 */
-    onResize?(callback: (res: { width: number; height: number }) => void): void;
-    /** 取消监听广告尺寸变化事件 */
-    offResize?(callback?: (res: { width: number; height: number }) => void): void;
-    /** 广告样式（位置与尺寸） */
-    style: { top: number; left: number; width?: number; height?: number };
 }
 
 /**
@@ -287,30 +227,6 @@ export interface IInterstitialAd {
     onClose?(callback: () => void): void;
     /** 取消监听广告关闭事件 */
     offClose?(callback?: () => void): void;
-}
-
-/**
- * 格子广告实例接口
- */
-export interface IGridAd {
-    /** 显示广告 */
-    show(): Promise<void>;
-    /** 隐藏广告 */
-    hide(): void;
-    /** 销毁广告实例 */
-    destroy(): void;
-    /** 监听广告错误事件 */
-    onError(callback: (err: IAdError) => void): void;
-    /** 取消监听广告错误事件 */
-    offError(callback?: (err: IAdError) => void): void;
-    /** 监听广告加载成功事件 */
-    onLoad?(callback: () => void): void;
-    /** 取消监听广告加载成功事件 */
-    offLoad?(callback?: () => void): void;
-    /** 监听广告尺寸变化事件 */
-    onResize?(callback: (res: { width: number; height: number }) => void): void;
-    /** 取消监听广告尺寸变化事件 */
-    offResize?(callback?: (res: { width: number; height: number }) => void): void;
 }
 
 /**

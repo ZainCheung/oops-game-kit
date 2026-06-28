@@ -1,16 +1,12 @@
 import { ISdk } from '../ISdk';
 import { SdkVibrateType } from '../SdkEnum';
 import type {
-    IBannerAd,
-    IBannerAdOption,
     ICustomAd,
     ICustomAdOption,
     ICustomPrivacyDialog,
     ICustomerServiceConversationOption,
     ICustomerServiceOption,
     IGameRecorderManager,
-    IGridAd,
-    IGridAdOption,
     IInterstitialAd,
     IInterstitialAdOption,
     IKVData,
@@ -159,20 +155,12 @@ export class DefaultSdk implements ISdk {
 
     //#region ========== 广告 ==========
 
-    createBannerAd(_option: IBannerAdOption): IBannerAd | null {
-        this.notSupported('createBannerAd');
-        return null;
-    }
     createRewardedVideoAd(_option: IRewardedVideoAdOption): IRewardedVideoAd | null {
         this.notSupported('createRewardedVideoAd');
         return null;
     }
     createInterstitialAd(_option: IInterstitialAdOption): IInterstitialAd | null {
         this.notSupported('createInterstitialAd');
-        return null;
-    }
-    createGridAd(_option: IGridAdOption): IGridAd | null {
-        this.notSupported('createGridAd');
         return null;
     }
     createCustomAd(_option: ICustomAdOption): ICustomAd | null {
