@@ -6,8 +6,8 @@ declare global {
         'OopsFrameworkPromptSkip' |
         /** 业务层 */
         'GameRedDot' |
-        'GameUserInfoCache' |
-        'GameOpenIdCache';
+        'GameCacheUserInfo' |
+        'GameCacheOpenId';
 }
 
 export { };
