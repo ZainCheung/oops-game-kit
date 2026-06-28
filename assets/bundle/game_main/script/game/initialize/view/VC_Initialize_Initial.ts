@@ -22,11 +22,11 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     /** 游戏必备资源加载 */
     private async loadRes() {
         // 并行加载必备资源
-        const promises: Promise<void>[] = [];
         if (this.useLanguage) {
+            const promises: Promise<void>[] = [];
             promises.push(this.loadLanguage());
+            await Promise.all(promises);
         }
-        await Promise.all(promises);
 
         // 窗口打开失败事件
         oops.gui.setOpenFailure(this.onOpenFailure);
