@@ -260,59 +260,33 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     }
 
     /**
-     * 使用截图分享（自动处理截图保存和分享）
-     *
-     * @param option 分享选项，包含 title、screenshotData 等
-     * @returns Promise，resolve 表示分享成功，reject 表示失败
+     * 将 base64 数据写入微信临时文件目录，返回本地路径。
+     * 业务流程由 B_Share_Main 编排：截图 → 本接口存文件 → shareAppMessage(imageUrl=路径)。
      */
-    async shareWithScreenshot(option: {
-        title?: string;
-        query?: string;
-        withShareTicket?: boolean;
-        screenshotData: string; // base64 截图数据
-    }): Promise<void> {
-        return new Promise((resolve, reject) => {
-            // 获取临时文件保存路径
+    async saveBase64ToFile(option: { data: string; ext?: string }): Promise<string> {
+        return new Promise<string>((resolve) => {
             const fs = wx.getFileSystemManager?.();
-            if (!fs) {
-                console.warn('[WeChatSdk] shareWithScreenshot: getFileSystemManager 不可用');
-                // 降级：直接分享无图
-                this.shareAppMessage({ title: option.title, query: option.query });
-                resolve();
-                return;
-            }
-
             const envPath = wx.env?.USER_DATA_PATH;
-            if (!envPath) {
-                console.warn('[WeChatSdk] shareWithScreenshot: USER_DATA_PATH 不可用');
-                this.shareAppMessage({ title: option.title, query: option.query });
-                resolve();
+            if (!fs || !envPath) {
+                console.warn('[WeChatSdk] saveBase64ToFile: 文件系统或 USER_DATA_PATH 不可用');
+                resolve('');
                 return;
             }
 
-            const filePath = `${envPath}/share_${Date.now()}.png`;
+            const ext = option.ext ?? 'png';
+            const filePath = `${envPath}/share_${Date.now()}.${ext}`;
 
-            // 保存 base64 数据为临时文件
             fs.writeFile({
                 filePath,
-                data: option.screenshotData,
+                data: option.data,
                 encoding: 'base64',
                 success: () => {
-                    console.log('[WeChatSdk] shareWithScreenshot: 截图保存成功', filePath);
-                    // 分享
-                    wx.shareAppMessage({
-                        title: option.title,
-                        imageUrl: filePath,
-                        query: option.query,
-                        ...(option.withShareTicket ? { withShareTicket: true } : {}),
-                    });
-                    resolve();
+                    console.log('[WeChatSdk] saveBase64ToFile: 临时文件已写入', filePath);
+                    resolve(filePath);
                 },
                 fail: (err: any) => {
-                    console.warn('[WeChatSdk] shareWithScreenshot: 截图保存失败', err);
-                    // 降级：直接分享无图
-                    this.shareAppMessage({ title: option.title, query: option.query });
-                    resolve();
+                    console.error('[WeChatSdk] saveBase64ToFile: 写入失败', err);
+                    resolve('');
                 },
             });
         });

@@ -59,28 +59,52 @@ export class B_Share_Main extends CCBusiness<Share> {
     }
 
     /**
-     * 截图分享 - 自动截取当前画面并分享
-     * 如果已传入 screenshotData 则直接使用，否则通过 SDK 自动截图
+     * 截图分享 - 跨平台统一流程：
+     *  1. screenshotData 为空 → 调 sdk.captureScreen() 截图
+     *  2. 调 sdk.saveBase64ToFile() 存为本地文件
+     *  3. 拿到文件路径 → 调 sdk.shareAppMessage(imageUrl=路径) 完成分享
+     *  4. 任意环节失败 → 降级为无图分享（调 shareAppMessage 不带图）
+     *
+     * 流程编排全部在业务层，平台 SDK 只暴露"截图/写文件/分享"三个原子能力，
+     * 避免每个平台 SDK 都重复实现"保存+分享+降级"逻辑。
      */
     private async onShareScreenshot<K extends ShareEventName.ShareScreenshot>(
         event: K,
         data: IShareEventDataMap[K]
     ): Promise<void> {
         try {
-            // 如果没有传入截图数据，通过 SDK 自动截取当前画面
+            // 1. 没有现成截图 → 走 SDK 截图
             if (!data.screenshotData) {
                 data.screenshotData = await this.sdk.captureScreen();
-                if (!data.screenshotData) {
-                    console.warn('[Share] 截图失败，无法分享');
-                    return;
-                }
             }
 
-            await this.sdk.shareWithScreenshot({
+            // 2. 有 base64 → 尝试存为本地文件再分享
+            if (data.screenshotData) {
+                const filePath = await this.sdk.saveBase64ToFile({
+                    data: data.screenshotData,
+                    ext: 'png',
+                });
+
+                if (filePath) {
+                    this.sdk.shareAppMessage({
+                        title: data.title,
+                        imageUrl: filePath,
+                        path: data.query,
+                        withShareTicket: data.withShareTicket,
+                    });
+                    return;
+                }
+                console.warn('[Share] 写文件失败，降级为无图分享');
+            }
+            else {
+                console.warn('[Share] 截图数据为空，降级为无图分享');
+            }
+
+            // 3. 降级路径：直接分享无图
+            this.sdk.shareAppMessage({
                 title: data.title,
-                query: data.query,
+                path: data.query,
                 withShareTicket: data.withShareTicket,
-                screenshotData: data.screenshotData,
             });
         }
         catch (err) {
