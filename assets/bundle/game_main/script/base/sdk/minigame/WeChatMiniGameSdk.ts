@@ -31,7 +31,6 @@ import type {
     IUserInfoResult,
 } from '../SdkTypes';
 import { DefaultSdk } from './DefaultSdk';
-import { WeChatSdkCfg } from '../SdkConfig';
 
 /**
  * 微信小游戏 SDK 实现
@@ -104,7 +103,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
             screenWidth: windowInfo.screenWidth,
             screenHeight: windowInfo.screenHeight,
             pixelRatio: windowInfo.pixelRatio,
-            language: WeChatSdkCfg.defaultSystemLanguage,
+            language: 'zh', // 新 API 不包含 language 字段，使用默认值
             SDKVersion: appBaseInfo.SDKVersion,
             raw: { deviceInfo, windowInfo, appBaseInfo },
         };
@@ -157,7 +156,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         if (typeof wx.cloud === 'object' && wx.cloud?.callFunction) {
             try {
                 const cloudRes = await wx.cloud.callFunction({
-                    name: WeChatSdkCfg.cloud.getOpenidFunctionName,
+                    name: 'getOpenid',
                     data: { code: res.code },
                 }) as any;
                 if (cloudRes?.result?.code === 0 && cloudRes?.result?.data) {
@@ -187,12 +186,12 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
         const fn = (wx as any).getUserProfile;
         if (typeof fn !== 'function') {
             console.warn('[WeChatSdk] getUserProfile 不可用，返回默认用户信息');
-            return Promise.resolve({ userInfo: { ...WeChatSdkCfg.defaultUserInfo } });
+            return Promise.resolve({ userInfo: { nickName: 'Player', avatarUrl: '', gender: 0 } });
         }
         return new Promise<IUserInfoResult>((resolve) => {
             fn({
                 desc: option.desc,
-                lang: option.lang ?? WeChatSdkCfg.defaultLang,
+                lang: option.lang ?? 'zh_CN',
                 success: (res: any) => {
                     const info = res?.userInfo;
                     resolve({
@@ -207,7 +206,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                                     city: info.city,
                                     raw: info,
                                 }
-                            : { ...WeChatSdkCfg.defaultUserInfo },
+                            : { nickName: 'Player', avatarUrl: '', gender: 0 },
                         rawData: res.rawData,
                         signature: res.signature,
                         encryptedData: res.encryptedData,
@@ -217,7 +216,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 },
                 fail: (err: any) => {
                     console.warn('[WeChatSdk] getUserProfile 失败/取消:', err);
-                    resolve({ userInfo: { ...WeChatSdkCfg.defaultUserInfo } });
+                    resolve({ userInfo: { nickName: 'Player', avatarUrl: '', gender: 0 } });
                 },
             });
         });
@@ -261,59 +260,33 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     }
 
     /**
-     * 使用截图分享（自动处理截图保存和分享）
-     *
-     * @param option 分享选项，包含 title、screenshotData 等
-     * @returns Promise，resolve 表示分享成功，reject 表示失败
+     * 将 base64 数据写入微信临时文件目录，返回本地路径。
+     * 业务流程由 B_Share_Main 编排：截图 → 本接口存文件 → shareAppMessage(imageUrl=路径)。
      */
-    async shareWithScreenshot(option: {
-        title?: string;
-        query?: string;
-        withShareTicket?: boolean;
-        screenshotData: string; // base64 截图数据
-    }): Promise<void> {
-        return new Promise((resolve, reject) => {
-            // 获取临时文件保存路径
+    async saveBase64ToFile(option: { data: string; ext?: string }): Promise<string> {
+        return new Promise<string>((resolve) => {
             const fs = wx.getFileSystemManager?.();
-            if (!fs) {
-                console.warn('[WeChatSdk] shareWithScreenshot: getFileSystemManager 不可用');
-                // 降级：直接分享无图
-                this.shareAppMessage({ title: option.title, query: option.query });
-                resolve();
-                return;
-            }
-
             const envPath = wx.env?.USER_DATA_PATH;
-            if (!envPath) {
-                console.warn('[WeChatSdk] shareWithScreenshot: USER_DATA_PATH 不可用');
-                this.shareAppMessage({ title: option.title, query: option.query });
-                resolve();
+            if (!fs || !envPath) {
+                console.warn('[WeChatSdk] saveBase64ToFile: 文件系统或 USER_DATA_PATH 不可用');
+                resolve('');
                 return;
             }
 
-            const filePath = `${envPath}/${WeChatSdkCfg.capture.shareFilePrefix}${Date.now()}${WeChatSdkCfg.capture.shareFileExt}`;
+            const ext = option.ext ?? 'png';
+            const filePath = `${envPath}/share_${Date.now()}.${ext}`;
 
-            // 保存 base64 数据为临时文件
             fs.writeFile({
                 filePath,
-                data: option.screenshotData,
-                encoding: WeChatSdkCfg.capture.encoding,
+                data: option.data,
+                encoding: 'base64',
                 success: () => {
-                    console.log('[WeChatSdk] shareWithScreenshot: 截图保存成功', filePath);
-                    // 分享
-                    wx.shareAppMessage({
-                        title: option.title,
-                        imageUrl: filePath,
-                        query: option.query,
-                        ...(option.withShareTicket ? { withShareTicket: true } : {}),
-                    });
-                    resolve();
+                    console.log('[WeChatSdk] saveBase64ToFile: 临时文件已写入', filePath);
+                    resolve(filePath);
                 },
                 fail: (err: any) => {
-                    console.warn('[WeChatSdk] shareWithScreenshot: 截图保存失败', err);
-                    // 降级：直接分享无图
-                    this.shareAppMessage({ title: option.title, query: option.query });
-                    resolve();
+                    console.error('[WeChatSdk] saveBase64ToFile: 写入失败', err);
+                    resolve('');
                 },
             });
         });
@@ -345,7 +318,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
      * 走 canvas.toTempFilePathSync 截屏 → fs.readFileSync 转 base64。
      */
     async captureScreen(option?: { scale?: number }): Promise<string> {
-        const scale = option?.scale ?? WeChatSdkCfg.capture.scale;
+        const scale = option?.scale ?? 0.5;
         return new Promise<string>((resolve) => {
             try {
                 const canvas = (GameGlobal as any)?.canvas || (globalThis as any).canvas;
@@ -373,8 +346,8 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                     height: srcH,
                     destWidth: destW,
                     destHeight: destH,
-                    fileType: WeChatSdkCfg.capture.fileType,
-                    quality: WeChatSdkCfg.capture.quality,
+                    fileType: 'png',
+                    quality: 1,
                 });
 
                 console.log(`[WeChatSdk] 截图完成: ${srcW}x${srcH} -> ${destW}x${destH}`);
@@ -387,7 +360,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 }
 
                 try {
-                    const base64 = fs.readFileSync(tempPath, WeChatSdkCfg.capture.encoding) as string;
+                    const base64 = fs.readFileSync(tempPath, 'base64') as string;
                     resolve(base64);
                 }
                 catch (e) {
@@ -441,7 +414,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 style: {
                     left: option.left ?? 0,
                     top: option.top ?? 0,
-                    width: option.width ?? WeChatSdkCfg.ad.defaultWidth,
+                    width: option.width ?? 300,
                 } as any,
             });
             return this.wrapBannerAd(ad, option);
@@ -559,7 +532,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
                 style: {
                     left: option.left ?? 0,
                     top: option.top ?? 0,
-                    width: option.width ?? WeChatSdkCfg.ad.defaultWidth,
+                    width: option.width ?? 300,
                 },
                 gridCount: option.gridCount,
             });
@@ -632,7 +605,7 @@ export class WeChatMiniGameSdk extends DefaultSdk implements ISdk {
     //#region ========== 设备能力 ==========
 
     vibrateShort(type?: SdkVibrateType): Promise<void> {
-        return this.promisify<void>(wx.vibrateShort.bind(wx), { type: type ?? WeChatSdkCfg.defaultVibrateType }).then(
+        return this.promisify<void>(wx.vibrateShort.bind(wx), { type: type ?? 'medium' }).then(
             () => undefined
         );
     }

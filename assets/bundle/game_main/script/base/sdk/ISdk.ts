@@ -96,19 +96,8 @@ export interface ISdk {
     shareAppMessage(option?: IShareOption): void;
 
     /**
-     * 使用截图分享（自动处理截图保存和分享）
-     * @param option 包含 title、query、screenshotData（base64）
-     */
-    shareWithScreenshot(option: {
-        title?: string;
-        query?: string;
-        withShareTicket?: boolean;
-        screenshotData: string;
-    }): Promise<void>;
-
-    /**
      * 截取当前画面，返回 base64 格式的图片数据。
-     * 业务层通过该接口获取截图数据，配合 {@link shareWithScreenshot} 完成截图分享。
+     * 业务层通过该接口获取截图数据后，再调用 {@link saveBase64ToFile} 存为临时文件，配合 {@link shareAppMessage} 完成截图分享。
      *
      * - 微信小游戏：底层走 canvas.toTempFilePathSync + fs.readFileSync
      * - 默认实现：返回空串（开发模式不支持截图）
@@ -116,6 +105,19 @@ export interface ISdk {
      * @returns 截图 base64 字符串，失败返回空串
      */
     captureScreen(option?: { scale?: number }): Promise<string>;
+
+    /**
+     * 将 base64 数据保存为临时文件，返回本地文件路径。
+     * 用于截图分享流程：截图(base64) → 本接口(路径) → shareAppMessage(imageUrl=路径)。
+     *
+     * 设计原因：保存文件 + 分享文件 = 跨平台固定流程，但"写文件 API"在不同小游戏平台（wx/tt）完全不同。
+     * 故只下沉到"原子能力"，流程编排由 B_Share_Main 完成，避免每个平台 SDK 重复实现。
+     *
+     * @param option.data base64 字符串（不带 data:image/png;base64, 前缀）
+     * @param option.ext  文件扩展名（默认 png）
+     * @returns 临时文件路径，失败返回空串
+     */
+    saveBase64ToFile(option: { data: string; ext?: string }): Promise<string>;
 
     /** 被动监听用户点击右上角转发 */
     onShareAppMessage(callback: (option?: IShareOption) => IShareOption | void): void;
