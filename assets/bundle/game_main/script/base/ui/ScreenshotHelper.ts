@@ -143,32 +143,37 @@ export class ScreenshotHelper {
         const camera = this.findMainCamera();
         if (!camera) {
             console.warn('[ScreenshotHelper] 找不到主相机');
+            renderTexture.destroy();
             return '';
         }
 
         const oldTargetTexture = camera.targetTexture;
         camera.targetTexture = renderTexture;
 
-        // 等一帧让相机渲染到 RenderTexture
-        await this.nextFrame();
+        try {
+            // 等一帧让相机渲染到 RenderTexture
+            await this.nextFrame();
 
-        camera.targetTexture = oldTargetTexture;
+            // readPixels() 返回 Uint8Array（RGBA 原始像素数据）
+            const pixels = renderTexture.readPixels();
+            if (!pixels || pixels.length === 0) {
+                console.warn('[ScreenshotHelper] readPixels 失败');
+                return '';
+            }
 
-        // readPixels() 返回 Uint8Array（RGBA 原始像素数据）
-        const pixels = renderTexture.readPixels();
-        if (!pixels || pixels.length === 0) {
-            console.warn('[ScreenshotHelper] readPixels 失败');
-            return '';
+            const pngBytes = this.encodePng(width, height, pixels);
+            if (pngBytes.length === 0) {
+                return '';
+            }
+
+            const base64 = this.uint8ArrayToBase64(pngBytes);
+            console.log(`[ScreenshotHelper] 截图完成 (RenderTexture): ${width}x${height}`);
+            return base64;
         }
-
-        const pngBytes = this.encodePng(width, height, pixels);
-        if (pngBytes.length === 0) {
-            return '';
+        finally {
+            camera.targetTexture = oldTargetTexture;
+            renderTexture.destroy();
         }
-
-        const base64 = this.uint8ArrayToBase64(pngBytes);
-        console.log(`[ScreenshotHelper] 截图完成 (RenderTexture): ${width}x${height}`);
-        return base64;
     }
 
     /** 查找场景中的主相机 */
