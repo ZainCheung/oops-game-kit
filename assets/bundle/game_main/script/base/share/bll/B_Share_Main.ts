@@ -59,6 +59,8 @@ export class B_Share_Main extends CCBusiness<Share> {
         });
     }
 
+    //#region ========== 截图相关 ==========
+
     /** 获取当前画布尺寸（不依赖微信 API） */
     private getCanvasSize(): { width: number; height: number } {
         const canvas = (globalThis as any).canvas || (GameGlobal as any)?.canvas;
@@ -137,6 +139,8 @@ export class B_Share_Main extends CCBusiness<Share> {
 
         return this.sdk.readFileAsBase64({ path: tempPath });
     }
+
+    //#endregion
 
     /**
      * 截图分享 - 跨平台统一流程：
