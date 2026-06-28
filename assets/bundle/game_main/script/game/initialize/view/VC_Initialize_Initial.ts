@@ -46,10 +46,10 @@ export class VC_Initialize_Initial extends CCView<Initialize> {
     private loadLanguage(): Promise<void> {
         return new Promise((resolve, reject) => {
             // 设置默认语言
-            let lan = oops.storage.get('Language');
+            let lan = oops.storage.get('OopsFrameworkLanguage');
             if (lan == null || lan == '') {
                 lan = oops.config.game.languageDefault;
-                oops.storage.set('Language', lan);
+                oops.storage.set('OopsFrameworkLanguage', lan);
             }
 
             // 加载语言包资源

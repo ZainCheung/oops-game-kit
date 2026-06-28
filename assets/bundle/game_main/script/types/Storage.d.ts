@@ -1,8 +1,8 @@
 declare global {
     type GameStorageKey =
         /** 框架内置 */
-        'OopsFrameworkLanguage' |
         'OopsFrameworkAudio' |
+        'OopsFrameworkLanguage' |
         'OopsFrameworkPromptSkip' |
         /** 业务层 */
         'GameRedDot' |
