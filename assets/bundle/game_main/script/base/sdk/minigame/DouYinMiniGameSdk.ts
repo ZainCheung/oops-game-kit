@@ -229,6 +229,55 @@ export class DouYinMiniGameSdk extends DefaultSdk implements ISdk {
         });
     }
 
+    /**
+     * 将 base64 数据写入抖音临时文件目录，返回本地路径。
+     * 业务流程由 B_Share_Main 编排：截图 → 本接口存文件 → shareAppMessage(imageUrl=路径)。
+     */
+    async saveBase64ToFile(option: { data: string; ext?: string }): Promise<string> {
+        return new Promise<string>((resolve) => {
+            const fs = this.tt.getFileSystemManager?.();
+            const envPath = this.tt.env?.USER_DATA_PATH;
+            if (!fs || !envPath) {
+                console.warn('[DouYinSdk] saveBase64ToFile: 文件系统或 USER_DATA_PATH 不可用');
+                resolve('');
+                return;
+            }
+
+            const ext = option.ext ?? 'png';
+            const filePath = `${envPath}/share_${Date.now()}.${ext}`;
+
+            fs.writeFile({
+                filePath,
+                data: option.data,
+                encoding: 'base64',
+                success: () => {
+                    console.log('[DouYinSdk] saveBase64ToFile: 临时文件已写入', filePath);
+                    resolve(filePath);
+                },
+                fail: (err: any) => {
+                    console.error('[DouYinSdk] saveBase64ToFile: 写入失败', err);
+                    resolve('');
+                },
+            });
+        });
+    }
+
+    /** 读取本地文件并返回 base64 字符串 */
+    async readFileAsBase64(option: { path: string }): Promise<string> {
+        const fs = this.tt.getFileSystemManager?.();
+        if (!fs?.readFileSync) {
+            console.warn('[DouYinSdk] readFileAsBase64: 文件系统不可用');
+            return '';
+        }
+        try {
+            return fs.readFileSync(option.path, 'base64') as string;
+        }
+        catch (e) {
+            console.error('[DouYinSdk] readFileAsBase64: 读取文件失败', e);
+            return '';
+        }
+    }
+
     onShareAppMessage(callback: (option?: IShareOption) => IShareOption | void): void {
         this.tt.onShareAppMessage(() => {
             const result = callback() || {};

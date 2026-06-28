@@ -96,22 +96,6 @@ export interface ISdk {
     shareAppMessage(option?: IShareOption): void;
 
     /**
-     * 将当前画面截取为临时文件，返回临时文件路径。
-     * 截图编排逻辑由业务层（B_Share_Main）完成，本方法只做平台相关的 canvas 截取。
-     *
-     * - 微信小游戏：canvas.toTempFilePathSync
-     * - 默认实现：返回空串（开发模式不支持截图）
-     * @param option.x 截取起始 x（默认 0）
-     * @param option.y 截取起始 y（默认 0）
-     * @param option.width 截取源宽度
-     * @param option.height 截取源高度
-     * @param option.destWidth 目标宽度
-     * @param option.destHeight 目标高度
-     * @param option.fileType 文件类型（如 'png'/'jpg'）
-     * @param option.quality 图片质量（0~1）
-     * @returns 临时文件路径，失败返回空串
-     */
-    /**
      * 【可选】读取本地文件并返回 base64 字符串。
      * 仅微信/抖音等小游戏平台支持，H5/编辑器不存在此方法。
      */
